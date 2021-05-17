@@ -1,0 +1,350 @@
+<template>
+  <div class="container-fluid">
+    <div class="block-header">
+      <!-- <button
+        type="button"
+        class="btn btn-default waves-effect"
+        @click="createNewClient"
+        :disabled="!roles.create_client"
+      >
+        <i class="material-icons">note_add</i>
+        <span>Create New Client</span>
+      </button>-->
+    </div>
+    <div class="card">
+      <div class="header">
+        <h2>Manage Clients</h2>
+      </div>
+      <div class="body">
+        <form @submit.prevent="searchClient">
+          <div class="row clearfix">
+            <div class="col-md-3 col-md-offset-7">
+              <div class="form-group">
+                <span>Search</span>
+                <div class="form-line">
+                  <input
+                    type="text"
+                    class="form-control"
+                    v-model="search.client"
+                    autocomplete="off"
+                  />
+                </div>
+              </div>
+            </div>
+            <div class="col-md-2">
+              <br />
+              <button
+                type="submit"
+                class="btn bg-black waves-effect waves-light"
+              >
+                Search
+              </button>
+              <button class="btn btn-success waves-effect" @click="reset">
+                Reset
+              </button>
+            </div>
+          </div>
+        </form>
+
+        <div class="row clearfix">
+          <div class="col-md-12">
+            <div class="table-wrap">
+              <div class="table-responsive">
+                <table class="table table-striped table-condensed table-hover">
+                  <thead>
+                    <tr>
+                      <th>Account No.</th>
+                      <th>Name</th>
+                      <th>Contact</th>
+                      <th>Address</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr
+                      v-for="client in clients"
+                      :key="client.id"
+                      style="cursor: pointer;"
+                      @click="getClient(client.id)"
+                      data-toggle="modal"
+                      data-target="#clientModal"
+                      title="click more details"
+                    >
+                      <td>{{ client.account_no }}</td>
+                      <td>{{ client.name }}</td>
+                      <td>{{ client.contact }}</td>
+                      <td>{{ client.location }}</td>
+                    </tr>
+
+                    <tr v-show="clients.length == 0">
+                      <td colspan="6" class="text-center">
+                        <small class="col-red">
+                          <i>No client found.</i>
+                        </small>
+                      </td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+            </div>
+            <p>{{ clients.length }} clients found.</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- SALES ORDER MODAL -->
+      <div
+        id="clientModal"
+        class="modal fade"
+        tabindex="-1"
+        role="dialog"
+        data-backdrop="static"
+        data-keyboard="false"
+      >
+        <div class="modal-dialog" role="document">
+          <div class="modal-content">
+            <div class="header">
+              <div class="row clearfix">
+                <div class="col-md-6">
+                  <h2>Client Details</h2>
+                </div>
+                <div class="col-md-6">
+                  <button
+                    type="button"
+                    class="close"
+                    data-dismiss="modal"
+                    aria-label="Close"
+                  >
+                    <span aria-hidden="true">&times;</span>
+                  </button>
+                </div>
+              </div>
+            </div>
+            <div class="modal-body">
+              <div class="row clearfix">
+                <div class="col-md-12">
+                  <div class="row clearfix">
+                    <div class="col-sm-12">
+                      <label>Account No.</label>
+                      <div class="input-group">
+                        <div class="form-line">
+                          <input
+                            type="text"
+                            class="form-control"
+                            v-model="client.account_no"
+                            autocomplete="off"
+                            :disabled="!roles.update_client"
+                          />
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div class="row clearfix">
+                    <div class="col-sm-12">
+                      <label>Name</label>
+                      <div class="input-group">
+                        <div class="form-line">
+                          <input
+                            type="text"
+                            class="form-control"
+                            v-model="client.name"
+                            autocomplete="off"
+                            :disabled="!roles.update_client"
+                          />
+                        </div>
+
+                        <small
+                          class="text-danger pull-left"
+                          v-show="errors.has('name')"
+                          >{{ errors.first("name") }}</small
+                        >
+                      </div>
+                    </div>
+                  </div>
+
+                  <div class="row clearfix">
+                    <div class="col-sm-12">
+                      <label>Contact</label>
+                      <div class="input-group">
+                        <div class="form-line">
+                          <input
+                            type="text"
+                            class="form-control"
+                            v-model="client.contact"
+                            autocomplete="off"
+                            :disabled="!roles.update_client"
+                          />
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div class="row clearfix">
+                    <div class="col-sm-12">
+                      <label>Address</label>
+                      <div class="input-group">
+                        <div class="form-line">
+                          <textarea
+                            type="text"
+                            class="form-control"
+                            v-model="client.location"
+                            rows="2"
+                            :disabled="!roles.update_client"
+                          ></textarea>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div class="modal-footer">
+              <!-- <router-link :to="'/account/' + client.id + '/ordered'">
+                <button
+                  class="btn btn-lg btn-success waves-effect waves-light"
+                  data-dismiss="modal"
+                >Order History</button>
+              </router-link>
+              <button
+                class="btn btn-lg btn-info waves-effect waves-light"
+                @click="update"
+                :disabled="!roles.update_client"
+              >Save Changes</button>-->
+            </div>
+          </div>
+        </div>
+      </div>
+      <!-- END SALES ORDER MODAL -->
+    </div>
+  </div>
+</template>
+
+<script>
+export default {
+  data() {
+    return {
+      authenticatedUser: [],
+      roles: [],
+      clients: [],
+      client: [],
+      search: {
+        client: null
+      }
+    };
+  },
+
+  created() {
+    this.getClients();
+    this.authenticatedUser = this.$global.getUser();
+    this.roles = this.$global.getRoles();
+  },
+
+  methods: {
+    getClients() {
+      this.$http.get("api/client").then(response => {
+        console.log(response.body);
+        this.clients = response.body;
+      });
+    },
+    getClient(id) {
+      this.client = [];
+
+      this.$http.get("api/client/" + id).then(response => {
+        this.client = response.body;
+      });
+    },
+
+    update() {
+      this.$validator.validateAll().then(result => {
+        if (result) {
+          this.$http
+            .put("api/client/" + this.client.id, this.client)
+            .then(response => {
+              this.clients = response.body;
+              //this.$global.setClients(response.body);
+              // $("#clientModal").modal("hide");
+              swal(this.client.name, "was successfully created!", {
+                icon: "success"
+              });
+            })
+            .catch(response => {
+              swal({
+                title: "Error",
+                text: response.body.error,
+                icon: "error",
+                dangerMode: true
+              }).then(value => {
+                if (value) {
+                }
+              });
+            });
+        }
+      });
+    },
+
+    searchClient() {
+      this.$http.post("api/client/search", this.search).then(response => {
+        this.clients = response.body;
+      });
+    },
+
+    reset() {
+      this.search.client = "";
+      this.searchClient();
+    },
+
+    createNewClient() {
+      swal("Create a new client?", {
+        buttons: {
+          Yes: true,
+          cancel: "Cancel"
+        }
+      }).then(value => {
+        switch (value) {
+          case "Yes":
+            this.$router.push({
+              path: "/create/client"
+            });
+            break;
+
+          default:
+            break;
+        }
+      });
+    }
+  }
+};
+</script>
+
+<style scoped>
+textarea {
+  resize: none;
+}
+
+.table-wrap {
+  height: 500px;
+  overflow-y: auto;
+  overflow-x: hidden;
+  border: 1px solid #eee;
+}
+
+/* width */
+::-webkit-scrollbar {
+  width: 5px;
+}
+
+/* Track */
+::-webkit-scrollbar-track {
+  background: #f1f1f1;
+}
+
+/* Handle */
+::-webkit-scrollbar-thumb {
+  background: #888;
+}
+
+/* Handle on hover */
+::-webkit-scrollbar-thumb:hover {
+  background: #555;
+}
+</style>

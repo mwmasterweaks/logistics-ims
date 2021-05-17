@@ -1,0 +1,454 @@
+<template>
+  <div class="container-fluid">
+    <div class="block-header">
+      <div class="row clearfix">
+        <div class="col-md-12">
+          <button
+            type="button"
+            class="btn btn-default waves-effect"
+            @click="exit"
+          >
+            <i class="material-icons">keyboard_backspace</i>
+            <span>Back</span>
+          </button>
+          <button
+            type="button"
+            class="btn btn-lg btn-info waves-effect"
+            @click="receive"
+            :disabled="data.receives.length < 1"
+          >
+            <span>Receive items</span>
+          </button>
+        </div>
+      </div>
+    </div>
+    <div class="card">
+      <div class="body">
+        <div class="row clearfix">
+          <div class="col-md-12 col-sm-12">
+            <h4>Receive Items</h4>
+          </div>
+        </div>
+        <div class="row clearfix">
+          <div class="col-md-6 col-sm-12">
+            <p>
+              Date Received
+
+              <b-form-datepicker
+                id="datepicker-valid"
+                v-model="data.date_receive"
+                :state="true"
+              ></b-form-datepicker>
+              <small class="text-danger pull-left" v-show="errors.has('date')"
+                >Date is required.</small
+              >
+            </p>
+          </div>
+        </div>
+        <div class="row clearfix">
+          <div class="col-md-12 col-sm-12">
+            <div class="table-wrap">
+              <table class="table table-stripped">
+                <thead>
+                  <tr>
+                    <th>Item</th>
+                    <th>Code#</th>
+                    <th>Qty</th>
+                    <th>Unit Price</th>
+                    <th>Receive To</th>
+                    <th>Action</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr v-for="item in data.receives" :key="item.id">
+                    <td>{{ item.name }} - {{ item.description }}</td>
+                    <td>{{ item.id }}</td>
+                    <td>
+                      <input
+                        type="text"
+                        v-model="item.qty"
+                        v-validate="'required|min_value:1|numeric'"
+                        v-bind:name="item.id + 'qty'"
+                      />
+
+                      <!-- <p>
+                        <small
+                          class="text-danger"
+                          v-show="errors.has(item.id + 'qty')"
+                          >Qty is required</small
+                        >
+                      </p> -->
+                    </td>
+
+                    <td>
+                      <input
+                        type="text"
+                        v-model="item.price"
+                        v-validate="'required|min_value:0|decimal:2'"
+                        v-bind:name="item.id + 'price'"
+                      />
+                      <p>
+                        <small
+                          class="text-danger"
+                          v-show="errors.has(item.id + 'price')"
+                          >Price is required</small
+                        >
+                      </p>
+                    </td>
+                    <td>
+                      <select
+                        v-model="item.received_to"
+                        v-validate="'required'"
+                        v-bind:name="item.id + 'receive_to'"
+                      >
+                        <option
+                          v-for="warehouse in warehouses"
+                          :key="warehouse.id"
+                          v-bind:value="warehouse.id"
+                        >
+                          {{ warehouse.name }}
+                        </option>
+                      </select>
+                      <p>
+                        <small
+                          class="text-danger"
+                          v-show="errors.has(item.id + 'receive_to')"
+                          >Receiving is required</small
+                        >
+                      </p>
+                    </td>
+                    <td>
+                      <a
+                        href="javascript:void(0);"
+                        @click="removeItem(item.id)"
+                        title="Remove"
+                      >
+                        <i
+                          class="material-icons text-danger"
+                          style="font-size: 16px !important"
+                          >delete</i
+                        >
+                      </a>
+                      <a
+                        href="javascript:void(0);"
+                        @click="selectFile"
+                        title="Import Serial"
+                      >
+                        <i
+                          class="material-icons text-success"
+                          style="font-size: 16px !important"
+                          >publish</i
+                        >
+                      </a>
+                      <input
+                        type="file"
+                        id="fileSelect"
+                        name="fileSelect"
+                        @change="previewFiles(item, $event)"
+                        style="visibility:hidden;"
+                      />
+                    </td>
+                  </tr>
+                  <tr v-show="data.receives.length < 1">
+                    <td class="text-center" colspan="5">
+                      <small class="col-red">
+                        <i>No items selected yet.</i>
+                      </small>
+                    </td>
+                    <td></td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+        <div class="row clearfix">
+          <div class="col-md-12">
+            <button
+              type="button"
+              class="btn btn-sm btn-default waves-effect"
+              data-toggle="modal"
+              data-target="#itemModal"
+            >
+              <i class="material-icons">note_add</i>
+              <span>Add Items</span>
+            </button>
+            <hr />
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- START ITEM MODAL -->
+    <div
+      class="modal fade"
+      id="itemModal"
+      tabindex="-1"
+      role="dialog"
+      data-backdrop="static"
+      data-keyboard="false"
+    >
+      <div class="modal-dialog modal-lg" role="document">
+        <div class="modal-content">
+          <div class="modal-header">
+            <button
+              type="button"
+              class="close"
+              data-dismiss="modal"
+              aria-label="Close"
+            >
+              <span aria-hidden="true">&times;</span>
+            </button>
+          </div>
+          <div class="modal-body">
+            <form @submit.prevent="searchItem">
+              <div class="row clearfix">
+                <div class="col-md-4">
+                  <div class="form-group">
+                    <div class="form-line">
+                      <span>Search</span>
+                      <input
+                        id="search"
+                        type="text"
+                        class="form-control"
+                        v-model="search.item"
+                        autocomplete="off"
+                        @keyup.delete="searchItem"
+                      />
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </form>
+            <div class="row clearfix">
+              <div class="col-md-12">
+                <table
+                  id="table_id"
+                  class="table table-bordered table-condensed table-hover"
+                >
+                  <thead>
+                    <tr>
+                      <th>Description</th>
+                      <th>Code</th>
+                      <th>Category</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr
+                      v-for="item in items"
+                      :key="item.id"
+                      style="cursor: pointer"
+                      @click="selectItem(item)"
+                    >
+                      <td>{{ item.name }} - {{ item.description }}</td>
+                      <td>{{ item.id }}</td>
+                      <td>{{ item.category.name }}</td>
+                    </tr>
+                    <tr v-show="items.length < 1">
+                      <td colspan="3" class="text-center">No results found.</td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <!-- END ITEM MODAL -->
+  </div>
+</template>
+<script>
+var moment = require("moment");
+moment().format();
+
+import swal from "sweetalert";
+import datePicker from "vue-bootstrap-datetimepicker";
+import PreLoader from "../PreLoader.vue";
+import { BModal, VBModal } from "bootstrap-vue";
+
+export default {
+  components: {
+    "date-picker": datePicker,
+    "pre-loader": PreLoader,
+    BModal
+  },
+  directives: { "b-modal": VBModal },
+
+  data() {
+    return {
+      data: {
+        date_receive: null,
+        receives: [],
+        barcodes: null
+      },
+      search: {
+        item: null
+      },
+      items: [],
+      warehouses: []
+    };
+  },
+
+  beforeMount() {},
+
+  created() {
+    this.items = this.$global.getItems();
+    this.warehouses = this.$global.getWarehouses();
+  },
+
+  mounted() {},
+
+  methods: {
+    selectFile() {
+      document.getElementById("fileSelect").click();
+    },
+    searchItem() {
+      this.$http.post("api/items/search", this.search).then(response => {
+        this.items = response.body;
+      });
+    },
+
+    previewFiles(item, e) {
+      console.log(item);
+      console.log(e);
+      var files = e.target.files,
+        f = files[0];
+      var reader = new FileReader();
+
+      reader.onload = function(e) {
+        var data = new Uint8Array(e.target.result);
+        var workbook = XLSX.read(data, { type: "array" });
+        let sheetName = workbook.SheetNames[0];
+
+        let worksheet = workbook.Sheets[sheetName];
+        console.log(XLSX.utils.sheet_to_json(worksheet));
+        console.log(this.data);
+        item.barcodes = XLSX.utils.sheet_to_json(worksheet);
+        item.qty = item.barcodes.length;
+        this.data.barcodes = item.barcodes;
+
+        document.getElementById("fileSelect").value = null;
+      }.bind(this);
+
+      reader.readAsArrayBuffer(f);
+    },
+
+    selectItem(item) {
+      var exists = false;
+
+      for (var i = 0; i < this.data.receives.length; i++) {
+        if (this.data.receives[i].id == item.id) {
+          exists = true;
+        }
+      }
+
+      if (!exists) {
+        this.$http.get("api/items/" + item.id).then(response => {
+          this.data.receives.push(response.body);
+        });
+      }
+
+      // $("#itemModal").modal("hide");
+    },
+
+    removeItem(id) {
+      swal({
+        title: "",
+        text: "Remove this item in the list?",
+        icon: "warning",
+        buttons: true,
+        dangerMode: true
+      }).then(willDelete => {
+        if (willDelete) {
+          for (var index = 0; index < this.data.receives.length; index++) {
+            if (this.data.receives[index].id == id) {
+              this.data.receives.splice(index, 1);
+            }
+          }
+        }
+      });
+    },
+
+    receive() {
+      console.log(this.data);
+      swal("Are you sure you want to receive the items?", {
+        buttons: {
+          receive: "Yes",
+          cancel: true
+        }
+      }).then(value => {
+        switch (value) {
+          case "receive":
+            this.$validator.validateAll().then(result => {
+              if (result) {
+                this.$http
+                  .post("api/stocks/direct_receive", this.data)
+                  .then(response => {
+                    console.log(response.body);
+                    if (response.body == "Serials already exist!") {
+                      swal({
+                        title: "Error",
+                        text: response.body,
+                        icon: "error",
+                        dangerMode: true
+                      });
+                    } else {
+                      swal("Items Received Succesfully.", {
+                        icon: "success"
+                      });
+
+                      this.$http.get("api/items").then(response => {
+                        this.$global.setItems(response.body);
+                      });
+                    }
+                    this.data.receives = [];
+                    this.data.barcodes = null;
+                    this.data.date_receive = null;
+                  });
+              }
+            });
+
+            break;
+
+          default:
+            break;
+        }
+      });
+    },
+
+    exit() {
+      swal("Are you sure you want to go back?", {
+        icon: "warning",
+        buttons: {
+          exit: "Yes",
+          cancel: true
+        }
+      }).then(value => {
+        switch (value) {
+          case "exit":
+            this.$router.push({
+              path: "/purchase_orders"
+            });
+            break;
+
+          default:
+            break;
+        }
+      });
+    }
+  }
+};
+</script>
+
+<style scoped>
+.table-wrap {
+  height: 300px;
+  overflow-y: auto;
+  overflow-x: hidden;
+}
+
+select {
+  padding: 3px 0px !important;
+}
+</style>
