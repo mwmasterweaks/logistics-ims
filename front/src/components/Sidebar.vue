@@ -7,7 +7,7 @@
         <div class="image">
           <!-- <img src="../img/female.gif" width="48" height="48" alt="User" /> -->
           <!-- <img src="../img/asdf.png" width="48" height="48" alt="User" /> -->
-          <img src="../img/avatar2.jpg" width="48" height="48" alt="User" />
+          <img src="../img/user.gif" width="48" height="48" alt="User" />
         </div>
         <div class="info-container">
           <div

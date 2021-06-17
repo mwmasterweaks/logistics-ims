@@ -383,4 +383,12 @@ class SalesOrderController extends Controller
 
         return array($bool, $index);
     }
+
+    public function searchItem(Request $request)
+    {
+        $temp = Item::with(['type', 'category', 'stocks'])
+            ->where('description', 'like', $request->item . '%')
+            ->get();
+        return response()->json($temp);
+    }
 }

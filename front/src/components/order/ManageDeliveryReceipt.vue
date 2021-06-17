@@ -1,6 +1,6 @@
 <template>
   <div class="container-fluid">
-    <div class="block-header" id="sales_order_button" style="margin-top:-20px">
+    <!-- <div class="block-header" id="sales_order_button" style="margin-top:-20px">
       <div class="row clearfix">
         <div class="col-lg-10 col-md-10">
           <json-excel
@@ -11,7 +11,7 @@
           </json-excel>
         </div>
       </div>
-    </div>
+    </div> -->
 
     <div class="card">
       <div class="header">

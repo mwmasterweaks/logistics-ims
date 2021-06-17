@@ -14,7 +14,19 @@
     <div class="card">
       <div class="header">
         <h2>Manage Clients</h2>
+        <div style="background:green;float:right;margin-top:-18px;">
+          <button
+            type="button"
+            class="btn bg-black waves-effect waves-light"
+            :disabled="!roles.create_client"
+            @click="updateClients"
+          >
+            <i class="material-icons">cached</i>
+            <span>Update</span>
+          </button>
+        </div>
       </div>
+
       <div class="body">
         <form @submit.prevent="searchClient">
           <div class="row clearfix">
@@ -64,7 +76,7 @@
                       v-for="client in clients"
                       :key="client.id"
                       style="cursor: pointer;"
-                      @click="getClient(client.id)"
+                      @click="getClient(client)"
                       data-toggle="modal"
                       data-target="#clientModal"
                       title="click more details"
@@ -86,7 +98,7 @@
                 </table>
               </div>
             </div>
-            <p>{{ clients.length }} clients found.</p>
+            <p>{{ clients.length }} clients displayed.</p>
           </div>
         </div>
       </div>
@@ -246,12 +258,26 @@ export default {
         this.clients = response.body;
       });
     },
-    getClient(id) {
-      this.client = [];
+    getClient(client) {
+      this.client = client;
 
-      this.$http.get("api/client/" + id).then(response => {
-        this.client = response.body;
+      // this.$http.get("api/client/" + id).then(response => {
+      //   this.client = response.body;
+      // });
+    },
+    updateClients() {
+      this.$http.post("api/updateClients").then(response => {
+        console.log(response.body);
+        swal("Clients List", "Updated", "success");
       });
+      // .catch(response => {
+      //   swal({
+      //     title: "Error",
+      //     text: response.body.error,
+      //     icon: "error",
+      //     dangerMode: true
+      //   });
+      // });
     },
 
     update() {

@@ -13,8 +13,8 @@
           </button>
 
           <div
-            v-show="
-              dataStock.status == 'For Approval' || roles.approved_sales_order
+            :hidden="
+              dataStock.status != 'For Approval' || !roles.approved_sales_order
             "
             style="float:right; display:block"
           >
@@ -94,12 +94,35 @@
                       </thead>
                       <tbody>
                         <tr v-for="item in itemsDis" :key="item.index">
-                          <td>{{ item.id }}</td>
+                          <td>
+                            {{ item.id }}
+                          </td>
                           <td>{{ item.serial }}</td>
                           <td>{{ item.name }}</td>
                           <td>{{ item.desc }}</td>
                           <td>{{ item.qty }}</td>
-                          <td>{{ item.status }}</td>
+                          <!-- <td>{{ item.status }}</td> -->
+                          <td :hidden="dataStock.status != 'For Approval'">
+                            <select
+                              class="form-control"
+                              v-model="data.status"
+                              @change="updateStatus"
+                            >
+                              <option value="Stocked in">Stocked in</option>
+                              <option value="Defective">Defective</option>
+                              <option value="For repair">For repair</option>
+                              <option value="Refurbish">Refurbish</option>
+                              <option value="Under observation"
+                                >Under observation</option
+                              >
+                              <option value="Stock transfer"
+                                >Stock transfer</option
+                              >
+                            </select>
+                          </td>
+                          <td :hidden="dataStock.status == 'For Approval'">
+                            {{ item.status }}
+                          </td>
                         </tr>
                       </tbody>
                     </table>
@@ -151,6 +174,9 @@ export default {
         date_recieve: "",
         returnee: "",
         remarks: ""
+      },
+      data: {
+        status: ""
       }
     };
   },
@@ -214,6 +240,27 @@ export default {
           //console.log(items);
         });
     },
+    updateStatus() {
+      if (this.data.status != null) {
+        var data = {
+          id: this.dataStock.id,
+          itemStatus: this.data.status,
+          item: this.itemsDis
+        };
+
+        console.log(data);
+        this.$http
+          .post("api/sales_return/updateStatus", data)
+          .then(response => {
+            // this.$global.setSalesReturn(response.body);
+            // swal(this.category.name, "has successfully updated!", {
+            //   icon: "success"
+            // });
+            // this.category = {};
+            console.log(response.body);
+          });
+      }
+    },
 
     accept() {
       this.$validator.validateAll().then(result => {
@@ -221,7 +268,7 @@ export default {
           this.$http
             .post("api/sales_return/accept/" + this.dataStock.id)
             .then(response => {
-              // console.log(response.body);
+              console.log(response.body);
               this.loadData();
               this.$global.setSalesReturn(response.body);
 

@@ -47,6 +47,7 @@ import Report from "./components/Report.vue";
 import Duplicate from "./components/Duplicate.vue";
 import Component from "./components/Components.vue";
 import Test from "./components/Maintenance.vue";
+import QuickReport from "./components/QuickReport.vue";
 
 // import Error404 from "./components/error/404.vue";
 
@@ -353,6 +354,14 @@ const router = new VueRouter({
     {
       path: "/component",
       component: Component,
+      meta: {
+        forAuth: true
+      }
+    },
+
+    {
+      path: "/qreport",
+      component: QuickReport,
       meta: {
         forAuth: true
       }

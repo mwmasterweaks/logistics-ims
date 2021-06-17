@@ -11,13 +11,17 @@ class ClientController extends Controller
 {
     public function index()
     {
-        $clients = Client::on("mysqlis")->orderBy("name")->take(500)->get();
+        // $clients = Client::on("mysqlis")->orderBy("name")->take(500)->get();
+        // return response()->json($clients);
+        $clients = DB::table('clients')->get();
+
         return response()->json($clients);
     }
 
     public function show($id)
     {
-        $client = Client::on("mysqlis")->find($id);
+        $client =
+            DB::table('clients')->where('id', '=', $id)->first();
 
         if (!empty($client))
             return response()->json($client);
@@ -64,8 +68,12 @@ class ClientController extends Controller
 
     public function showSearch(Request $request)
     {
-        $clients = Client::on("mysqlis")
-            ->where('name', 'like', '%' . $request->client . '%')->get();
+        // $clients = DB::table('clients')
+        //     ->where('name', 'like', '%' . $request->client . '%')->get();
+        $clients = DB::table('clients')
+            // ->select('name')
+            ->where('name', 'like', $request->client . '%')
+            ->get();
         return response()->json($clients);
     }
 
@@ -73,5 +81,38 @@ class ClientController extends Controller
     {
         $clients = Client::all();
         return count($clients);
+    }
+
+    public function updateClients()
+    {
+        // return "connected";
+        // $clients = Client::on("mysqlis")->orderBy("name")->take(500)->get();
+        try {
+            $current = Client::max('id');
+            $dataSet = Client::on("mysqlis")->where("id", ">", $current)->get();
+            // return $dataSet;
+            $temp = [];
+            foreach ($dataSet as $i => $d) {
+                $temp[$i] = [
+                    'id' => $d->id,
+                    'account_no' => $d->account_no,
+                    'branch_id' => $d->branch_id,
+                    'name' => $d->name,
+                    'owner_name' => $d->owner_name,
+                    'location' => $d->location,
+                    'contact_person' => $d->contact_person,
+                    'business_type' => $d->business_type,
+                    'contact' => $d->contact,
+                    'email_add' => $d->email_add
+
+
+                ];
+            }
+            DB::table('clients')->insert($temp);
+
+            return "ok";
+        } catch (\Exception $ex) {
+            return response()->json(['error' => $ex->getMessage()], 500);
+        }
     }
 }

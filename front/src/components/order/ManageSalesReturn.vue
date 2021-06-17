@@ -74,7 +74,7 @@
                       <td>{{ sales_return.date_return }}</td>
                     </router-link>
                     <tr v-if="sales_returns.length == 0">
-                      <td colspan="5" class="text-center">
+                      <td colspan="6" class="text-center">
                         <small class="col-red">
                           <i>No Sales Return found.</i>
                         </small>

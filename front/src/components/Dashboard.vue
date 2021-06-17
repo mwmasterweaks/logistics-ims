@@ -1,11 +1,18 @@
 <template>
   <div class="container-fluid">
-    <pre-loader></pre-loader>
+    <pre-loader v-if="loaded"></pre-loader>
+
+    <div
+      class="row clearfix"
+      style="background:yellow;width:10%;float:right;margin-right:3px;margin-top:-20px"
+    >
+      <b-button variant="dark" @click="quickReport">Quick Report</b-button>
+    </div>
 
     <!-- Summary reports-->
-    <div class="row clearfix">
+    <div class="row clearfix" style="margin-top:30px">
       <!-- stock monitoring table -->
-      <div class="col-md-12" style="max-height:500px">
+      <div class="col-md-12" style="max-height:520px">
         <div class="card" style="height:100%;overflow-y:scroll">
           <div class="header">
             <h2>Latest Forecast</h2>
@@ -27,7 +34,7 @@
                 <tbody>
                   <tr
                     v-for="alert in alerts"
-                    :key="alert.id"
+                    :key="alert.item_id"
                     v-show="alert.totalItem > 0 && alert.status == 'no'"
                   >
                     <td>
@@ -63,7 +70,7 @@
                 <tbody>
                   <tr
                     v-for="alert in alerts"
-                    :key="alert.id"
+                    :key="alert.item_id"
                     v-show="alert.totalItem < 1 && alert.status == 'no'"
                   >
                     <td style="display: table-cell; vertical-align: middle;">
@@ -85,258 +92,21 @@
         </div>
       </div>
     </div>
+
     <br />
-    <br />
 
-    <!-- QUICK REPORT -->
-    <div class="row clearfix">
-      <div class="col-md-12">
-        <div class="card">
-          <div class="header" style="display:block">
-            <h2 style="float:left">Quick Report</h2>
-
-            <div style="float:right">
-              <button
-                class="btn btn-success waves-effect"
-                data-toggle="modal"
-                data-target="#summary"
-              >
-                Create Report
-              </button>
-              <button
-                type="submit"
-                class="btn bg-black waves-effect waves-light"
-                @click.prevent="print"
-              >
-                Print
-              </button>
-            </div>
-          </div>
-
-          <div
-            class="modal fade"
-            id="summary"
-            tabindex="-1"
-            role="dialog"
-            data-backdrop="static"
-            data-keyboard="false"
-          >
-            <!-- data-backdrop="static"
-        data-keyboard="false" -->
-            <div class="modal-dialog modal-lg" role="document">
-              <div class="modal-content">
-                <div class="modal-header">
-                  <h4>GENERATE QUICK REPORT</h4>
-                  <button
-                    type="button"
-                    class="close"
-                    data-dismiss="modal"
-                    aria-label="Close"
-                  >
-                    <span aria-hidden="true">&times;</span>
-                  </button>
-                </div>
-                <div class="modal-body">
-                  <form>
-                    <div class="row">
-                      <div class="col-25">
-                        <label class="labelNew">Filter By</label>
-                      </div>
-                      <div class="col-75">
-                        <select v-model="filterBy" @change="getSummary">
-                          <option value="deliverySum">Delivery Receipt</option>
-                          <option value="clientSum">Clients</option>
-                          <option value="itemSum">Items</option>
-                          <option value="salesSum">Sales Orders</option>
-                        </select>
-                      </div>
-                    </div>
-                    <div class="row">
-                      <div class="col-25">
-                        <label for="subject">Select Date Range</label>
-                      </div>
-                      <div class="col-75">
-                        <rangedate-picker
-                          style="color:black; background-color:white"
-                          i18n="EN"
-                          @selected="onDateSelected"
-                        ></rangedate-picker>
-                      </div>
-                    </div>
-                    <div class="row" v-if="filterBy == 'clientSum'">
-                      <div class="col-25">
-                        <label>Select Client</label>
-                      </div>
-                      <div class="col-75">
-                        <!-- <select v-model="clientSelected" @change="getSummary">
-                          <option
-                            v-for="client in clients"
-                            :value="client.id"
-                            :key="client.id"
-                            >{{ client.name }}</option
-                          >
-                        </select> -->
-                        <model-list-select
-                          :list="clients"
-                          v-model="clientSelected"
-                          option-value="id"
-                          option-text="name"
-                          placeholder="-- Select Client --"
-                          style="background:gray"
-                        ></model-list-select>
-                      </div>
-                    </div>
-
-                    <div></div>
-                    <br />
-
-                    <div style="float:right">
-                      <button
-                        class="btn btn-success waves-effect"
-                        data-dismiss="modal"
-                      >
-                        Done
-                      </button>
-                    </div>
-                  </form>
-                </div>
-              </div>
-            </div>
-          </div>
-
-          <div class="col-md-12">
-            <div class="card" id="printable">
-              <div class="header text-center">
-                <img src="./../img/logo.jpg" width="150px" />
-                <br />
-                <br />
-
-                <h4 style="color:black">
-                  INVENTORY ITEM QUICK REPORT
-                </h4>
-                <h6>
-                  As of {{ this.sumDateSelected.end | moment("MMMM Do YYYY") }}
-                </h6>
-              </div>
-              <div class="table-wrap">
-                <table class="table table-striped table-condensed">
-                  <thead>
-                    <tr>
-                      <th></th>
-                      <th>Type</th>
-                      <th>Date</th>
-                      <th>Number</th>
-                      <th>Name</th>
-                      <th>Description</th>
-                      <th>Qty</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    <template>
-                      <h4>Inventory</h4>
-                    </template>
-
-                    <!-- DELIVERY RECEIPT  -->
-                    <tr
-                      v-for="report in reports.data"
-                      :key="report.id"
-                      :hidden="filterBy == 'salesSum'"
-                    >
-                      <td></td>
-                      <td>Invoice</td>
-                      <td>
-                        <p>{{ report.date }}</p>
-                      </td>
-                      <td>
-                        <a
-                          :href="'/delivery_receipt/' + report.dr_id"
-                          target="_blank"
-                          >{{ report.dr_id }}</a
-                        >
-                      </td>
-                      <td>
-                        <p>{{ report.name }}</p>
-                      </td>
-                      <td>
-                        <p>{{ report.desc }}</p>
-                      </td>
-                      <td>
-                        <p>-{{ report.qty }}</p>
-                      </td>
-                    </tr>
-                    <tr :hidden="filterBy == 'salesSum'">
-                      <td :hidden="filterBy == 'salesSum'">
-                        Total On Hand As of
-                        {{ this.sumDateSelected.end | moment("MMMM Do YYYY") }}
-                      </td>
-                      <td></td>
-                      <td></td>
-                      <td></td>
-                      <td></td>
-                      <td></td>
-                      <td>-{{ reports.totalQty }}</td>
-                    </tr>
-                    <template> </template>
-                    <tr
-                      v-for="report in reports.data"
-                      :key="report.id"
-                      :hidden="filterBy == 'deliverySum'"
-                    >
-                      <td></td>
-                      <td>Sales Order</td>
-                      <td>
-                        <p>{{ report.date }}</p>
-                      </td>
-                      <td>
-                        <a
-                          :href="'/sales_order/' + report.sales_order_id"
-                          target="_blank"
-                        >
-                          {{ report.sales_order_id }}
-                        </a>
-                      </td>
-                      <td>
-                        <p>{{ report.name }}</p>
-                      </td>
-                      <td>
-                        <p>{{ report.desc }}</p>
-                      </td>
-                      <td>
-                        <p>-{{ report.qty }}</p>
-                      </td>
-                    </tr>
-                    <tr :hidden="filterBy == 'deliverySum'">
-                      <td>
-                        Total On Sales Order As of
-                        {{ this.sumDateSelected.end | moment("MMMM Do YYYY") }}
-                      </td>
-                      <td></td>
-                      <td></td>
-                      <td></td>
-                      <td></td>
-                      <td></td>
-                      <td>-{{ reports.totalQty }}</td>
-                    </tr>
-                    <tr>
-                      <td>
-                        Total As of
-                        {{ this.sumDateSelected.end | moment("MMMM Do YYYY") }}
-                      </td>
-                      <td></td>
-                      <td></td>
-                      <td></td>
-                      <td></td>
-                      <td></td>
-                      <td>-{{ reports.totalQty }}</td>
-                    </tr>
-                  </tbody>
-                </table>
-              </div>
-            </div>
-          </div>
-        </div>
+    <div class="footer">
+      <div style="margin-left:40%">
+        <img src="./../img/inet.gif" style="width:12%" />
+        <img
+          src="./../img/giga.gif"
+          style="width:25%;margin-left:25px;margin-right:20px"
+        />
+        <img src="./../img/solutions.gif" style="width:12%" />
       </div>
     </div>
+    <br />
+    <br />
   </div>
 </template>
 
@@ -354,6 +124,7 @@ export default {
 
   data() {
     return {
+      loaded: false,
       reports: [],
       clients: [],
       filterBy: "",
@@ -378,16 +149,12 @@ export default {
     this.user = this.$global.getUser();
     this.load();
     this.roles = this.$global.getRoles();
-    this.getClients();
   },
-  mounted() {
-    //this.setCount();
-    // channel.bind("NotifyCreatedSalesOrder", this.liveUpdate);
-    // channel.bind("NotifyUpdatedSalesOrder", this.liveUpdate);
-  },
+  mounted() {},
 
   methods: {
     load() {
+      this.loaded = true;
       this.$http.post("api/sales_order/alert").then(response => {
         this.alerts = response.body;
       });
@@ -397,63 +164,30 @@ export default {
         this.roles = this.$global.getRoles();
         $(".page-loader-wrapper").fadeOut();
       });
+      this.loaded = false;
     },
     linkGen(pageNum) {
       return pageNum === 1 ? "?" : `?page=${pageNum}`;
     },
 
-    print() {
-      this.$htmlToPaper("printable");
-    },
-
-    done() {
-      // $("#summary").modal("hide");
-    },
-
-    getClients() {
-      this.$http.get("api/client").then(response => {
-        this.clients = response.body;
-      });
-    },
-    onDateSelected(dateSelected) {
-      this.sumDateSelected = dateSelected;
-      console.log(this.sumDateSelected.end);
-      this.getSummary();
-    },
-
-    getSummary() {
-      this.sumDateSelected.filterBy = this.filterBy;
-
-      console.log(this.sumDateSelected);
-      if (this.sumDateSelected.start != null) {
-        if (this.filterBy == "itemSum") {
-          this.$http
-            .post("api/dashboard/showItemInventoryReport", this.sumDateSelected)
-            .then(response => {
-              console.log(response.body);
-              this.reports = response.body;
-            });
-        } else if (
-          this.filterBy == "clientSum" &&
-          this.clientSelected != null
-        ) {
-          this.sumDateSelected.client_id = this.clientSelected;
-          console.log(this.sumDateSelected);
-          this.$http
-            .post("api/dashboard/showItemInventoryReport", this.sumDateSelected)
-            .then(response => {
-              console.log(response.body);
-              this.reports = response.body;
-            });
-        } else {
-          this.$http
-            .post("api/dashboard/showItemInventoryReport", this.sumDateSelected)
-            .then(response => {
-              console.log(response.body);
-              this.reports = response.body;
-            });
+    quickReport() {
+      swal("You will be redirected to Quick Report.Continue?", {
+        buttons: {
+          Yes: true,
+          cancel: "Cancel"
         }
-      }
+      }).then(value => {
+        switch (value) {
+          case "Yes":
+            this.$router.push({
+              path: "/qreport"
+            });
+            break;
+
+          default:
+            break;
+        }
+      });
     }
   }
 };
@@ -542,5 +276,16 @@ input[type="submit"]:hover {
   cursor: pointer;
   -webkit-transition-duration: 0.4s; /* Safari */
   transition-duration: 0.4s;
+}
+
+.footer {
+  position: fixed;
+  left: 0;
+  bottom: 0;
+  width: 100%;
+  height: 73px;
+  background-color: #fff;
+  color: white;
+  opacity: 0.5;
 }
 </style>

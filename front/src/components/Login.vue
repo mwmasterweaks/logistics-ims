@@ -5,23 +5,20 @@
       style="max-width:600px"
     >
       <div class="col-md-4 text-center company__info">
-        <!-- <span class="company__logo">
-          <i class="material-icons">shopping_cart</i>
-        </span> -->
-        <div class="image">
-          <img src="../img/IMS.jpg" width="180" alt="User" />
-          <!-- <img src="../img/cart.gif" width="180" alt="User" /> -->
+        <div class="image" style="margin-top:-20px">
+          <img src="../img/ims.gif" width="180" alt="User" />
         </div>
-        <h5 class="company_title">DCTECH MICRO SERVICES INC.</h5>
+        <div style="margin-top:40px">
+          <img src="../img/dctech.gif" width="150" alt="User" />
+        </div>
       </div>
       <div class="col-md-8 col-xs-12 col-sm-12 login_form">
         <form @submit.prevent="login" class="form-signin">
           <div>
             <div class="body">
-              <h1 class="h3 mb-3 font-weight-bold" @click="checkDB">
-                LOGISTICS
-              </h1>
-              <div class="msg">Sign in to start your session</div>
+              <div class="msg" style="margin-top:30px">
+                <h4>Sign in to start your session</h4>
+              </div>
 
               <hr />
 
@@ -78,7 +75,10 @@
                     >Login failed.</small
                   >
                 </div>
-                <div class="col-md-6">
+                <div
+                  class="col-md-6"
+                  style="margin-top:-8px;margin-bottom:10px"
+                >
                   <button
                     class="btn bg-black btn-lg waves-effect waves-light pull-right"
                     type="submit"

@@ -21,7 +21,7 @@ class ItemsController extends Controller
     public function index()
     {
         $items = Item::with(['type', 'category', 'stocks'])
-            ->orderBy('id', 'desc')->get();
+            ->orderBy('id', 'asc')->get();
 
         $temp = [];
 
@@ -83,6 +83,13 @@ class ItemsController extends Controller
         $groups = item_group::with('items')->get();
 
         return response()->json($groups);
+    }
+
+    public function showItems()
+    {
+        $items = Item::with(['type', 'category', 'stocks'])
+            ->orderBy('id', 'asc')->get();
+        return response()->json($items);
     }
 
 
@@ -534,5 +541,52 @@ class ItemsController extends Controller
         } catch (\Exception $ex) {
             return response()->json(['error' => $ex->getMessage()], 500);
         }
+    }
+
+    public function searchItem(Request $request)
+    {
+
+        $items = Item::with(['type', 'category', 'stocks'])
+            ->where('description', 'like', $request->item . '%')
+            ->get();
+
+        $temp = [];
+
+        foreach ($items as $item) {
+            $total_qty_in = 0;
+            $total_qty_out = 0;
+
+            $total_qty_in = DB::table('stocks')
+                ->where('item_id', $item->id)
+                ->sum('qty_in');
+
+            $total_qty_out = DB::table('stocks')
+                ->where('item_id', $item->id)
+                ->sum('qty_out');
+
+            $forecast = (object) app(NotificationController::class)->forecast($item->id);
+            $forecast = (object) $forecast->original;
+
+            $collection = collect($item);
+            $collection->put('total_qty', $total_qty_in - $total_qty_out);
+            $collection->put('price', 0);
+            $collection->put('ordered_qty', 0);
+            $collection->put('forecast', $forecast);
+            array_push($temp, $collection->all());
+        }
+
+        $items = $temp;
+
+        return response()->json($items);
+    }
+
+    public function searchGroup(Request $request)
+    {
+        $items = DB::table('item_groups')
+            ->where('group_name', 'like', $request->group . '%')
+            ->get();
+
+
+        return response()->json($items);
     }
 }

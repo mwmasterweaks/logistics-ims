@@ -7,15 +7,6 @@ use Illuminate\Database\Eloquent\Model;
 class Client extends Model
 {
     protected $fillable = [
-        'name', 'contact', 'address', 'client_type'
+        'account_no', 'branch_id', 'name', 'owner_name', 'location', 'contact_person', 'business_type', 'contact', 'email_add'
     ];
-
-    protected $table = 'clients';
-    protected $connection = 'mysqlis';
-
-    public function __construct(array $attributes = [])
-    {
-        $this->table = env('DB_DATABASE_IS') . '.' . $this->table;
-        parent::__construct();
-    }
 }

@@ -26,7 +26,7 @@ class DeliveryReceiptController extends Controller
 
         foreach ($delivery_receipts as $delivery_receipt) {
 
-            $client = Client::on("mysqlis")->find($delivery_receipt->sales_order->client_id);
+            $client = Client::find($delivery_receipt->sales_order->client_id);
 
             if (empty($client)) {
                 $client = [];
@@ -44,9 +44,12 @@ class DeliveryReceiptController extends Controller
 
     public function store(Request $request, $id)
     {
+        $temp = DB::table('sales_orders')->where('id', $id)->first();
+
         $delivery_receipt_id = DB::table('delivery_receipts')->insertGetId(
             [
                 "sales_order_id" => $id,
+                "memo" => $temp->note,
                 "user_id" => $request->id,
                 "status" => "for delivery",
                 "created_at" =>  Carbon::now(),
@@ -115,12 +118,12 @@ class DeliveryReceiptController extends Controller
                         $collection->put('price', $value->price);
                         $collection->put('ordered_qty', $sales_order_details->qty);
                         $collection->put('delivering_qty', $value->qty);
-                        $collection->put('return_qty',$value->qty_return);
+                        // $collection->put('return_qty', $value->qty_return);
                         $collection->put('ordered_serial', $temp_ordered_serial);
                         $collection->put('delivered_qty', $delivered_qty);
                         array_push($orders, $collection->all());
                     }
-                } else if($item->type->name == "Consumable"){
+                } else if ($item->type->name == "Consumable") {
                     $sales_order_details =
                         DB::table('item_sales_order')
                         ->where('sales_order_id', $delivery_receipt->sales_order_id)
@@ -137,7 +140,7 @@ class DeliveryReceiptController extends Controller
                     $collection = collect($item);
                     $collection->put('price', $value->price);
                     $collection->put('delivering_qty', $value->qty);
-                    $collection->put('return_qty', $value->qty_return);
+                    // $collection->put('return_qty', $value->qty_return);
                     $collection->put('ordered_qty', $sales_order_details->qty);
                     $collection->put('delivered_qty', $delivered_qty);
                     array_push($orders, $collection->all());
@@ -151,7 +154,6 @@ class DeliveryReceiptController extends Controller
         $delivery_receipt = $collection->all();
 
         return response()->json($delivery_receipt);
-
     }
 
     public function update(Request $request, $id)
@@ -209,7 +211,7 @@ class DeliveryReceiptController extends Controller
             $orders = DB::table('delivery_receipt_item')
                 ->where('delivery_receipt_id', '=', $id)->get();
 
-            $client = DB::table('c4_infosystem.clients')
+            $client = DB::table('clients')
                 ->join('sales_orders', 'clients.id', 'sales_orders.client_id')
                 ->join('delivery_receipts', 'delivery_receipts.sales_order_id', 'sales_orders.id')
                 ->where('delivery_receipts.id', $id)

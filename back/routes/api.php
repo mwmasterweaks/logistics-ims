@@ -38,8 +38,12 @@ Route::group(['middleware' => 'auth:api'], function () {
 
 
     Route::get('items/serial/{serial}', 'ItemsController@serial');
+    Route::post('items/showItems', 'ItemsController@showItems');
     Route::post('items/showItemGroup', 'ItemsController@showItemGroup');
     Route::post('items/showGroupData/{id}', 'ItemsController@showGroupData');
+    Route::post('items/searchItem', 'ItemsController@searchItem');
+    Route::post('items/searchGroup', 'ItemsController@searchGroup');
+
 
     Route::post('items/addGroup', 'ItemsController@addGroup');
     Route::get('stock/getSerialsPerItem/{id}', 'StockController@getSerialsPerItem');
@@ -66,10 +70,12 @@ Route::group(['middleware' => 'auth:api'], function () {
     Route::post('sales_order/accept/{sales_order}', 'SalesOrderController@approve');
     Route::post('sales_order/decline/{sales_order}', 'SalesOrderController@decline');
     Route::get('sales_order/receipts/{sales_order}', 'SalesOrderController@showforReceipt');
+    Route::post('sales_order/searchItem', 'SalesOrderController@searchItem');
 
     //--------------------Sales Return Aprroval------------------------------//
 
     Route::post('sales_return/accept/{sales_return}', 'SalesReturnController@approve');
+    Route::post('sales_return/updateStatus', 'SalesReturnController@updateStatus');
 
 
     //--------------------Delivery Receipt------------------------------//
@@ -83,8 +89,12 @@ Route::group(['middleware' => 'auth:api'], function () {
     Route::post('sales_order/verified/number', 'SalesOrderController@countVerified');
     Route::post('sales_order/declined/number', 'SalesOrderController@countDeclined');
     Route::post('client/number', 'ClientController@countClient');
+    Route::post('updateClients', 'ClientController@updateClients');
+
     Route::post('dashboard/successful_order', 'DashboardController@showSuccessfulOrder');
     Route::post('dashboard/showItemInventoryReport', 'DashboardController@showItemInventoryReport');
+    Route::post('dashboard/showClientInventoryReport', 'DashboardController@showClientInventoryReport');
+
 
 
     //--------------------Notification------------------------------//

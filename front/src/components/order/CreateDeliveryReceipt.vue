@@ -90,8 +90,19 @@
           </div>
         </div>
         <div class="row clearfix">
-          <div class="col-md-3 col-sm-12">
-            <img src="../../img/logo.jpg" />
+          <div
+            class="col-md-3 col-sm-12"
+            style="margin-top:-10px"
+            v-if="sales_order.client.class == 'INET CLIENTS'"
+          >
+            <img src="../../img/inet.gif" style="width:100%" />
+          </div>
+          <div
+            class="col-md-3 col-sm-12"
+            style="margin-top:-10px"
+            v-if="sales_order.client.class == 'SOLUTIONS CLIENTS'"
+          >
+            <img src="../../img/solutions.gif" style="width:100%" />
           </div>
           <div class="col-md-3 col-sm-12">
             From
@@ -108,7 +119,7 @@
             <address>
               <strong>{{ sales_order.client.name }}</strong>
               <br />
-              {{ sales_order.client.address }}
+              {{ sales_order.client.location }}
               <br />
               {{ sales_order.client.contact }}
             </address>
@@ -141,7 +152,7 @@
                       <th>Description</th>
                       <th>Serial/Barcode</th>
                       <th>Qty</th>
-                      <th>Qty Return</th>
+                      <!-- <th>Qty Return</th> -->
                       <th>Price</th>
                       <th>Amount</th>
                     </tr>
@@ -178,9 +189,9 @@
                       </td>
 
                       <td v-else>{{ order.ordered_serial.length }}</td>
-                      <td>
+                      <!-- <td>
                         {{ order.return_qty }}
-                      </td>
+                      </td> -->
                       <td>{{ order.price }}</td>
                       <td v-if="order.type.name == 'Consumable'">
                         {{ order.price * order.delivering_qty }}
@@ -251,8 +262,16 @@
         </div>
         <hr />
         <div class="row clearfix">
+          <center>
+            <strong
+              ><em>RECEIVED ABOVE ITEMS IN GOOD ORDER AND CONDITION</em></strong
+            >
+          </center>
+        </div>
+        <hr />
+        <div class="row clearfix">
           <div class="col-xs-2">
-            <b>Prepared By:</b>
+            <b>Encoded By:</b>
             <br />
             <br />
             <br />
@@ -265,14 +284,19 @@
             <br />_________________________________
           </div>
           <div class="col-xs-2">
-            <b>Date Received:</b>
+            <b>Released by:</b>
             <br />
             <br />
             <br />
             <b>Received By:</b>
           </div>
           <div class="col-xs-4">
-            _________________________________
+            <b v-if="sales_order.client.class == 'INET CLIENTS'"
+              >Emmanuel G. Llabore Jr.</b
+            >
+            <b v-if="sales_order.client.class == 'SOLUTIONS CLIENTS'"
+              >Gabriel Sanchez</b
+            >
             <br />
             <br />
             <br />_________________________________
@@ -508,8 +532,19 @@
           </div>
         </div>
         <div class="row clearfix">
-          <div class="col-md-3 col-xs-3">
-            <img src="../../img/logo.jpg" />
+          <div
+            class="col-md-3 col-sm-12"
+            style="margin-top:-10px"
+            v-if="sales_order.client.class == 'INET CLIENTS'"
+          >
+            <img src="../../img/inet.gif" style="width:100%" />
+          </div>
+          <div
+            class="col-md-3 col-sm-12"
+            style="margin-top:-10px"
+            v-if="sales_order.client.class == 'SOLUTIONS CLIENTS'"
+          >
+            <img src="../../img/solutions.gif" style="width:100%" />
           </div>
           <div class="col-md-3 col-xs-3">
             From
@@ -526,7 +561,7 @@
             <address>
               <strong>{{ sales_order.client.name }}</strong>
               <br />
-              {{ sales_order.client.address }}
+              {{ sales_order.client.location }}
               <br />
               {{ sales_order.client.contact }}
             </address>
@@ -648,7 +683,7 @@
         <hr />
         <div class="row clearfix">
           <div class="col-xs-2">
-            <b>Prepared By:</b>
+            <b>Encoded By:</b>
             <br />
             <br />
             <br />
@@ -661,14 +696,19 @@
             <br />_________________________________
           </div>
           <div class="col-xs-2">
-            <b>Date Received:</b>
+            <b>Released By:</b>
             <br />
             <br />
             <br />
             <b>Received By:</b>
           </div>
           <div class="col-xs-4">
-            _________________________________
+            <b v-if="sales_order.client.class == 'INET CLIENTS'"
+              >Emmanuel G. Llabore Jr.</b
+            >
+            <b v-if="sales_order.client.class == 'SOLUTIONS CLIENTS'"
+              >Gabriel Sanchez</b
+            >
             <br />
             <br />
             <br />_________________________________

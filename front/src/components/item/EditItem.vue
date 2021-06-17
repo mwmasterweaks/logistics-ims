@@ -73,6 +73,115 @@
           <span>Delete Item</span>
         </button>
       </div>
+
+      <!-- modal for filter -->
+      <div
+        class="modal fade"
+        id="summary"
+        tabindex="-1"
+        role="dialog"
+        data-backdrop="static"
+        data-keyboard="false"
+      >
+        <div
+          class="modal-dialog modal-xl"
+          role="document"
+          style="width:1000px;background:gray"
+        >
+          <div class="modal-content">
+            <div class="modal-header">
+              <label :v-model="item.id"
+                >{{ item.id }} - {{ item.description }}</label
+              >
+              <button
+                type="button"
+                class="close"
+                data-dismiss="modal"
+                aria-label="Close"
+                id="dismiss"
+              >
+                <span aria-hidden="true">&times;</span>
+              </button>
+            </div>
+            <div class="modal-body">
+              <div class="row">
+                <div class="col-25" style="background: #17a2b8;">
+                  <label
+                    style="float:left;margin-top:8px;font-size:13px;color:#f1e6e6;"
+                    >Select Client</label
+                  >
+                </div>
+                <div class="col-50">
+                  <model-list-select
+                    :list="clients"
+                    v-model="clientSelected"
+                    option-value="id"
+                    option-text="name"
+                    style="background:#e4e4e4;"
+                  ></model-list-select>
+                </div>
+                <div class="col-20" style="display:flex">
+                  <div style="width:50%;margin-right:5px">
+                    <button
+                      type="button"
+                      class="btn btn-lg btn-success waves-effect"
+                      style="width:100%"
+                      @click="reset"
+                    >
+                      <span>Clear Client</span>
+                    </button>
+                  </div>
+                  <div style="width:50%">
+                    <button
+                      type="button"
+                      class="btn btn-lg btn-dark waves-effect"
+                      style="width:100%"
+                      @click.prevent="printSummary"
+                    >
+                      <span>Print</span>
+                    </button>
+                  </div>
+                </div>
+              </div>
+              <br />
+              <!-- accordion -->
+              <div class="accordion" role="tablist" style="width:100%">
+                <b-card no-body class="mb-1">
+                  <b-card-header
+                    header-tag="header"
+                    class="p-1"
+                    role="tab"
+                    style="height:20px;"
+                  >
+                    <b-button
+                      block
+                      v-b-toggle.accordion-1
+                      style="background: #17a2b8;color:#f1e6e6"
+                      >Select Date Range</b-button
+                    >
+                  </b-card-header>
+                  <b-collapse
+                    id="accordion-1"
+                    hidden
+                    accordion="my-accordion"
+                    role="tabpanel"
+                  >
+                    <b-card-body>
+                      <date-range-picker @update="onDateSelected" />
+                    </b-card-body>
+                  </b-collapse>
+                </b-card>
+              </div>
+
+              <br />
+
+              <br />
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- product details -->
       <div class="card">
         <div class="header">
           <h2>Product/Supply</h2>
@@ -83,20 +192,8 @@
           <div class="row clearfix">
             <div class="col-md-3">
               <img
-                v-if="item.image != null"
                 class="img-responsive"
-                :src="$img_path + item.image"
-                width="200"
-                height="200"
-                data-toggle="modal"
-                data-target="#modalExpandImage"
-                @click="imageExpand"
-                style="cursor: pointer"
-              />
-              <img
-                v-else
-                class="img-responsive"
-                :src="$img_path + '/default.png'"
+                :src="item.image"
                 width="200"
                 height="200"
                 data-toggle="modal"
@@ -339,6 +436,190 @@
         </div>
       </div>
     </div>
+    <!-- Generated Summary Invidual-->
+    <div class="row clearfix">
+      <div class="col-md-12">
+        <div class="card">
+          <div class="header" style="display:block">
+            <h2 style="float:left">Quick Report</h2>
+
+            <div style="float:right">
+              <button
+                class="btn btn-success waves-effect"
+                data-toggle="modal"
+                data-target="#summary"
+              >
+                Generate Summary
+              </button>
+              <button
+                type="submit"
+                class="btn bg-black waves-effect waves-light"
+                @click.prevent="printSummary"
+              >
+                Print
+              </button>
+            </div>
+          </div>
+          <div class="col-md-12" style="background:green;height:100%">
+            <div class="card" id="printable">
+              <div class="header text-center">
+                <img src="../../img/logo.jpg" width="200px" />
+                <br />
+                <br />
+
+                <h4 style="color:black">
+                  INVENTORY ITEM QUICK REPORT
+                </h4>
+                <h6>As of {{ this.report_date | moment("MMMM Do YYYY") }}</h6>
+              </div>
+              <div class="table-wrap">
+                <table class="table table-borderless">
+                  <thead>
+                    <tr>
+                      <th>Type</th>
+                      <th>Date</th>
+                      <th>Number</th>
+                      <th>Name</th>
+                      <th>Memo</th>
+                      <th>Qty</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <!-- part 1-->
+                    <template>
+                      <tr>
+                        <td><strong>Inventory</strong></td>
+                        <td></td>
+                        <td></td>
+                        <td></td>
+                        <td></td>
+                        <td>
+                          <strong>{{ reports.stocks }}</strong>
+                        </td>
+                      </tr>
+                      <h6>{{ item.name }} - {{ item.description }}</h6>
+                    </template>
+
+                    <!-- invoice or delivery reciepts list -->
+
+                    <tr>
+                      <td>
+                        <h6>On Hand As Of {{ reports.dateStocks }}</h6>
+                      </td>
+                      <td></td>
+                      <td></td>
+                      <td></td>
+                      <td></td>
+                      <td>{{ reports.stocks }}</td>
+                    </tr>
+
+                    <tr v-for="(report, i) in reports.data" :key="`A-${i}`">
+                      <td><p>Invoice</p></td>
+                      <td>
+                        <p>{{ report.date }}</p>
+                      </td>
+                      <td>
+                        <p>{{ report.dr_id }}</p>
+                      </td>
+                      <td>
+                        <p>{{ report.name }}</p>
+                      </td>
+                      <td>
+                        <p>{{ report.description }}</p>
+                      </td>
+                      <td>
+                        <p>-{{ report.qty }}</p>
+                      </td>
+                    </tr>
+                    <tr>
+                      <td>
+                        Tot On Hand As Of
+                        {{ this.report_date | moment("MMMM Do YYYY") }}
+                      </td>
+                      <td></td>
+                      <td></td>
+                      <td></td>
+                      <td></td>
+                      <td>
+                        <strong>{{ reports.totalQty }}</strong>
+                      </td>
+                    </tr>
+                    <br />
+                    <br />
+                    <!-- part 2 -->
+                    <template>
+                      <h6>On Sales Order</h6>
+                    </template>
+                    <tr v-for="(report, i) in reports.data" :key="`B-${i}`">
+                      <td><p>Sales Order</p></td>
+                      <td>
+                        <p>{{ report.dateSales }}</p>
+                      </td>
+                      <td>
+                        <p>{{ report.sales_order_id }}</p>
+                      </td>
+                      <td>
+                        <p>{{ report.name }}</p>
+                      </td>
+                      <td>
+                        <p>{{ report.description }}</p>
+                      </td>
+                      <td>
+                        <p>0</p>
+                      </td>
+                    </tr>
+                    <tr>
+                      <td>
+                        Tot On Sales Order As of
+                        {{ this.report_date | moment("MMMM Do YYYY") }}
+                      </td>
+                      <td></td>
+                      <td></td>
+                      <td></td>
+                      <td></td>
+                      <td>
+                        <strong>0</strong>
+                      </td>
+                    </tr>
+                    <br />
+                    <br />
+                    <tr>
+                      <td>Total Inventory</td>
+                      <td></td>
+                      <td></td>
+                      <td></td>
+                      <td></td>
+                      <td>
+                        <strong>{{ item.total_qty }}</strong>
+                      </td>
+                    </tr>
+                    <br />
+                    <tr>
+                      <td>
+                        <strong>
+                          TOTAL As Of
+                          {{
+                            this.report_date | moment("MMMM Do YYYY")
+                          }}</strong
+                        >
+                      </td>
+                      <td></td>
+                      <td></td>
+                      <td></td>
+                      <td></td>
+                      <td>
+                        <strong>{{ item.total_qty }}</strong>
+                      </td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+          <!-- NO CLIENT SELECTED -->
+        </div>
+      </div>
+    </div>
     <!-- Modal ExpandImage -->
     <div id="modalExpandImage" class="modal fade" tabindex="-1">
       <div class="modal-dialog" role="document">
@@ -346,16 +627,7 @@
           <div class="modal-body">
             <center>
               <div v-if="imageSelected == null">
-                <img
-                  v-if="item.image != null"
-                  class="img-responsive"
-                  :src="$img_path + item.image"
-                />
-                <img
-                  v-else
-                  class="img-responsive"
-                  :src="$img_path + '/default.png'"
-                />
+                <img class="img-responsive" :src="item.image" />
               </div>
               <div v-else>
                 <img class="img-responsive" :src="item.imageSelected" />
@@ -399,10 +671,16 @@
 <script>
 import swal from "sweetalert";
 import PreLoader from "../PreLoader.vue";
+import VueRangedatePicker from "vue-rangedate-picker";
+import { ModelListSelect } from "vue-search-select";
+import DateRangePicker from "vue-mj-daterangepicker";
 
 export default {
   components: {
-    "pre-loader": PreLoader
+    "pre-loader": PreLoader,
+    "rangedate-picker": VueRangedatePicker,
+    "model-list-select": ModelListSelect,
+    "data-range-picker": DateRangePicker
   },
 
   data() {
@@ -425,7 +703,14 @@ export default {
       forecast: [],
       roles: [],
       logs: [],
-      serial_to_print: []
+      clients: [],
+      clientSelected: null,
+      dateSelected: null,
+      itemSelected: null,
+      reports: [],
+      report_date: null,
+      serial_to_print: [],
+      getSummary: {}
     };
   },
 
@@ -455,19 +740,32 @@ export default {
     this.getItem();
     this.getLogs();
     this.getToprint();
+    this.getClients();
   },
 
   mounted() {},
 
   methods: {
+    printSummary() {
+      this.$htmlToPaper("printable");
+    },
+    reset() {
+      this.clientSelected = "";
+    },
+    getClients() {
+      this.$http.get("api/client").then(response => {
+        this.clients = response.body;
+      });
+    },
     getItem() {
-      console.log(this.$img_path);
       this.$http.get("api/items/" + this.$route.params.item).then(response => {
-        this.item = response.body;
+        console.log(response.body);
+        var temp = response.body;
 
-        // if (this.item.image == null)
-        //   this.item.image = $img_path + "/default.png";
-        // else this.item.image = $img_path + this.item.image;
+        if (temp.image == null) temp.image = this.$img_path + "/default.png";
+        else temp.image = this.$img_path + temp.image;
+
+        this.item = temp;
         $(".page-loader-wrapper").fadeOut();
       });
     },
@@ -635,6 +933,26 @@ export default {
     },
     imageExpand() {
       this.imageSelected = null;
+    },
+    onDateSelected(values) {
+      this.$root.$emit("pageLoading");
+      console.log(values);
+      this.report_date = values.to;
+      // console.log(this.item.id);
+      this.getSummary.dateSelected = values;
+      this.getSummary.clientSelected = this.clientSelected;
+      this.getSummary.itemSelected = this.item.id;
+      console.log(this.getSummary.itemSelected);
+
+      this.$http
+        .post("api/dashboard/showClientInventoryReport", this.getSummary)
+        .then(response => {
+          console.log(response.body);
+          this.reports = response.body;
+        });
+      // $("#summary").modal("hide");
+      this.$root.$emit("pageLoaded");
+      document.getElementById("dismiss").click();
     }
   }
 };
@@ -724,5 +1042,25 @@ textarea {
 
 .checkload > .load > .modalLoading {
   display: block;
+}
+.col-25 {
+  float: left;
+  width: 15%;
+  margin-top: 6px;
+  margin-left: 15px;
+  border-radius: 5px 0 0 5px;
+  background: #e4e4e4;
+}
+
+.col-50 {
+  float: left;
+  width: 60%;
+  margin-top: 6px;
+  margin-left: -5px;
+}
+.col-20 {
+  float: left;
+  width: 22%;
+  margin-top: 6px;
 }
 </style>

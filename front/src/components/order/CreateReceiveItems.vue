@@ -201,6 +201,7 @@
             </button>
           </div>
           <div class="modal-body">
+            <div id="snackbar">Item Added.</div>
             <form @submit.prevent="searchItem">
               <div class="row clearfix">
                 <div class="col-md-4">
@@ -228,6 +229,7 @@
                 >
                   <thead>
                     <tr>
+                      <th>Add</th>
                       <th>Description</th>
                       <th>Code</th>
                       <th>Category</th>
@@ -238,8 +240,15 @@
                       v-for="item in items"
                       :key="item.id"
                       style="cursor: pointer"
-                      @click="selectItem(item)"
                     >
+                      <td>
+                        <button
+                          class="btn btn-lg btn-success waves-effect"
+                          @click="selectItem(item)"
+                        >
+                          ADD
+                        </button>
+                      </td>
                       <td>{{ item.name }} - {{ item.description }}</td>
                       <td>{{ item.id }}</td>
                       <td>{{ item.category.name }}</td>
@@ -349,6 +358,12 @@ export default {
         });
       }
 
+      var x = document.getElementById("snackbar");
+      x.className = "show";
+      setTimeout(function() {
+        x.className = x.className.replace("show", "");
+      }, 2000);
+
       // $("#itemModal").modal("hide");
     },
 
@@ -450,5 +465,27 @@ export default {
 
 select {
   padding: 3px 0px !important;
+}
+
+#snackbar {
+  visibility: hidden;
+  min-width: 250px;
+  margin-left: -125px;
+  background-color: #333;
+  color: #fff;
+  text-align: center;
+  border-radius: 2px;
+  padding: 16px;
+  position: fixed;
+  z-index: 1;
+  left: 40%;
+  top: 100px;
+  font-size: 17px;
+}
+
+#snackbar.show {
+  visibility: visible;
+  -webkit-animation: fadein 1s, fadeout 1s 1s;
+  animation: fadein 1s, fadeout 1s 1s;
 }
 </style>

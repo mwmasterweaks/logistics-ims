@@ -9,79 +9,41 @@
             <br />
             <div>
               <div>
-                <form @submit.prevent="searchItem" style="margin-top:-30px">
-                  <br />
-                  <div class="row clearfix">
-                    <div class="col-md-3">
-                      <div class="form-group">
-                        <div class="form-line">
-                          <span>Search</span>
-                          <input
-                            id="search"
-                            type="text"
-                            class="form-control"
-                            autocomplete="off"
-                            @keyup="searchText"
-                            v-model="search.text"
-                          />
-                        </div>
+                <br />
+                <div class="row clearfix">
+                  <div class="col-md-3">
+                    <div class="form-group">
+                      <div class="form-line">
+                        <span>Search</span>
+                        <input
+                          id="search"
+                          type="text"
+                          class="form-control"
+                          autocomplete="off"
+                          v-model="itemSearch.item"
+                          @keyup="searchItem"
+                        />
                       </div>
-                    </div>
-                    <div class="col-md-2">
-                      <div class="form-group">
-                        <span>Category</span>
-                        <div class="form-line">
-                          <select
-                            class="form-control"
-                            v-model="search.category"
-                          >
-                            <option
-                              v-for="category in category"
-                              :key="category.id"
-                              v-bind:value="category.id"
-                            >
-                              {{ category.name }}
-                            </option>
-                            <option value selected>All</option>
-                          </select>
-                        </div>
-                      </div>
-                    </div>
-                    <div class="col-md-2">
-                      <div class="form-group">
-                        <span>Type</span>
-                        <div class="form-line">
-                          <select class="form-control" v-model="search.type">
-                            <option
-                              v-for="type in types"
-                              :key="type.id"
-                              v-bind:value="type.id"
-                            >
-                              {{ type.name }}
-                            </option>
-                            <option value selected>All</option>
-                          </select>
-                        </div>
-                      </div>
-                    </div>
-                    <div class="col-md-3">
-                      <br />
-                      <button
-                        type="submit"
-                        class="btn bg-black waves-effect waves-light"
-                      >
-                        Filter
-                      </button>
-
-                      <button
-                        class="btn btn-success waves-effect"
-                        @click="clearSearch"
-                      >
-                        Clear Filter
-                      </button>
                     </div>
                   </div>
-                </form>
+
+                  <div class="col-md-3">
+                    <br />
+                    <button
+                      class="btn bg-black waves-effect waves-light"
+                      @click="searchItem"
+                    >
+                      Filter
+                    </button>
+
+                    <button
+                      class="btn btn-success waves-effect"
+                      @click="resetItem"
+                    >
+                      Clear Filter
+                    </button>
+                  </div>
+                </div>
                 <div style="float:right;display:block;margin-top:-66px">
                   <button
                     type="button"
@@ -118,8 +80,6 @@
                   <div class="table-wrap">
                     <table
                       class="table table-striped table-condensed table-hover"
-                      id="itemTable"
-                      ref="itemTable"
                     >
                       <thead>
                         <tr>
@@ -133,13 +93,7 @@
                         </tr>
                       </thead>
                       <tbody>
-                        <router-link
-                          tag="tr"
-                          v-for="item in items"
-                          :key="item.id"
-                          :to="'/items/' + item.id + '/edit'"
-                          style="cursor: pointer"
-                        >
+                        <tr v-for="item in items" :key="item.id">
                           <td>
                             <img
                               v-if="item.image != null"
@@ -156,10 +110,18 @@
                               height="50"
                             />
                           </td>
-                          <td>{{ item.id }}</td>
+                          <td>
+                            <a
+                              :href="'/items/' + item.id + '/edit'"
+                              target="_blank"
+                            >
+                              {{ item.id }}
+                            </a>
+                          </td>
                           <td>{{ item.name }}</td>
                           <td>{{ item.description }}</td>
                           <td>{{ item.category.name }}</td>
+                          <!-- <td>{{ item.category.name }}</td> -->
                           <td>{{ item.type.name }}</td>
                           <td
                             class="bg-red"
@@ -192,8 +154,9 @@
                             <span v-if="item.stocks.length < 1">0</span>
                             <span v-else>{{ item.total_qty }}</span>
                           </td>
-                        </router-link>
-                        <tr v-show="items.length == 0">
+                        </tr>
+                        <!-- </router-link> -->
+                        <tr v-show="totalRows == 0">
                           <td colspan="14" class="text-center">
                             <small class="col-red">
                               <i>No results found.</i>
@@ -204,7 +167,7 @@
                     </table>
                   </div>
                 </div>
-                <p>{{ items.length }} items found.</p>
+                <p>{{ totalRows }} items found.</p>
               </div>
             </div>
           </b-card-text>
@@ -218,46 +181,40 @@
             <br />
             <div>
               <div>
-                <form
-                  @submit.prevent="searchItemGroup"
-                  style="margin-top:-30px"
-                >
-                  <br />
-                  <div class="row clearfix">
-                    <div class="col-md-5">
-                      <div class="form-group">
-                        <div class="form-line">
-                          <span>Search</span>
-                          <input
-                            id="search"
-                            type="text"
-                            class="form-control"
-                            autocomplete="off"
-                            @keyup="searchTextGroup"
-                            v-model="search2.text2"
-                          />
-                        </div>
+                <br />
+                <div class="row clearfix">
+                  <div class="col-md-5">
+                    <div class="form-group">
+                      <div class="form-line">
+                        <span>Search</span>
+                        <input
+                          id="search"
+                          type="text"
+                          class="form-control"
+                          autocomplete="off"
+                          v-model="groupSearch.group"
+                        />
                       </div>
                     </div>
-
-                    <div class="col-md-3">
-                      <br />
-                      <button
-                        type="submit"
-                        class="btn bg-black waves-effect waves-light"
-                      >
-                        Filter
-                      </button>
-
-                      <button
-                        class="btn btn-success waves-effect"
-                        @click="clearSearch"
-                      >
-                        Clear Filter
-                      </button>
-                    </div>
                   </div>
-                </form>
+
+                  <div class="col-md-3">
+                    <br />
+                    <button
+                      class="btn bg-black waves-effect waves-light"
+                      @click="searchItemGroup"
+                    >
+                      Filter
+                    </button>
+
+                    <button
+                      class="btn btn-success waves-effect"
+                      @click="resetGroup"
+                    >
+                      Clear Filter
+                    </button>
+                  </div>
+                </div>
                 <div style="float:right;display:block;margin-top:-66px">
                   <button
                     type="button"
@@ -324,7 +281,7 @@
                     </table>
                   </div>
                 </div>
-                <p>{{ items.length }} items found.</p>
+                <p>{{ totalRows }} items found.</p>
               </div>
             </div>
           </b-card-text>
@@ -424,6 +381,7 @@ export default {
     return {
       tabs: [],
       tabCounter: 0,
+      totalRows: 1,
       printData: {
         id: true,
         name: true,
@@ -455,6 +413,12 @@ export default {
         type: "",
         sort: "Latest"
       },
+      itemSearch: {
+        item: ""
+      },
+      groupSearch: {
+        group: ""
+      },
       dataForExcel: [],
       groups: [],
       groupItems: [],
@@ -464,26 +428,15 @@ export default {
         name: "",
         items: []
       },
-      search: {
-        text: "",
-        item: ""
-      },
-      search2: {
-        text2: "",
-        item: ""
-      },
-
-      item_selected: {
-        group_name: "",
-        orders: []
-      }
+      items: []
     };
   },
 
   mounted() {
     this.fetchDataaa();
-    this.item = this.$global.getItems();
+    // this.items = this.$global.getItems();
     this.loadGroups();
+    this.totalRows = this.items.length;
   },
   created() {
     this.items = this.$global.getItems();
@@ -491,6 +444,7 @@ export default {
     this.category = this.$global.getCategories();
     this.warehouses = this.$global.getWarehouses();
     this.roles = this.$global.getRoles();
+    this.totalRows = this.items.length;
     console.log(this.$img_path);
     $(".page-loader-wrapper").fadeOut();
   },
@@ -499,87 +453,36 @@ export default {
     getItems() {
       this.$http.get("api/items").then(response => {
         this.items = response.body;
+        this.totalRows = this.items.length;
       });
     },
     searchItem() {
-      var body = $("body");
-      body.addClass("loading");
-      this.$http.post("api/items/search", this.search).then(response => {
-        var body = $("body");
-        console.log(response.body);
-        this.items = response.body;
-        this.fetchDataaa();
-        body.removeClass("loading");
-      });
+      this.$http
+        .post("api/items/searchItem", this.itemSearch)
+        .then(response => {
+          this.items = response.body;
+          console.log(response.body);
+        });
     },
-
-    searchText() {
-      var filter, table, tr, targetTableColCount;
-      filter = this.search.text.toUpperCase();
-      table = document.getElementById("itemTable");
-      tr = table.getElementsByTagName("tr");
-
-      for (var i = 0; i < tr.length - 1; i++) {
-        var rowData = "";
-
-        if (i == 0) {
-          targetTableColCount = 9; //table.rows.item(i).cells.length;
-
-          continue; //do not execute further code for header row.
-        }
-        for (var colIndex = 0; colIndex < targetTableColCount; colIndex++) {
-          //console.log(table.rows.item(i).cells.item(colIndex).textContent);
-          rowData += table.rows.item(i).cells.item(colIndex).textContent;
-        }
-
-        if (rowData.toUpperCase().indexOf(filter) == -1) {
-          table.rows.item(i).style.display = "none";
-        } else {
-          table.rows.item(i).style.display = "table-row";
-        }
-      }
+    resetItem() {
+      this.itemSearch.item = "";
+      this.searchItem();
     },
-    searchTextGroup() {
-      var filter, table, tr, targetTableColCount;
-      filter = this.search2.text2.toUpperCase();
-      table = document.getElementById("itemGroupTable");
-      tr = table.getElementsByTagName("row");
-
-      for (var i = 0; i < tr.length - 1; i++) {
-        var rowData = "";
-
-        if (i == 0) {
-          targetTableColCount = 9; //table.rows.item(i).cells.length;
-
-          continue; //do not execute further code for header row.
-        }
-        for (var colIndex = 0; colIndex < targetTableColCount; colIndex++) {
-          //console.log(table.rows.item(i).cells.item(colIndex).textContent);
-          rowData += table.rows.item(i).cells.item(colIndex).textContent;
-        }
-
-        if (rowData.toUpperCase().indexOf(filter) == -1) {
-          table.rows.item(i).style.display = "none";
-        } else {
-          table.rows.item(i).style.display = "table-row";
-        }
-      }
-    },
-
     searchItemGroup() {
-      var body = $("body");
-      body.addClass("loading");
-      this.$http.post("api/items/search", this.search).then(response => {
-        var body = $("body");
-        // console.log(response.body);
-        this.groups = response.body;
-        this.fetchDataaa();
-        body.removeClass("loading");
-      });
+      this.$http
+        .post("api/items/searchGroup", this.groupSearch)
+        .then(response => {
+          this.groups = response.body;
+          console.log(response.body);
+        });
+    },
+    resetGroup() {
+      this.groupSearch.group = "";
+      this.searchItemGroup();
     },
     fetchDataaa() {
       this.dataForExcel = [];
-      for (var i = 0; i < this.items.length; i++) {
+      for (var i = 0; i < this.totalRows; i++) {
         var status = "";
         if (
           this.items[i].forecast.totalItem < 1 &&
@@ -607,12 +510,7 @@ export default {
         });
       }
     },
-    clearSearch() {
-      this.search.item = "";
-      this.search.category = "";
-      this.search.type = "";
-      // this.searchItem();
-    },
+
     print() {
       this.$htmlToPaper("printable");
     },
@@ -666,83 +564,7 @@ export default {
       this.groupItems = this.groups[index];
       console.log(this.groupItems);
     },
-    create() {
-      console.log(this.item_selected.group_name);
-      console.log(this.item_selected.orders);
 
-      this.$validator.validateAll().then(result => {
-        if (result) {
-          swal("Create this item group?", {
-            buttons: {
-              agree: "Yes",
-              cancel: true
-            }
-          }).then(value => {
-            switch (value) {
-              case "agree":
-                this.$http
-                  .post("api/items/addGroup", this.item_selected)
-                  .then(response => {
-                    swal("A new  item group was successfully added!", {
-                      icon: "success"
-                    });
-                    // this.$http.get("api/items").then(response => {
-                    //   this.$global.setItems(response.body);
-                    this.$router.push({
-                      path: "/inventory"
-                    });
-                    // });
-                  });
-                break;
-              default:
-                break;
-            }
-          });
-        }
-      });
-    },
-
-    addtoGroup(item) {
-      this.item_selected.orders.push({
-        id: item.id,
-        name: item.name,
-        qty: ""
-      });
-
-      this.search.item = "";
-      this.searchItem();
-    },
-    searchItem() {
-      var filter, table, tr, targetTableColCount;
-      filter = this.search.item.toUpperCase();
-      table = document.getElementById("tblSearchItem");
-      tr = table.getElementsByTagName("tr");
-      for (var i = 0; i < tr.length; i++) {
-        var rowData = "";
-
-        if (i == 0) {
-          targetTableColCount = table.rows.item(i).cells.length;
-          continue; //do not execute further code for header row.
-        }
-        for (var colIndex = 0; colIndex < targetTableColCount; colIndex++) {
-          //console.log(table.rows.item(i).cells.item(colIndex).textContent);
-          rowData += table.rows.item(i).cells.item(colIndex).textContent;
-        }
-
-        if (rowData.toUpperCase().indexOf(filter) == -1) {
-          table.rows.item(i).style.display = "none";
-        } else {
-          table.rows.item(i).style.display = "table-row";
-        }
-      }
-    },
-    removefromSelected(id) {
-      for (var index = 0; index < this.item_selected.orders.length; index++) {
-        if (this.item_selected.orders[index].id == id) {
-          this.item_selected.orders.splice(index, 1);
-        }
-      }
-    },
     exit() {
       swal("Are you sure you want to go back?", {
         icon: "warning",

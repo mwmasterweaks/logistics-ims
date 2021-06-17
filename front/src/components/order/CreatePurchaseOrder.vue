@@ -14,6 +14,13 @@
             <span>Back</span>
           </button>
 
+          <button
+            class="btn btn-lg btn-default waves-effect"
+            @click.prevent="print"
+          >
+            Print Preview
+          </button>
+
           <!-- SAVE BUTTON START -->
           <button
             type="button"
@@ -64,7 +71,7 @@
             type="button"
             class="btn btn-lg btn-default waves-effect"
             @click="submitSupplier"
-            :disabled="
+            :hidden="
               data.status == 'draft' ||
                 data.status == 'approval' ||
                 data.status == 'declined' ||
@@ -110,109 +117,78 @@
             </button>
           </div>
         </div>
-
-        <!-- <div class="col-lg-2 col-md-2">
-          <div style="float:right; display:block">
-            <button
-              type="button"
-              class="btn btn-lg btn-success waves-effect"
-              @click="acceptPurchaseOrder"
-              v-show="
-                data.status == 'approval' &&
-                  roles.approved_purchase_order &&
-                  data.orders.length > 0
-              "
-            >
-              <span>Accept</span>
-            </button>
-            <button
-              type="button"
-              class="btn btn-lg btn-danger waves-effect"
-              @click="declinePurchaseOrder"
-              v-show="
-                data.status == 'approval' && roles.approved_purchase_order
-              "
-            >
-              <span>Decline</span>
-            </button>
-        </div> -->
       </div>
     </div>
 
-    <div class="card">
+    <div class="card" id="printable">
       <div class="body">
         <div class="row clearfix">
-          <div class="col-md-12 col-sm-12">
+          <div class="col-md-8 col-sm-12">
             <h4>Purchase Order</h4>
           </div>
+          <div class="col-md-4 col-sm-12">
+            <div class="alert alert-warning" v-show="data.status == 'draft'">
+              <b>Status:</b> Draft
+            </div>
+            <div
+              class="alert alert-approval"
+              v-show="data.status == 'approval'"
+            >
+              <b>Status:</b> For Approval
+            </div>
+            <div class="alert alert-success" v-show="data.status == 'approved'">
+              <b>Status:</b> Order Approved
+            </div>
+            <div class="alert alert-danger" v-show="data.status == 'declined'">
+              <b>Status:</b> Order Declined
+            </div>
+            <div class="alert alert-success" v-show="data.status == 'on order'">
+              <b>Status:</b> On Order
+            </div>
+            <div
+              class="alert alert-success"
+              v-show="data.status == 'order complete'"
+            >
+              <b>Status:</b> Order fulfilled
+            </div>
+          </div>
         </div>
-        <div class="row clearfix">
+
+        <div class="row clearfix" style="margin-top:-20px">
           <div class="col-md-2 col-sm-12">
             <img src="../../img/logo.jpg" />
           </div>
+          <div
+            class="col-md-4 col-sm-12"
+            style="margin-top:14px;line-height:100%;"
+          >
+            Dctech Building, Shanghai Street,<br />Matina Aplaya, Davao City<br />Davao
+            Del Sur 8000, Philippines<br />Tel #: (082) 221-2380<br />VAT
+            Registered TIN: 003-375-571-000
+          </div>
 
-          <div class="col-md-2 col-sm-12 text-center">
-            <h5>PO#{{ $route.params.purchase_order }}</h5>
-            <p v-if="data.supplier != null">{{ data.supplier.name }}</p>
+          <div class="col-md-3 col-sm-12">
+            <h5>Purchase Order #{{ $route.params.purchase_order }}</h5>
+            <p>Date Created:{{ data.created_at }}</p>
+          </div>
+          <div class="col-md-3 col-sm-12">
+            <h5>Supplier:</h5>
+            <p v-if="data.supplier != null">
+              {{ data.supplier.name }} <br />
+              {{ data.supplier.contact }} <br />
+              {{ data.supplier.email }} <br />
+              {{ data.supplier.address }}
+            </p>
             <p v-else>
               <small>
                 <i>select supplier</i>
               </small>
             </p>
-            <button
-              type="button"
-              class="btn btn-sm btn-info waves-effect disabled"
-              v-if="
-                data.status == 'on order' ||
-                  data.status == 'order complete' ||
-                  data.status == 'declined'
-              "
-            >
-              <span>Supplier</span>
-            </button>
           </div>
-          <div class="col-md-8 col-sm-12">
-            <div class="row clearfix">
-              <div class="col-md-12">
-                <div
-                  class="alert alert-warning"
-                  v-show="data.status == 'draft'"
-                >
-                  <b>Status:</b> Draft
-                </div>
-                <div
-                  class="alert alert-approval"
-                  v-show="data.status == 'approval'"
-                >
-                  <b>Status:</b> For Approval
-                </div>
-                <div
-                  class="alert alert-success"
-                  v-show="data.status == 'approved'"
-                >
-                  <b>Status:</b> Order Approved
-                </div>
-                <div
-                  class="alert alert-danger"
-                  v-show="data.status == 'declined'"
-                >
-                  <b>Status:</b> Order Declined
-                </div>
-                <div
-                  class="alert alert-success"
-                  v-show="data.status == 'on order'"
-                >
-                  <b>Status:</b> On Order
-                </div>
-                <div
-                  class="alert alert-success"
-                  v-show="data.status == 'order complete'"
-                >
-                  <b>Status:</b> Order fulfilled
-                </div>
-              </div>
-            </div>
+        </div>
 
+        <div class="row clearfix">
+          <div class="col-md-12 col-sm-12">
             <div class="row clearfix">
               <div class="col-md-6 col-sm-12">
                 <p>
@@ -222,6 +198,7 @@
                     :state="true"
                     v-model="data.delivery_date"
                     name="expected_date"
+                    v-validate="'required'"
                     :disabled="
                       data.status == 'approval' ||
                         data.status == 'approved' ||
@@ -232,6 +209,11 @@
                   ></b-form-datepicker>
                 </p>
               </div>
+              <small
+                class="text-danger pull-left"
+                v-show="errors.has('expected_date')"
+                >Date is required.</small
+              >
             </div>
           </div>
         </div>
@@ -447,7 +429,6 @@
                                 v-if="
                                   order.pivot.price > 0 && order.pivot.qty > 0
                                 "
-
                                 >{{
                                   (order.pivot.price * order.pivot.qty).toFixed(
                                     2
@@ -739,6 +720,7 @@
                 >
                   <thead>
                     <tr>
+                      <th>Add</th>
                       <th>Description</th>
                       <th>Code</th>
                       <th>Category</th>
@@ -749,8 +731,15 @@
                       v-for="item in items"
                       :key="item.id"
                       style="cursor: pointer"
-                      @click="selectItem(item)"
                     >
+                      <td>
+                        <button
+                          class="btn btn-lg btn-success waves-effect"
+                          @click="selectItem(item)"
+                        >
+                          Add
+                        </button>
+                      </td>
                       <td>{{ item.name }} - {{ item.description }}</td>
                       <td>{{ item.id }}</td>
                       <td>{{ item.category.name }}</td>
@@ -778,18 +767,18 @@
     >
       <div class="modal-dialog modal-lg" role="document">
         <div class="modal-content">
-          <div class="modal-header">
+          <div class="modal-header" style="background:gray">
             <h4 class="modal-title">
-              Receive
-              <button
-                type="button"
-                class="close"
-                data-dismiss="modal"
-                aria-label="Close"
-              >
-                <span aria-hidden="true">&times;</span>
-              </button>
+              Receive Items
             </h4>
+            <button
+              type="button"
+              class="close"
+              data-dismiss="modal"
+              aria-label="Close"
+            >
+              <span aria-hidden="true">&times;</span>
+            </button>
           </div>
           <div class="modal-body">
             <div class="row clearfix">
@@ -802,14 +791,14 @@
               </div>
             </div>
             <div class="row clearfix">
-              <div class="col-md-2 col-sm-12">
+              <div class="col-md-4 col-sm-12">
                 <p>
                   Date Ordered
                   <br />
                   {{ data.created_at }}
                 </p>
               </div>
-              <div class="col-md-6 col-sm-12">
+              <div class="col-md-6 col-sm-12" style="margin-right:-10px">
                 <p>
                   Date Received
                   <b-form-datepicker
@@ -840,6 +829,7 @@
                         <th>Total Received</th>
                         <th>Unit Price</th>
                         <th>Receive To</th>
+                        <th>File Upload</th>
                       </tr>
                     </thead>
                     <tbody>
@@ -902,6 +892,27 @@
                               >Receiving is required</small
                             >
                           </p>
+                        </td>
+                        <td>
+                          <a
+                            href="javascript:void(0);"
+                            @click="selectFile"
+                            title="Import Serial"
+                          >
+                            <i
+                              class="material-icons text-success"
+                              style="font-size: 16px !important"
+                              >publish</i
+                            >
+                          </a>
+                          <h6>{{ file }}</h6>
+                          <input
+                            type="file"
+                            id="fileSelect"
+                            name="fileSelect"
+                            @change="previewFiles(receive, $event)"
+                            style="visibility:hidden;"
+                          />
                         </td>
                       </tr>
                     </tbody>
@@ -1024,9 +1035,11 @@ export default {
       data_receives: {
         purchase_order_id: null,
         date_receive: null,
-        receives: []
+        receives: [],
+        barcodes: null
       },
-      warehouses: []
+      warehouses: [],
+      file: "File"
     };
   },
 
@@ -1300,17 +1313,30 @@ export default {
         });
     },
     receiveItem() {
+      console.log(this.data_receives);
       this.$validator.validateAll().then(result => {
         if (result) {
           this.data_receives.purchase_order_id = this.$route.params.purchase_order;
           this.$http.post("api/stocks", this.data_receives).then(response => {
-            this.getPurchaseOrder();
-            swal("Ordered Item Successfully Received!", {
-              icon: "success"
-            });
+            console.log(response.body);
+            if (response.body == "Serials already exist!") {
+              swal({
+                title: "Error",
+                text: response.body,
+                icon: "error",
+                dangerMode: true
+              });
+            } else {
+              this.getPurchaseOrder();
+              swal("Ordered Item Successfully Received!", {
+                icon: "success"
+              });
+            }
+
             // $("#receiveModal").modal("hide");
 
             this.data_receives.receives = [];
+            this.data_receives.barcodes = null;
 
             this.$http.get("api/purchase_order").then(response => {
               this.$global.setPurchaseOrders(response.body);
@@ -1455,6 +1481,36 @@ export default {
       this.data.amount.tax = tax;
       this.data.amount.shipping = shipping;
       this.data.amount.total = sum + tax + parseFloat(shipping);
+    },
+    print() {
+      this.$htmlToPaper("printable");
+    },
+    selectFile() {
+      document.getElementById("fileSelect").click();
+    },
+    previewFiles(receive, e) {
+      console.log(receive);
+      console.log(e);
+      var files = e.target.files,
+        f = files[0];
+      var reader = new FileReader();
+
+      reader.onload = function(e) {
+        var data = new Uint8Array(e.target.result);
+        var workbook = XLSX.read(data, { type: "array" });
+        let sheetName = workbook.SheetNames[0];
+
+        let worksheet = workbook.Sheets[sheetName];
+        console.log(XLSX.utils.sheet_to_json(worksheet));
+        console.log(this.data);
+        this.file = workbook.SheetNames[0];
+        receive.barcodes = XLSX.utils.sheet_to_json(worksheet);
+        this.data_receives.barcodes = receive.barcodes;
+
+        document.getElementById("fileSelect").value = null;
+      }.bind(this);
+
+      reader.readAsArrayBuffer(f);
     }
   }
 };

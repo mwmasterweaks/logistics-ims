@@ -114,7 +114,7 @@
 
                 <button
                   type="button"
-                  class="btn btn-lg btn-info waves-effect"
+                  class="btn btn-lg btn-info waves-effect waves-light pull-right"
                   @click="create"
                 >
                   Create
@@ -209,7 +209,8 @@
                           {{ item.description }}
                         </td>
                         <td>{{ item.id }}</td>
-                        <td>{{ item.category.name }}</td>
+                        <!-- <td>{{ item.category.name }}</td> -->
+                        <td></td>
                       </tr>
                       <tr v-if="items.length == 0">
                         <td colspan="3" class="text-center">

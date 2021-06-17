@@ -25,7 +25,7 @@ class SalesReturnController extends Controller
         $SalesReturn = SalesReturn::all();
         $container = array();
         foreach ($SalesReturn as $sret) {
-            $clientFrom =  DB::table('c4_infosystem.clients')
+            $clientFrom =  DB::table('clients')
                 ->where('id', $sret->from_client_id)->first();
 
             $temp = (object)[
@@ -95,6 +95,7 @@ class SalesReturnController extends Controller
                         'sales_return_id' => $id,
                         'item_id' => $item->id,
                         'serial' => $item->serial,
+                        'date_return' => $receive_date,
                         'qty' => $item->qty,
                         'received_to' => $item->received_to,
                         'status' => $item->status,
@@ -124,6 +125,7 @@ class SalesReturnController extends Controller
                 ->where('id', $id)
                 ->first();
 
+
             $retSales = DB::table('sales_orders')
                 ->where("client_id", $return2->from_client_id)
                 ->first();
@@ -149,12 +151,12 @@ class SalesReturnController extends Controller
                         'updated_at' => Carbon::now()
                     ]);
 
-                $addQty = $retItem->increment("qty_return", 1);
+                // $addQty = $retItem->increment("qty_return", 1);
 
                 $itemTemp = Item::with(['type', 'category', 'stocks'])
                     ->find($return1->item_id);
 
-                //return $return1->serial;
+
 
                 if ($return1->serial == null) {
                     if ($return1->status != 'Defective') {
@@ -202,7 +204,7 @@ class SalesReturnController extends Controller
                         'item_id' => $return1->item_id,
                         'serial' => $return1->serial,
                         'status' => $return1->status,
-                        'remarks' => $return2->remarks,
+                        'remarks' => ' Return Quantity of ' . $return1->qty,
                         'created_at' => Carbon::now(),
                         'updated_at' => Carbon::now(),
                     ]
@@ -233,9 +235,9 @@ class SalesReturnController extends Controller
     public function show($salesReturn_id)
     {
         $SalesReturn = SalesReturn::find($salesReturn_id);
-        $clientFrom =  DB::table('c4_infosystem.clients')
+        $clientFrom =  DB::table('clients')
             ->where('id', $SalesReturn->from_client_id)->first();
-        $clientTo =  DB::table('c4_infosystem.clients')
+        $clientTo =  DB::table('clients')
             ->where('id', $SalesReturn->to_client_id)->first();
         $items = DB::table('items')
             ->join('sales_return_item', 'sales_return_item.item_id', 'items.id')
@@ -276,9 +278,8 @@ class SalesReturnController extends Controller
      * @param  \App\SalesReturn  $salesReturn
      * @return \Illuminate\Http\Response
      */
-    public function update(Request $request, SalesReturn $salesReturn)
+    public function update(Request $request)
     {
-        //
     }
 
     /**
@@ -294,5 +295,27 @@ class SalesReturnController extends Controller
 
     public function searchSalesReturn(Request $request)
     {
+    }
+
+    public function updateStatus(Request $request)
+    {
+        try {
+            $status = $request->itemStatus;
+            $items = $request->item;
+
+            foreach ($items as $item) {
+
+                $item = (object)$item;
+                DB::table('sales_return_item')
+                    ->where('item_id', '=', $item->id)
+                    ->where('sales_return_id', '=', $request->id)
+                    ->update(['status' => $request->itemStatus]);
+            }
+
+            return "ok";
+        } catch (\Exception $ex) {
+            DB::rollBack();
+            return response([$ex, 500]);
+        }
     }
 }

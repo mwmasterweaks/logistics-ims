@@ -134,7 +134,7 @@
                           <th>Name</th>
                           <th>Description</th>
                           <th>Qty</th>
-                          <th>Status</th>
+                          <!-- <th>Status</th> -->
                           <th>Receive To</th>
                           <th>Action</th>
                         </tr>
@@ -167,8 +167,9 @@
                               v-validate="'required|min_value:1|numeric'"
                             />
                           </td>
-                          <td>
+                          <!-- <td>
                             <select class="form-control" v-model="item.status">
+
                               <option value="Stocked in">Stocked in</option>
                               <option value="Defective">Defective</option>
                               <option value="For repair">For repair</option>
@@ -180,7 +181,7 @@
                                 >Stock transfer</option
                               >
                             </select>
-                          </td>
+                          </td> -->
                           <td>
                             <select
                               class="form-control"
@@ -507,7 +508,7 @@ export default {
             name: item.name,
             desc: item.description,
             qty: "1",
-            status: "Stocked in",
+            status: "",
             type: "serial",
             serial: "",
             received_to: null

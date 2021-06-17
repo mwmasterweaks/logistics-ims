@@ -8,22 +8,11 @@
       <div class="logo">
         <router-link to="/">
           <a class="navbar-brand" href="javascript:void(0);">
-            <img src="../img/IMS.jpg" width="150" alt="User" />
+            <img src="../img/ims.gif" width="150" alt="User" />
           </a>
         </router-link>
       </div>
       <div style="margin-right:12px">
-        <!-- <label>
-          <a
-            href="javascript:void(0);"
-            @click="logout"
-            style="color:white;background:black"
-            title="Log-out"
-          >
-            <i class="material-icons">logout</i>
-            <span>Log out</span>
-          </a></label
-        > -->
         <button @click="logout" class="btn btn-success waves-effect">
           <i class="material-icons">logout</i>
           <span>Log out</span>

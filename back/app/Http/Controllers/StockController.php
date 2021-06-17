@@ -61,20 +61,49 @@ class StockController extends Controller
             $receive->type = (object) $receive->type;
 
             if ($receive->type->name == "Serialize") {
-                for ($i = 1; $i <= $receive->pivot->qty; $i++) {
-                    $serial = strtoupper($receive->id . $id . substr(md5(uniqid('', true)), -8));
 
-                    while (DB::table('stock_serial')->where('serial', $serial)->exists()) {
-                        $serial = strtoupper($receive->id . $id . substr(md5(uniqid('', true)), -8));
+                if ($request->barcodes != null) {
+
+                    $data = [];
+                    foreach ($receive->barcodes as $serial) {
+                        $serial = (object) $serial;
+
+
+                        $temp = [
+                            'stock_id' => $id,
+                            'serial' => $serial->serial,
+                            'status' => 'stocked in',
+                        ];
+                        array_push($data, $temp);
+                    }
+
+
+                    while (DB::table('stock_serial')->where('serial', $serial->serial)->exists()) {
+                        return response()->json("Serials already exist!");
                     }
 
                     DB::table('stock_serial')->insert(
-                        [
-                            'stock_id' => $id,
-                            'serial' => $serial,
-                            'status' => 'stocked in'
-                        ]
+                        $data
                     );
+
+                    //   end of insert from file
+
+                } else {
+                    for ($i = 1; $i <= $receive->pivot->qty; $i++) {
+                        $serial = strtoupper($receive->id . $id . substr(md5(uniqid('', true)), -8));
+
+                        while (DB::table('stock_serial')->where('serial', $serial)->exists()) {
+                            $serial = strtoupper($receive->id . $id . substr(md5(uniqid('', true)), -8));
+                        }
+
+                        DB::table('stock_serial')->insert(
+                            [
+                                'stock_id' => $id,
+                                'serial' => $serial,
+                                'status' => 'stocked in'
+                            ]
+                        );
+                    }
                 }
             }
         }

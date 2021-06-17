@@ -226,7 +226,7 @@
             <address>
               <strong>{{ sales_order.client.name }}</strong>
               <br />
-              <span>{{ sales_order.client.address }}</span>
+              <span>{{ sales_order.client.location }}</span>
               <br />
               <span>{{ sales_order.client.contact }}</span>
             </address>
@@ -457,6 +457,7 @@
                       class="form-control"
                       v-model="search.client"
                       autocomplete="off"
+                      @keyup="searchClient"
                     />
                   </div>
                 </div>
@@ -469,7 +470,10 @@
                 >
                   Search
                 </button>
-                <button class="btn btn-success waves-effect" @click="reset()">
+                <button
+                  class="btn btn-success waves-effect"
+                  @click="resetClient()"
+                >
                   Reset
                 </button>
               </div>
@@ -514,7 +518,7 @@
       </div>
     </div>
     <!-- END CLIENT MODAL-->
-    <!-- START ITEM MODAL -->
+    <!-- START ITEM TABLE MODAL -->
     <div
       class="modal fade"
       id="itemModal"
@@ -546,19 +550,25 @@
                       id="search"
                       type="text"
                       class="form-control"
-                      v-model="search.item"
+                      v-model="itemSearch.item"
                       autocomplete="off"
                       @keyup="searchItem"
                     />
                   </div>
                 </div>
               </div>
-              <div class="col-md-2">
+              <div class="col-md-4">
                 <br />
-                <button class="btn btn-sm bg-black waves-effect waves-light">
+                <button
+                  class="btn btn-sm bg-black waves-effect waves-light"
+                  @click="searchItem"
+                >
                   Search
                 </button>
-                <button class="btn btn-sm btn-success waves-effect">
+                <button
+                  class="btn btn-sm btn-success waves-effect"
+                  @click="resetItem"
+                >
                   Reset
                 </button>
               </div>
@@ -573,6 +583,7 @@
                     <thead>
                       <tr>
                         <th>Add</th>
+                        <th>Name</th>
                         <th>Description</th>
                         <th>Code</th>
                         <th>Category</th>
@@ -592,7 +603,8 @@
                             ADD
                           </button>
                         </td>
-                        <td>{{ item.name }} - {{ item.description }}</td>
+                        <td>{{ item.name }}</td>
+                        <td>- {{ item.description }}</td>
                         <td>{{ item.id }}</td>
                         <td>{{ item.category.name }}</td>
                       </tr>
@@ -636,38 +648,13 @@
           </div>
           <div class="modal-body">
             <div id="snackbar">Item Added.</div>
-            <div class="row clearfix">
-              <div class="col-md-4">
-                <div class="form-group">
-                  <div class="form-line">
-                    <span>Search</span>
-                    <input
-                      id="search"
-                      type="text"
-                      class="form-control"
-                      v-model="search.item"
-                      autocomplete="off"
-                      @keyup="searchItem"
-                    />
-                  </div>
-                </div>
-              </div>
-              <div class="col-md-2">
-                <br />
-                <button class="btn btn-sm bg-black waves-effect waves-light">
-                  Search
-                </button>
-                <button class="btn btn-sm btn-success waves-effect">
-                  Reset
-                </button>
-              </div>
-            </div>
+
             <div class="row clearfix">
               <div class="col-md-12">
                 <div class="table-wrap">
                   <table
                     class="table table-stripped table-condensed table-hover"
-                    id="tblSearchItem"
+                    id="tblSearchItemGroup"
                   >
                     <thead>
                       <tr>
@@ -733,7 +720,7 @@ export default {
         orders: [],
         client: {
           name: "",
-          address: "",
+          location: "",
           contact: ""
         },
         user: [],
@@ -751,7 +738,8 @@ export default {
       item: {
         item: {
           name: "",
-          description: ""
+          description: "",
+          qty: 0
         },
         type: {
           name: ""
@@ -768,6 +756,9 @@ export default {
         item: "",
         client: "",
         serial: ""
+      },
+      itemSearch: {
+        item: ""
       },
       barcode: {
         serial: ""
@@ -863,29 +854,38 @@ export default {
     },
 
     searchItem() {
-      var filter, table, tr, targetTableColCount;
-      filter = this.search.item.toUpperCase();
-      table = document.getElementById("tblSearchItem");
-      tr = table.getElementsByTagName("tr");
-      for (var i = 0; i < tr.length; i++) {
-        var rowData = "";
-
-        if (i == 0) {
-          targetTableColCount = table.rows.item(i).cells.length;
-          continue; //do not execute further code for header row.
-        }
-        for (var colIndex = 0; colIndex < targetTableColCount; colIndex++) {
-          //console.log(table.rows.item(i).cells.item(colIndex).textContent);
-          rowData += table.rows.item(i).cells.item(colIndex).textContent;
-        }
-
-        if (rowData.toUpperCase().indexOf(filter) == -1) {
-          table.rows.item(i).style.display = "none";
-        } else {
-          table.rows.item(i).style.display = "table-row";
-        }
-      }
+      this.$http
+        .post("api/sales_order/searchItem", this.itemSearch)
+        .then(response => {
+          this.items = response.body;
+          console.log(response.body);
+        });
     },
+
+    // searchItem() {
+    //   var filter, table, tr, targetTableColCount;
+    //   filter = this.search.item.toUpperCase();
+    //   table = document.getElementById("tblSearchItem");
+    //   tr = table.getElementsByTagName("tr");
+    //   for (var i = 0; i < tr.length; i++) {
+    //     var rowData = "";
+
+    //     if (i == 0) {
+    //       targetTableColCount = table.rows.item(i).cells.length;
+    //       continue; //do not execute further code for header row.
+    //     }
+    //     for (var colIndex = 0; colIndex < targetTableColCount; colIndex++) {
+    //       //console.log(table.rows.item(i).cells.item(colIndex).textContent);
+    //       rowData += table.rows.item(i).cells.item(colIndex).textContent;
+    //     }
+
+    //     if (rowData.toUpperCase().indexOf(filter) == -1) {
+    //       table.rows.item(i).style.display = "none";
+    //     } else {
+    //       table.rows.item(i).style.display = "table-row";
+    //     }
+    //   }
+    // },
     realtime() {
       this.$http.get("api/items").then(response => {
         this.items = response.body;
@@ -928,8 +928,10 @@ export default {
       } else if (flag == 2) {
         var length = item.items.length;
         groupItems = item.items;
+        var qty = item.items.qty;
 
-        console.log(groupItems[0]);
+        // console.log(groupItems[0]);
+        console.log(qty);
 
         for (var index = 0; index < length; index++) {
           this.execute(
@@ -961,7 +963,7 @@ export default {
           x.className = x.className.replace("show", "");
         }, 2000);
 
-        this.search.item = "";
+        this.itemSearch.item = "";
         this.searchItem();
       } else {
         swal("That item is already in the list", {
@@ -1088,9 +1090,14 @@ export default {
       this.sales_order.amount.total = sum;
     },
 
-    reset() {
+    resetClient() {
       this.search.client = "";
       this.searchClient();
+    },
+
+    resetItem() {
+      this.itemSearch.item = "";
+      this.searchItem();
     },
 
     clear() {
@@ -1265,7 +1272,7 @@ export default {
             '<div data-notify="container" class="bootstrap-notify-container alert alert-dismissible {0} ' +
             (allowDismiss ? "p-r-35" : "") +
             '" role="alert">' +
-            '<button type="button" aria-hidden="true" class="close" data-notify="dismiss">×</button>' +
+            '<button type="button" aria-hidden="true" class="close" data-notify="dismiss">Ã—</button>' +
             '<span data-notify="icon"></span> ' +
             '<span data-notify="title">{1}</span> ' +
             '<span data-notify="message">{2}</span>' +
