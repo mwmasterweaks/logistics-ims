@@ -10,9 +10,11 @@
         <router-view></router-view>
       </section>
     </div>
-    <div class="busyPageLoader" v-if="pageBusy">
-      <img src="./img/loading.gif" class="imgLoader" />
-    </div>
+    <!-- <div class="busyPageLoader" v-if="pageBusy">
+      <img src="./img/load.gif" style="width:10%" class="imgLoader" />
+      <p style="color:black">Loading...</p>
+    </div> -->
+    <pre-loader v-if="pageBusy"> </pre-loader>
   </div>
 </template>
 
@@ -21,13 +23,15 @@ import Login from "./components/Login.vue";
 import Navbar from "./components/Navbar.vue";
 import Sidebar from "./components/Sidebar.vue";
 import Maintenance from "./components/Maintenance.vue";
+import PreLoader from "./components/PreLoader.vue";
 
 export default {
   components: {
     "my-login": Login,
     "my-navbar": Navbar,
     "my-sidebar": Sidebar,
-    "my-maintenance": Maintenance
+    "my-maintenance": Maintenance,
+    "pre-loader": PreLoader
   },
 
   data() {
@@ -41,10 +45,12 @@ export default {
     this.$root.$on("pageLoading", () => {
       //console.log("pageLoading");
       this.pageBusy = true;
+      this.isAuth = null;
     });
     this.$root.$on("pageLoaded", () => {
       //console.log("pageLoaded");
       this.pageBusy = false;
+      this.isAuth = this.$auth.isAuthenticated();
     });
   },
   created() {

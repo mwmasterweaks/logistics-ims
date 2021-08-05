@@ -15,7 +15,7 @@ class SalesReturn extends Model
     ];
     public function client()
     {
-        return $this->hasOne(Client::class, 'id', 'client_id');
+        return $this->hasOne(Client::class, 'id', 'from_client_id');
     }
     public function sales_return_details()
     {

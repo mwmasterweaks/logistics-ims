@@ -103,7 +103,6 @@
         class="modal fade"
         tabindex="-1"
         role="dialog"
-        data-backdrop="static"
         data-keyboard="false"
       >
         <div class="modal-dialog" role="document">
@@ -151,6 +150,23 @@
                       v-show="errors.has('name')"
                       >Name is required.</small
                     >
+                  </div>
+                </div>
+              </div>
+
+              <div class="row clearfix">
+                <div class="col-md-12">
+                  <span>Registered TIN</span>
+                  <div class="input-group">
+                    <div class="form-line">
+                      <input
+                        type="text"
+                        class="form-control"
+                        v-model="supplier.tin"
+                        autocomplete="off"
+                        :disabled="!roles.update_supplier"
+                      />
+                    </div>
                   </div>
                 </div>
               </div>
@@ -205,7 +221,7 @@
                         type="text"
                         class="form-control"
                         v-model="supplier.address"
-                        rows="2"
+                        rows="4"
                       ></textarea>
                     </div>
                   </div>
@@ -301,7 +317,7 @@ export default {
               this.suppliers = response.body;
               this.$global.setSupplier(response.body);
               // $("#supplierModal").modal("hide");
-              swal(this.supplier.name, "was successfully created!", {
+              swal(this.supplier.name, "was successfully updated!", {
                 icon: "success"
               });
             })

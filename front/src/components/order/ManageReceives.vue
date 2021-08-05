@@ -5,14 +5,13 @@
     </div>
     <div class="card">
       <div class="header">
-        <h2>Manage Supplier Payment</h2>
+        <h2>Manage Receiving Report</h2>
       </div>
       <div class="body">
         <div class="table-wrap">
           <table class="table table-striped table-condensed table-hover">
             <thead>
               <tr>
-                <th>Status</th>
                 <th>Purchase Order</th>
                 <th>Supplier</th>
                 <th>Expected Delivery</th>
@@ -24,18 +23,11 @@
                 tag="tr"
                 v-for="purchase_order in purchase_orders"
                 :key="purchase_order.id"
-                v-show="purchase_order.status == 'approved'"
-                :to="'/supplier_bills/' + purchase_order.id"
+                v-show="purchase_order.status == 'approval'"
+                :to="'/purchase_order/' + purchase_order.id"
                 style="cursor: pointer"
               >
-                <td>
-                  <b-button variant="danger">Unpaid</b-button>
-                </td>
-                <td>
-                  <router-link :to="'/purchase_order/' + purchase_order.id">
-                    <a href="javascript:void(0);">{{ purchase_order.id }}</a>
-                  </router-link>
-                </td>
+                <td>{{ purchase_order.id }}</td>
                 <td v-if="purchase_order.supplier">
                   {{ purchase_order.supplier.name }}
                 </td>
@@ -44,19 +36,21 @@
                     <i>no supplier selected</i>
                   </small>
                 </td>
+
                 <td v-if="purchase_order.delivery_date">
                   <small>{{
                     purchase_order.delivery_date.substring(0, 10)
                   }}</small>
                 </td>
+
+                <td v-if="purchase_order.user">
+                  {{ purchase_order.user.name }}
+                </td>
+
                 <td v-else>
                   <small class="col-red">
                     <i>no date selected</i>
                   </small>
-                </td>
-
-                <td v-if="purchase_order.user">
-                  {{ purchase_order.user.name }}
                 </td>
               </router-link>
               <tr v-show="purchase_orders.length == 0">
@@ -92,20 +86,20 @@ export default {
       swal("Create a new purchase order ?", {
         buttons: {
           Yes: true,
-          cancel: "Cancel",
-        },
-      }).then((value) => {
+          cancel: "Cancel"
+        }
+      }).then(value => {
         switch (value) {
           case "Yes":
             this.$http
               .post("api/purchase_order", this.authenticatedUser)
-              .then((response) => {
-                this.$http.get("api/purchase_order").then((response) => {
+              .then(response => {
+                this.$http.get("api/purchase_order").then(response => {
                   this.$global.setPurchaseOrders(response.body);
                 });
 
                 this.$router.push({
-                  path: "purchase_order/" + response.body.id,
+                  path: "purchase_order/" + response.body.id
                 });
               });
             break;
@@ -114,8 +108,8 @@ export default {
             break;
         }
       });
-    },
-  },
+    }
+  }
 };
 </script>
 
@@ -147,4 +141,3 @@ export default {
   background: #555;
 }
 </style>
-

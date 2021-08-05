@@ -11,9 +11,9 @@ class ClientController extends Controller
 {
     public function index()
     {
-        // $clients = Client::on("mysqlis")->orderBy("name")->take(500)->get();
+        // $clients = Client::on("mysqlis")->orderBy("name")->take(100)->get();
         // return response()->json($clients);
-        $clients = DB::table('clients')->get();
+        $clients = DB::table('clients')->orderBy("name")->get();
 
         return response()->json($clients);
     }
@@ -89,7 +89,7 @@ class ClientController extends Controller
         // $clients = Client::on("mysqlis")->orderBy("name")->take(500)->get();
         try {
             $current = Client::max('id');
-            $dataSet = Client::on("mysqlis")->where("id", ">", $current)->get();
+            $dataSet = Client::on("mysqlis")->where("id", ">", $current)->take(100)->get();
             // return $dataSet;
             $temp = [];
             foreach ($dataSet as $i => $d) {

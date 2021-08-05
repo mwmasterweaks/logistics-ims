@@ -34,6 +34,10 @@ Route::group(['middleware' => 'auth:api'], function () {
     Route::resource('SalesReturns', 'SalesReturnController');
     Route::resource('company_assets', 'CompanyAssetsController');
     Route::resource('company_assets_type', 'CompanyAssetsTypeController');
+    Route::resource('mode_of_payment', 'ModeOfPaymentController');
+    Route::resource('term', 'TermController');
+    Route::resource('direct_receives', 'DirectReceiveController');
+
 
 
 
@@ -94,6 +98,8 @@ Route::group(['middleware' => 'auth:api'], function () {
     Route::post('dashboard/successful_order', 'DashboardController@showSuccessfulOrder');
     Route::post('dashboard/showItemInventoryReport', 'DashboardController@showItemInventoryReport');
     Route::post('dashboard/showClientInventoryReport', 'DashboardController@showClientInventoryReport');
+    Route::post('dashboard/showAllInventoryReport', 'DashboardController@showAllInventoryReport');
+
 
 
 

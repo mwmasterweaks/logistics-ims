@@ -11,22 +11,22 @@
             <i class="material-icons">note_add</i>
             <span>New</span>
           </button>
-          <router-link
+          <!-- <router-link
             tag="button"
             class="btn btn-default waves-effect"
             to="/receive_items"
           >
             <i class="material-icons">call_received</i>
             <span>Direct Receive Items</span>
-          </router-link>
-          <router-link
+          </router-link> -->
+          <!-- <router-link
             tag="button"
             class="btn btn-default waves-effect"
             to="/report"
           >
             <i class="material-icons">summarize</i>
             <span>Generate Report</span>
-          </router-link>
+          </router-link> -->
         </div>
       </div>
     </div>

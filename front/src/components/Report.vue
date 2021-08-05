@@ -17,15 +17,25 @@
                 class="btn btn-success waves-effect"
                 data-toggle="modal"
                 data-target="#summary"
+                title="Generate Summary"
               >
-                Create Report
+                <i class="material-icons">summarize</i>
               </button>
               <button
                 type="submit"
                 class="btn bg-black waves-effect waves-light"
+                title="Print Preview"
                 @click.prevent="print"
               >
-                Print
+                <i class="material-icons">print</i>
+              </button>
+              <button
+                type="submit"
+                class="btn bg-black waves-effect waves-light"
+                title="Export to Excel"
+                @click="purchaseExcel('summaryTable')"
+              >
+                <i class="material-icons">publish</i>
               </button>
             </div>
           </div>
@@ -67,6 +77,7 @@
                             v-for="supplier in suppliers"
                             :value="supplier.id"
                             :key="supplier.id"
+                            :v-model="supplier.name"
                             >{{ supplier.name }}</option
                           >
                         </select>
@@ -109,19 +120,26 @@
                 <br />``
                 <br />
                 <h4 style="color:black">
-                  INVOICE QUICK REPORT
+                  Item Received Quick Report
                 </h4>
+
                 <h6>
-                  As of {{ this.sumDateSelected.end | moment("MMMM Do YYYY") }}
+                  As of
+                  {{ this.sumDateSelected.end | moment("MMMM Do YYYY") }}
                 </h6>
               </div>
               <div class="table-wrap">
-                <table class="table table-striped table-condensed">
+                <table
+                  class="table table-striped table-condensed"
+                  id="summaryTable"
+                >
                   <thead>
                     <tr>
-                      <th>Purchase Order No.</th>
+                      <th>P.O No.</th>
+                      <th>Supplier</th>
+                      <th>Total Amount</th>
                       <th>Created Date</th>
-                      <th>Expected Delivery Date</th>
+                      <th>Requested by</th>
                       <th>Status</th>
                     </tr>
                   </thead>
@@ -229,13 +247,74 @@ export default {
     print() {
       this.$htmlToPaper("printable");
     },
+    purchaseExcel(tbl) {
+      this.$nextTick(function() {
+        setTimeout(
+          function() {
+            var tab_text =
+              "<table><tr><th colspan='2' style='font-size: large;'>Item Received Quick Report</th></tr>" +
+              "<tr></tr><tr>" +
+              "<td>From: " +
+              moment(String(this.sumDateSelected.from)).format("MM/DD/YYYY") +
+              " To: " +
+              moment(String(this.sumDateSelected.to)).format("MM/DD/YYYY") +
+              "</td>" +
+              "</tr>" +
+              "<tr>" +
+              "<td>" +
+              "</td>" +
+              "</tr>";
+            var textRange;
+            var j = 0;
+            var tab = document.getElementById(tbl); // id of table
+            // var tab1 = document.getElementById("summaryTable1");
+
+            // for (j = 0; j < tab1.rows.length; j++) {
+            //   tab_text = tab_text + tab1.rows[j].innerHTML + "</tr>";
+            // }
+            tab_text = tab_text + "<tr></tr> <tr></tr>";
+            var j = 0;
+            for (j = 0; j < tab.rows.length; j++) {
+              tab_text = tab_text + tab.rows[j].innerHTML + "</tr>";
+            }
+
+            tab_text = tab_text + "</table>";
+            tab_text = tab_text.replace(/<A[^>]*>|<\/A>/g, ""); //remove if u want links in your table
+            tab_text = tab_text.replace(/<img[^>]*>/gi, ""); // remove if u want images in your table
+            tab_text = tab_text.replace(/<input[^>]*>|<\/input>/gi, ""); // reomves input params
+
+            var ua = window.navigator.userAgent;
+            var msie = ua.indexOf("MSIE ");
+
+            if (msie > 0 || !!navigator.userAgent.match(/Trident.*rv\:11\./)) {
+              // If Internet Explorer
+              txtArea1.document.open("txt/html", "replace");
+              txtArea1.document.write(tab_text);
+              txtArea1.document.close();
+              txtArea1.focus();
+              var sa = txtArea1.document.execCommand(
+                "SaveAs",
+                true,
+                "Say Thanks to Sumit.xls"
+              );
+            } //other browser not tested on IE 11
+            else
+              var sa = window.open(
+                "data:application/vnd.ms-excel," + encodeURIComponent(tab_text)
+              );
+            return sa;
+          }.bind(this),
+          1000
+        );
+      });
+    },
 
     linkGen(pageNum) {
       return pageNum === 1 ? "?" : `?page=${pageNum}`;
     },
 
     done() {
-      // $("#summary").modal("hide");
+      $("#summary").modal("hide");
     },
 
     getClients() {

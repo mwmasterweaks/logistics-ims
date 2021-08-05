@@ -1,7 +1,5 @@
 <template>
   <div class="container-fluid">
-    <pre-loader v-if="loaded"></pre-loader>
-
     <div
       class="row clearfix"
       style="background:yellow;width:10%;float:right;margin-right:3px;margin-top:-20px"
@@ -111,20 +109,17 @@
 </template>
 
 <script>
-import PreLoader from "./PreLoader.vue";
 import VueRangedatePicker from "vue-rangedate-picker";
 import { ModelListSelect } from "vue-search-select";
 
 export default {
   components: {
-    "pre-loader": PreLoader,
     "rangedate-picker": VueRangedatePicker,
     "model-list-select": ModelListSelect
   },
 
   data() {
     return {
-      loaded: false,
       reports: [],
       clients: [],
       filterBy: "",
@@ -148,23 +143,22 @@ export default {
   created() {
     this.user = this.$global.getUser();
     this.load();
-    this.roles = this.$global.getRoles();
+    // this.roles = this.$global.getRoles();
   },
   mounted() {},
 
   methods: {
     load() {
-      this.loaded = true;
+      this.$root.$emit("pageLoading");
       this.$http.post("api/sales_order/alert").then(response => {
         this.alerts = response.body;
+        this.$root.$emit("pageLoaded");
       });
 
-      this.$http.get("api/users/" + this.user.id).then(response => {
-        this.$global.setRoles(response.body.roles);
-        this.roles = this.$global.getRoles();
-        $(".page-loader-wrapper").fadeOut();
-      });
-      this.loaded = false;
+      // this.$http.get("api/users/" + this.user.id).then(response => {
+      //   this.$global.setRoles(response.body.roles);
+      //   this.roles = this.$global.getRoles();
+      // });
     },
     linkGen(pageNum) {
       return pageNum === 1 ? "?" : `?page=${pageNum}`;

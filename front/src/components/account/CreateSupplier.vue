@@ -27,9 +27,38 @@
                       v-model.trim="supplier.name"
                       autocomplete="off"
                       autofocus="on"
-                    >
+                    />
                   </div>
-                  <small class="text-danger pull-left" v-show="errors.has('name')">Name is required.</small>
+                  <small
+                    class="text-danger pull-left"
+                    v-show="errors.has('name')"
+                    >Name is required.</small
+                  >
+                </div>
+              </div>
+            </div>
+
+            <div class="row clearfix">
+              <div class="col-sm-12">
+                <span>Registered TIN</span>
+                <div class="input-group">
+                  <div class="form-line">
+                    <input
+                      type="text"
+                      ref="name"
+                      name="name"
+                      class="form-control"
+                      v-validate="'required'"
+                      v-model.trim="supplier.tin"
+                      autocomplete="off"
+                      autofocus="on"
+                    />
+                  </div>
+                  <small
+                    class="text-danger pull-left"
+                    v-show="errors.has('name')"
+                    >Name is required.</small
+                  >
                 </div>
               </div>
             </div>
@@ -46,12 +75,13 @@
                       v-validate="{ email: true }"
                       v-model.trim="supplier.email"
                       autocomplete="off"
-                    >
+                    />
                   </div>
                   <small
                     class="text-danger pull-left"
                     v-show="errors.has('email')"
-                  >{{ errors.first('email') }}</small>
+                    >{{ errors.first("email") }}</small
+                  >
                 </div>
               </div>
             </div>
@@ -67,7 +97,7 @@
                       class="form-control"
                       v-model.trim="supplier.contact"
                       autocomplete="off"
-                    >
+                    />
                   </div>
                 </div>
               </div>
@@ -105,13 +135,15 @@
                         v-for="locale in locales"
                         :key="locale.id"
                         v-bind:value="locale.id"
-                      >{{ locale.name }}</option>
+                        >{{ locale.name }}</option
+                      >
                     </select>
                   </div>
                   <small
                     class="text-danger pull-left"
                     v-show="errors.has('locale')"
-                  >Locale is required.</small>
+                    >Locale is required.</small
+                  >
                 </div>
               </div>
             </div>
@@ -143,6 +175,7 @@ export default {
         name: null,
         contact: null,
         address: null,
+        tin: null,
         email: null,
         locale_id: 1
       },
@@ -219,7 +252,6 @@ export default {
   }
 };
 </script>
-
 
 <style scoped>
 textarea {

@@ -25,16 +25,16 @@
             >
               <span>Accept</span>
             </button>
-            <button type="button" class="btn btn-lg btn-danger waves-effect">
+            <!-- <button type="button" class="btn btn-lg btn-danger waves-effect">
               <span>Decline</span>
-            </button>
+            </button> -->
           </div>
         </div>
         <div class="card">
           <div class="body">
             <div class="row clearfix">
               <div class="col-md-12 col-sm-12">
-                <h4>Sales Return</h4>
+                <h4>Sales Return #{{ dataStock.id }}</h4>
               </div>
             </div>
             <hr />
@@ -269,12 +269,25 @@ export default {
             .post("api/sales_return/accept/" + this.dataStock.id)
             .then(response => {
               console.log(response.body);
-              this.loadData();
-              this.$global.setSalesReturn(response.body);
+              if (response.body == "Data doesn't exist!!") {
+                swal({
+                  title: "Error",
+                  text: response.body,
+                  icon: "error",
+                  dangerMode: true
+                });
+              } else {
+                swal("Item Returned.", {
+                  icon: "success"
+                });
+              }
 
-              swal("Sales Return #" + this.dataStock.id + " accepted!", {
-                icon: "success"
-              });
+              this.loadData();
+              // this.$global.setSalesReturn(response.body);
+
+              // swal("Sales Return #" + this.dataStock.id + " accepted!", {
+              //   icon: "success"
+              // });
             });
         }
       });

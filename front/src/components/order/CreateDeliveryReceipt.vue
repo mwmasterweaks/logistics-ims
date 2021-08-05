@@ -93,7 +93,10 @@
           <div
             class="col-md-3 col-sm-12"
             style="margin-top:-10px"
-            v-if="sales_order.client.class == 'INET CLIENTS'"
+            v-if="
+              sales_order.client.class == 'INET CLIENTS' ||
+                sales_order.client.class == ''
+            "
           >
             <img src="../../img/inet.gif" style="width:100%" />
           </div>

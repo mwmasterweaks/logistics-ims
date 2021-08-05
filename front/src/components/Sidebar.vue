@@ -46,6 +46,15 @@
               <router-link tag="li" to="/purchase_orders">
                 <a href="javascript:void(0);">Purchase Orders</a>
               </router-link>
+              <router-link tag="li" to="/direct_receives">
+                <a href="javascript:void(0);">Direct Receive Items</a>
+              </router-link>
+              <router-link tag="li" to="/manage_receivingReports">
+                <a href="javascript:void(0);">Receiving Reports</a>
+              </router-link>
+              <router-link tag="li" to="/manage_itemReceipts">
+                <a href="javascript:void(0);">Item Receipts</a>
+              </router-link>
             </ul>
           </li>
           <li>
@@ -69,20 +78,7 @@
               </router-link>
             </ul>
           </li>
-          <!-- <li>
-            <a href="javascript:void(0);" class="menu-toggle">
-              <i class="material-icons">payment</i>
-              <span>Accounting</span>
-            </a>
-            <ul class="ml-menu">
-              <router-link tag="li" to="/manage_requests">
-                <a href="javascript:void(0);">Purchase Orders</a>
-              </router-link>
-              <router-link tag="li" to="/manage_payables">
-                <a href="javascript:void(0);">Supplier Bills</a>
-              </router-link>
-            </ul>
-          </li> -->
+
           <li>
             <a href="javascript:void(0);" class="menu-toggle">
               <i class="material-icons">archive</i>
@@ -439,6 +435,8 @@
 </template>
 <script>
 export default {
+  components: {},
+
   data() {
     return {
       authenticatedUser: [],

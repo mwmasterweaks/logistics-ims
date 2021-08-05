@@ -131,23 +131,43 @@ class StockController extends Controller
     public function directStore(Request $request)
     {
 
-
-        // $return = $request->barcodes;
         try {
             DB::beginTransaction();
             foreach ($request->receives as $receive) {
                 $receive = (object) $receive;
                 $receive->pivot = (object) $receive->pivot;
                 $receive->type = (object) $receive->type;
+                $supplier = (object) $request->supplier;
+                $user = (object) $request->user;
 
                 // $receive->barcodes = (object) $receive->barcodes;
 
                 $receive_date = date_create($request->date_receive);
                 $receive_date = date_format($receive_date, "Y-m-d H:i:s");
 
+                $direct = DB::table('direct_receives')
+                    ->insertGetId([
+                        'user_id' => $user->id,
+                        'supplier_id' => $supplier->id,
+                        'created_at' => Carbon::now(),
+                        'updated_at' => Carbon::now()
+                    ]);
 
+                DB::table('direct_receive_item')
+                    ->insert([
+                        'direct_receive_id' => $direct,
+                        'item_id' => $receive->id,
+                        'warehouse_id' => $receive->received_to,
+                        'qty' => $receive->qty,
+                        'price' => $receive->price
+                    ]);
+
+
+                // ADD TO STOCKS//
                 $id = DB::table('stocks')->insertGetId(
                     [
+                        'user' => $user->id,
+                        'supplier' => $supplier->id,
                         'item_id' => $receive->id,
                         'warehouse_id' => $receive->received_to,
                         'price' => $receive->price,
@@ -158,54 +178,56 @@ class StockController extends Controller
                     ]
                 );
 
-                if ($receive->type->name == "Serialize") {
 
 
-                    if ($request->barcodes != null) {
-
-                        $data = [];
-                        foreach ($receive->barcodes as $serial) {
-                            $serial = (object) $serial;
+                // if ($receive->type->name == "Serialize") {
 
 
-                            $temp = [
-                                'stock_id' => $id,
-                                'serial' => $serial->serial,
-                                'status' => 'stocked in',
-                            ];
-                            array_push($data, $temp);
-                        }
+                //     if ($request->barcodes != null) {
+
+                //         $data = [];
+                //         foreach ($receive->barcodes as $serial) {
+                //             $serial = (object) $serial;
 
 
-                        while (DB::table('stock_serial')->where('serial', $serial->serial)->exists()) {
-                            return response()->json("Serials already exist!");
-                        }
+                //             $temp = [
+                //                 'stock_id' => $id,
+                //                 'serial' => $serial->serial,
+                //                 'status' => 'stocked in',
+                //             ];
+                //             array_push($data, $temp);
+                //         }
 
-                        DB::table('stock_serial')->insert(
-                            $data
-                        );
 
-                        //   end of insert from file
+                //         while (DB::table('stock_serial')->where('serial', $serial->serial)->exists()) {
+                //             return response()->json("Serials already exist!");
+                //         }
 
-                    } else {
+                //         DB::table('stock_serial')->insert(
+                //             $data
+                //         );
 
-                        for ($i = 1; $i <= $receive->qty; $i++) {
-                            $serial = strtoupper($receive->id . $id . substr(md5(uniqid('', true)), -8));
+                //         //   end of insert from file
 
-                            while (DB::table('stock_serial')->where('serial', $serial)->exists()) {
-                                $serial = strtoupper($receive->id . $id . substr(md5(uniqid('', true)), -8));
-                            }
+                //     } else {
 
-                            DB::table('stock_serial')->insert(
-                                [
-                                    'stock_id' => $id,
-                                    'serial' => $serial,
-                                    'status' => 'stocked in',
-                                ]
-                            );
-                        }
-                    }
-                }
+                //         for ($i = 1; $i <= $receive->qty; $i++) {
+                //             $serial = strtoupper($receive->id . $id . substr(md5(uniqid('', true)), -8));
+
+                //             while (DB::table('stock_serial')->where('serial', $serial)->exists()) {
+                //                 $serial = strtoupper($receive->id . $id . substr(md5(uniqid('', true)), -8));
+                //             }
+
+                //             DB::table('stock_serial')->insert(
+                //                 [
+                //                     'stock_id' => $id,
+                //                     'serial' => $serial,
+                //                     'status' => 'stocked in',
+                //                 ]
+                //             );
+                //         }
+                //     }
+                // }
             }
             DB::commit();
         } catch (\Exception $ex) {

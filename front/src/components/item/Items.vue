@@ -93,7 +93,14 @@
                         </tr>
                       </thead>
                       <tbody>
-                        <tr v-for="item in items" :key="item.id">
+                        <router-link
+                          tag="tr"
+                          v-for="item in items"
+                          :key="item.id"
+                          :to="'/items/' + item.id + '/edit'"
+                          style="cursor: pointer"
+                        >
+                          <!-- <tr v-for="item in items" :key="item.id"> -->
                           <td>
                             <img
                               v-if="item.image != null"
@@ -110,14 +117,15 @@
                               height="50"
                             />
                           </td>
-                          <td>
+                          <!-- <td>
                             <a
                               :href="'/items/' + item.id + '/edit'"
                               target="_blank"
                             >
                               {{ item.id }}
                             </a>
-                          </td>
+                          </td> -->
+                          <td>{{ item.id }}</td>
                           <td>{{ item.name }}</td>
                           <td>{{ item.description }}</td>
                           <td>{{ item.category.name }}</td>
@@ -154,8 +162,8 @@
                             <span v-if="item.stocks.length < 1">0</span>
                             <span v-else>{{ item.total_qty }}</span>
                           </td>
-                        </tr>
-                        <!-- </router-link> -->
+                          <!-- </tr> -->
+                        </router-link>
                         <tr v-show="totalRows == 0">
                           <td colspan="14" class="text-center">
                             <small class="col-red">
@@ -451,9 +459,11 @@ export default {
 
   methods: {
     getItems() {
+      this.$root.$emit("pageLoading");
       this.$http.get("api/items").then(response => {
         this.items = response.body;
         this.totalRows = this.items.length;
+        this.$root.$emit("pageLoaded");
       });
     },
     searchItem() {

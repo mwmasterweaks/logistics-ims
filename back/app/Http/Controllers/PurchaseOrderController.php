@@ -94,6 +94,7 @@ class PurchaseOrderController extends Controller
         }
 
         $shipping_fee = $request->amount->shipping;
+        $total = $request->amount->total;
         $tax = $request->amount->tax;
 
         DB::table('purchase_orders')
@@ -102,6 +103,7 @@ class PurchaseOrderController extends Controller
                 'delivery_date' => $request->delivery_date,
                 'shipping_fee' => $shipping_fee,
                 'tax' => $tax,
+                'total' => $total,
                 'supplier_id' => $supplier_id,
                 'updated_at' => \Carbon\Carbon::now()
             ]);

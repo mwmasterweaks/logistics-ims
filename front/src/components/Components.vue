@@ -10,7 +10,7 @@
               type="button"
               class="btn btn-default waves-effect"
               @click="createNewWarehouse"
-              :disabled="!roles.create_warehouse"
+              :hidden="!roles.create_warehouse"
               style="float:right"
             >
               <i class="material-icons">note_add</i>
@@ -79,7 +79,7 @@
             <button
               type="button"
               class="btn btn-default waves-effect"
-              :disabled="!roles.create_category"
+              :hidden="!roles.create_category"
               style="float:right"
               @click="createNewCategory"
             >
@@ -130,6 +130,7 @@
               style="float:right"
               data-toggle="modal"
               data-target="#modalAddType"
+              :hidden="!roles.create_warehouse"
             >
               <i class="material-icons">note_add</i>
               <span>Create</span>
@@ -140,7 +141,16 @@
               <div class="col-md-12">
                 <div class="table-wrap">
                   <div class="table-responsive">
-                    <table class="table table-bordered table-hover">
+                    <table
+                      class="table table-striped table-condensed table-hover"
+                    >
+                      <thead>
+                        <tr>
+                          <th>Name</th>
+                          <th>Date Created</th>
+                          <th>Updated At</th>
+                        </tr>
+                      </thead>
                       <tbody>
                         <tr
                           v-for="(type, index) in types"
@@ -151,6 +161,8 @@
                           data-target="#assetTypeModal"
                         >
                           <td>{{ type.type_name }}</td>
+                          <td>{{ type.created_at }}</td>
+                          <td>{{ type.updated_at }}</td>
                         </tr>
                         <tr v-show="type.length == 0">
                           <td colspan="5" class="text-center">
@@ -176,6 +188,7 @@
               type="button"
               class="btn btn-default waves-effect"
               style="float:right"
+              :hidden="!roles.create_warehouse"
               @click="createCompanyAsset"
             >
               <i class="material-icons">note_add</i>
@@ -234,7 +247,7 @@
                         <tr v-show="assets.length == 0">
                           <td colspan="8" class="text-center">
                             <small class="col-red">
-                              <i>No orders found.</i>
+                              <i>No assets found.</i>
                             </small>
                           </td>
                         </tr>
@@ -249,8 +262,126 @@
             </div>
           </b-card-text>
         </b-tab>
+
+        <!--  MANAGE MOP-->
+        <b-tab title="Mode of Payment" style="cursor:pointer">
+          <b-card>
+            <b>Manage Mode of Payment</b>
+            <button
+              type="button"
+              class="btn btn-default waves-effect"
+              style="float:right"
+              data-toggle="modal"
+              data-target="#modalAddMOP"
+              :hidden="!roles.create_warehouse"
+            >
+              <i class="material-icons">note_add</i>
+              <span>Create</span>
+            </button>
+          </b-card>
+          <b-card-text>
+            <div class="row clearfix" style="margin-top:-25px">
+              <div class="col-md-12">
+                <!-- START ORDER LIST TABLE -->
+                <div class="table-wrap">
+                  <div class="table-responsive">
+                    <table
+                      class="table table-striped table-condensed table-hover"
+                      id="MOPTable"
+                    >
+                      <thead>
+                        <tr>
+                          <th>Name</th>
+                          <th>Date Created</th>
+                          <th>Updated At</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        <tr
+                          v-for="(mode, index) in modes"
+                          :key="mode.index"
+                          style="cursor: pointer;"
+                          @click="getMode(index)"
+                          data-toggle="modal"
+                          data-target="#modalEditMOP"
+                        >
+                          <td>{{ mode.mode }}</td>
+                          <td>{{ mode.created_at }}</td>
+                          <td>{{ mode.updated_at }}</td>
+                        </tr>
+                      </tbody>
+                    </table>
+                  </div>
+                </div>
+                <!-- END ORDER LIST TABLE-->
+                <br />
+                <p>{{ modes.length }} data found.</p>
+              </div>
+            </div>
+          </b-card-text>
+        </b-tab>
+
+        <!-- MANAGE TERM -->
+        <b-tab title="Term" style="cursor:pointer">
+          <b-card>
+            <b>Manage Term</b>
+            <button
+              type="button"
+              class="btn btn-default waves-effect"
+              style="float:right"
+              data-toggle="modal"
+              data-target="#modalAddTerm"
+              :hidden="!roles.create_warehouse"
+            >
+              <i class="material-icons">note_add</i>
+              <span>Create</span>
+            </button>
+          </b-card>
+          <b-card-text>
+            <div class="row clearfix" style="margin-top:-25px">
+              <div class="col-md-12">
+                <!-- START ORDER LIST TABLE -->
+                <div class="table-wrap">
+                  <div class="table-responsive">
+                    <table
+                      class="table table-striped table-condensed table-hover"
+                      id="MOPTable"
+                    >
+                      <thead>
+                        <tr>
+                          <th>Term</th>
+                          <th>Date Created</th>
+                          <th>Updated At</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        <tr
+                          v-for="(term, index) in terms"
+                          :key="term.index"
+                          style="cursor: pointer;"
+                          @click="getTerm(index)"
+                          data-toggle="modal"
+                          data-target="#modalEditTerm"
+                        >
+                          <td>{{ term.term }}</td>
+                          <td>{{ term.created_at }}</td>
+                          <td>{{ term.updated_at }}</td>
+                        </tr>
+                      </tbody>
+                    </table>
+                  </div>
+                </div>
+                <!-- END ORDER LIST TABLE-->
+                <br />
+                <p>{{ terms.length }} data found.</p>
+              </div>
+            </div>
+          </b-card-text>
+        </b-tab>
       </b-tabs>
     </b-card>
+
+    <!----------------------------------------------- MODALS FOR COMPONENTS --------------------------------->
 
     <!-- Modal ADD WAREHOUSE -->
     <div class="modal fade" id="modalAddWarehouse" role="dialog">
@@ -331,7 +462,7 @@
     </div>
     <!--  -->
 
-    <!-- Modal ADD CATEGORY-->
+    <!-- Modal ADD ASSET TYPE-->
     <div class="modal fade" id="modalAddType" role="dialog">
       <div class="modal-dialog">
         <!-- Modal content-->
@@ -377,6 +508,7 @@
                       type="submit"
                       value="Create"
                       class="btn btn-lg btn-info waves-effect waves-light pull-right"
+                      style="float:right"
                     />
                   </div>
                 </div>
@@ -387,9 +519,8 @@
         </div>
       </div>
     </div>
-    <!-- Modal END ADD CATEGORY -->
 
-    <!-- WAREHOUSE MODAL -->
+    <!-- UPDATE WAREHOUSE MODAL -->
     <div
       id="warehouseModal"
       class="modal fade"
@@ -470,9 +601,8 @@
         </div>
       </div>
     </div>
-    <!-- END WAREHOUSE MODAL -->
 
-    <!-- CATEGORY MODAL -->
+    <!--UPDATE CATEGORY MODAL -->
     <div
       id="categoryModal"
       class="modal fade"
@@ -535,9 +665,8 @@
         </div>
       </div>
     </div>
-    <!-- END CATEGORY MODAL -->
 
-    <!-- ASSET TYPE MODAL -->
+    <!-- UPDATE ASSET TYPE MODAL -->
     <div
       id="assetTypeModal"
       class="modal fade"
@@ -549,7 +678,7 @@
       <div class="modal-dialog modal-lg" role="document">
         <div class="modal-content">
           <div class="modal-header">
-            <b>Asset Type</b>
+            <b>Update Asset Type</b>
 
             <button
               type="button"
@@ -602,7 +731,7 @@
     </div>
     <!-- END ASSET TYPE MODAL -->
 
-    <!-- COMPANY ASSET MODAL -->
+    <!-- UPDATE COMPANY ASSET MODAL -->
     <div
       id="companyAssetModal"
       class="modal fade"
@@ -791,7 +920,259 @@
         </div>
       </div>
     </div>
-    <!-- END OF COMPANY ASSET MODAL -->
+    <!-- ADD MOP MODAL -->
+    <div class="modal fade" id="modalAddMOP" role="dialog">
+      <div class="modal-dialog">
+        <!-- Modal content-->
+        <div class="modal-content">
+          <div class="modal-header" style="display:block">
+            <button type="button" class="close" data-dismiss="modal">
+              &times;
+            </button>
+            <h4 class="modal-title">Add Mode of Payment</h4>
+          </div>
+          <div class="modal-body">
+            <form @submit.prevent="createMOP">
+              <div class="body">
+                <div class="row clearfix">
+                  <div class="col-lg-12 col-md-12">
+                    <span>Mode of Payment</span>
+                    <div class="input-group">
+                      <div class="form-line">
+                        <input
+                          ref="mop"
+                          name="mop"
+                          type="text"
+                          class="form-control"
+                          autocomplete="off"
+                          v-validate="'required'"
+                          v-model.trim="addMode.name"
+                        />
+                      </div>
+                      <small
+                        class="text-danger pull-left"
+                        v-show="errors.has('mop')"
+                        >Input is required.</small
+                      >
+                    </div>
+                  </div>
+                </div>
+
+                <div class="row clearfix">
+                  <div
+                    class="col-lg-6 col-md-6 col-sm-12 col-xs-12 col-lg-offset-6"
+                  >
+                    <input
+                      type="submit"
+                      value="Create"
+                      class="btn btn-lg btn-info waves-effect waves-light pull-right"
+                      style="float:right"
+                    />
+                  </div>
+                </div>
+              </div>
+            </form>
+          </div>
+          <div class="modal-footer"></div>
+        </div>
+      </div>
+    </div>
+    <!-- UPDATE MOP MODAL -->
+    <div
+      id="modalEditMOP"
+      class="modal fade"
+      tabindex="-1"
+      role="dialog"
+      data-backdrop="static"
+      data-keyboard="false"
+    >
+      <div class="modal-dialog modal-lg" role="document">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h4 class="modal-title">Update Mode of Payment</h4>
+            <button
+              type="button"
+              class="close"
+              data-dismiss="modal"
+              aria-label="Close"
+            >
+              <span aria-hidden="true">&times;</span>
+            </button>
+          </div>
+          <div class="modal-body">
+            <form @submit.prevent="updateMOP">
+              <div class="body">
+                <div class="row clearfix">
+                  <div class="col-lg-12 col-md-12">
+                    <span>Mode of Payment</span>
+                    <div class="input-group">
+                      <div class="form-line">
+                        <input
+                          ref="editMOP"
+                          name="editMOP"
+                          type="text"
+                          class="form-control"
+                          autocomplete="off"
+                          v-validate="'required'"
+                          v-model.trim="mode.mode"
+                          :disabled="!roles.update_category"
+                        />
+                      </div>
+                      <small
+                        class="text-danger pull-left"
+                        v-show="errors.has('editMOP')"
+                        >Input is required.</small
+                      >
+                    </div>
+                  </div>
+                </div>
+
+                <div class="row clearfix">
+                  <div
+                    class="col-lg-6 col-md-6 col-sm-12 col-xs-12 col-lg-offset-6"
+                  >
+                    <input
+                      type="submit"
+                      value="Save Changes"
+                      class="btn btn-lg btn-info waves-effect waves-light pull-right"
+                      style="float:right"
+                    />
+                  </div>
+                </div>
+              </div>
+            </form>
+          </div>
+          <div class="modal-footer"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ADD TERM MODAL -->
+    <div class="modal fade" id="modalAddTerm" role="dialog">
+      <div class="modal-dialog">
+        <!-- Modal content-->
+        <div class="modal-content">
+          <div class="modal-header" style="display:block">
+            <button type="button" class="close" data-dismiss="modal">
+              &times;
+            </button>
+            <h4 class="modal-title">Add Term</h4>
+          </div>
+          <div class="modal-body">
+            <form @submit.prevent="createTerm">
+              <div class="body">
+                <div class="row clearfix">
+                  <div class="col-lg-12 col-md-12">
+                    <span>Term</span>
+                    <div class="input-group">
+                      <div class="form-line">
+                        <input
+                          ref="term"
+                          name="term"
+                          type="text"
+                          class="form-control"
+                          autocomplete="off"
+                          v-validate="'required'"
+                          v-model.trim="addTerm.name"
+                        />
+                      </div>
+                      <small
+                        class="text-danger pull-left"
+                        v-show="errors.has('term')"
+                        >Input is required.</small
+                      >
+                    </div>
+                  </div>
+                </div>
+
+                <div class="row clearfix">
+                  <div
+                    class="col-lg-6 col-md-6 col-sm-12 col-xs-12 col-lg-offset-6"
+                  >
+                    <input
+                      type="submit"
+                      value="Create"
+                      class="btn btn-lg btn-info waves-effect waves-light pull-right"
+                      style="float:right"
+                    />
+                  </div>
+                </div>
+              </div>
+            </form>
+          </div>
+          <div class="modal-footer"></div>
+        </div>
+      </div>
+    </div>
+    <!-- UPDATE TERM MODAL -->
+    <div
+      id="modalEditTerm"
+      class="modal fade"
+      tabindex="-1"
+      role="dialog"
+      data-backdrop="static"
+      data-keyboard="false"
+    >
+      <div class="modal-dialog modal-lg" role="document">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h4 class="modal-title">Update Term</h4>
+            <button
+              type="button"
+              class="close"
+              data-dismiss="modal"
+              aria-label="Close"
+            >
+              <span aria-hidden="true">&times;</span>
+            </button>
+          </div>
+          <div class="modal-body">
+            <form @submit.prevent="updateTerm">
+              <div class="body">
+                <div class="row clearfix">
+                  <div class="col-lg-12 col-md-12">
+                    <span>Term</span>
+                    <div class="input-group">
+                      <div class="form-line">
+                        <input
+                          ref="editTerm"
+                          name="editTerm"
+                          type="text"
+                          class="form-control"
+                          autocomplete="off"
+                          v-validate="'required'"
+                          v-model.trim="term.term"
+                          :disabled="!roles.update_category"
+                        />
+                      </div>
+                      <small
+                        class="text-danger pull-left"
+                        v-show="errors.has('editTerm')"
+                        >Input is required.</small
+                      >
+                    </div>
+                  </div>
+                </div>
+
+                <div class="row clearfix">
+                  <div
+                    class="col-lg-6 col-md-6 col-sm-12 col-xs-12 col-lg-offset-6"
+                  >
+                    <input
+                      type="submit"
+                      value="Save Changes"
+                      class="btn btn-lg btn-info waves-effect waves-light pull-right"
+                      style="float:right"
+                    />
+                  </div>
+                </div>
+              </div>
+            </form>
+          </div>
+          <div class="modal-footer"></div>
+        </div>
+      </div>
+    </div>
   </div>
 </template>
 
@@ -814,6 +1195,8 @@ export default {
       category: {},
       types: [],
       type: {},
+      mode: {},
+      term: {},
       assets: [],
       roles: [],
       tabs: [],
@@ -841,6 +1224,14 @@ export default {
       },
       addType: {
         type_name: ""
+      },
+      addMode: {
+        name: ""
+      },
+      modes: [],
+      terms: [],
+      addTerm: {
+        name: ""
       }
     };
   },
@@ -854,6 +1245,8 @@ export default {
     this.assets = this.$global.getCompanyAssets();
     this.roles = this.$global.getRoles();
     this.loadTypes();
+    this.loadMode();
+    this.loadTerms();
   },
 
   methods: {
@@ -880,49 +1273,6 @@ export default {
         }
       });
     },
-    // createWarehouse() {
-    //   console.log(this.warehouseNew);
-    //   if (this.warehouseNew.name != "") {
-    //     swal("Create new warehouse?", {
-    //       buttons: {
-    //         Yes: true,
-    //         cancel: "Cancel"
-    //       }
-    //     }).then(value => {
-    //       switch (value) {
-    //         case "Yes":
-    //           this.$http
-    //             .post("api/warehouse", this.warehouseNew)
-    //             .then(response => {
-    //               this.$global.setWarehouses(response.body);
-    //               swal(
-    //                 this.warehouse.name,
-    //                 "has successfully added!",
-    //                 "success"
-    //               );
-    //             })
-    //             //   break;
-    //             .catch(response => {
-    //               swal({
-    //                 title: "Error",
-    //                 text: response.body.error,
-    //                 icon: "error",
-    //                 dangerMode: true
-    //               }).then(value => {
-    //                 if (value) {
-    //                   this.$refs.name.focus();
-    //                 }
-    //               });
-    //             });
-
-    //         default:
-    //           break;
-    //       }
-    //     });
-    //   } else {
-    //     swal("Asset type name is required.", "Information", "info");
-    //   }
-    // },
     updateWarehouse() {
       if (this.warehouse.name != null) {
         this.$http
@@ -1012,6 +1362,18 @@ export default {
     loadTypes() {
       this.$http.get("api/company_assets_type").then(response => {
         this.types = response.body;
+      });
+    },
+
+    loadMode() {
+      this.$http.get("api/mode_of_payment").then(response => {
+        this.modes = response.body;
+      });
+    },
+
+    loadTerms() {
+      this.$http.get("api/term").then(response => {
+        this.terms = response.body;
       });
     },
 
@@ -1127,6 +1489,146 @@ export default {
             break;
         }
       });
+    },
+    createMOP() {
+      if (this.addMode.name != "") {
+        swal("Create new Mode of Payment?", {
+          buttons: {
+            Yes: true,
+            cancel: "Cancel"
+          }
+        }).then(value => {
+          switch (value) {
+            case "Yes":
+              this.$http
+                .post("api/mode_of_payment", this.addMode)
+                .then(response => {
+                  // console.log(response.body);
+                  this.loadMode();
+                  swal(this.addMode.name, "has successfully added!", "success");
+                })
+                //   break;
+                .catch(response => {
+                  swal({
+                    title: "Error",
+                    text: response.body.error,
+                    icon: "error",
+                    dangerMode: true
+                  }).then(value => {
+                    if (value) {
+                      this.$refs.name.focus();
+                    }
+                  });
+                });
+
+            default:
+              break;
+          }
+        });
+      } else {
+        swal("Asset type name is required.", "Information", "info");
+      }
+    },
+    getMode(index) {
+      this.mode = this.modes[index];
+    },
+    updateMOP() {
+      if (this.mode.mode != null) {
+        this.$http
+          .put("api/mode_of_payment/" + this.mode.id, this.mode)
+          .then(response => {
+            this.loadMode();
+            // console.log(response.body);
+            swal(this.mode.mode, "has successfully updated!", {
+              icon: "success"
+            });
+
+            this.mode = {};
+          })
+          .catch(response => {
+            swal({
+              title: "Error",
+              text: response.body.error,
+              icon: "error",
+              dangerMode: true
+            }).then(value => {
+              if (value) {
+              }
+            });
+          });
+      } else {
+        swal("type name is required.", "Information", "info");
+      }
+    },
+    createTerm() {
+      if (this.addTerm.name != "") {
+        swal("Create new Term of Payment?", {
+          buttons: {
+            Yes: true,
+            cancel: "Cancel"
+          }
+        }).then(value => {
+          switch (value) {
+            case "Yes":
+              this.$http
+                .post("api/term", this.addTerm)
+                .then(response => {
+                  // console.log(response.body);
+                  this.loadTerms();
+                  swal(this.addTerm.name, "has successfully added!", "success");
+                })
+                //   break;
+                .catch(response => {
+                  swal({
+                    title: "Error",
+                    text: response.body.error,
+                    icon: "error",
+                    dangerMode: true
+                  }).then(value => {
+                    if (value) {
+                      this.$refs.name.focus();
+                    }
+                  });
+                });
+
+            default:
+              break;
+          }
+        });
+      } else {
+        swal("Asset type name is required.", "Information", "info");
+      }
+    },
+    getTerm(index) {
+      this.term = this.terms[index];
+    },
+    updateTerm() {
+      if (this.term.term != null) {
+        this.$http
+          .put("api/term/" + this.term.id, this.term)
+          .then(response => {
+            // this.loadTerms();
+            console.log(response.body);
+            swal(this.term.term, "has successfully updated!", {
+              icon: "success"
+            });
+
+            // this.term = {};
+          })
+          .catch(response => {
+            swal({
+              title: "Error",
+              text: response.body.error,
+              icon: "error",
+              dangerMode: true
+            }).then(value => {
+              if (value) {
+              }
+            });
+          });
+      } else {
+        swal("type name is required.", "Information", "info");
+      }
     }
   }
 };

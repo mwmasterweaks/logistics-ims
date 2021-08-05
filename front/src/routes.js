@@ -22,9 +22,10 @@ import ManageSupplier from "./components/account/ManageSupplier.vue";
 import ManageDeliveryReceipt from "./components/order/ManageDeliveryReceipt.vue";
 import ManageCompanyAssets from "./components/company_assets/ManageCompanyAssets.vue";
 import ViewSalesReturn from "./components/order/ViewSalesReturn.vue";
-import ManagePayables from "./components/order/ManagePayables.vue";
-import ManageRequests from "./components/order/ManageRequests.vue";
+import ManageReceives from "./components/order/ManageReceives.vue";
+import ManageItemReceipt from "./components/order/ManageItemReceipt.vue";
 import ManageSupplierBills from "./components/order/ManageSupplierBills.vue";
+import ManageDirectReceives from "./components/order/ManageDirectReceives.vue";
 
 import CreateCompanyAssets from "./components/company_assets/CreateCompanyAssets.vue";
 import CreateItem from "./components/item/CreateItem.vue";
@@ -38,6 +39,7 @@ import CreateSupplier from "./components/account/CreateSupplier.vue";
 import CreateDeliveryReceipt from "./components/order/CreateDeliveryReceipt.vue";
 import CreatePurchaseOrder from "./components/order/CreatePurchaseOrder.vue";
 import CreateReceiveItems from "./components/order/CreateReceiveItems.vue";
+import CreateReceivingReport from "./components/order/CreateReceivingReport.vue";
 
 import ModifyCompanyAssets from "./components/company_assets/ModifyCompanyAssets.vue";
 import EditItem from "./components/item/EditItem.vue";
@@ -46,7 +48,9 @@ import EditSalesOrder from "./components/order/EditSalesOrder.vue";
 import Report from "./components/Report.vue";
 import Duplicate from "./components/Duplicate.vue";
 import Component from "./components/Components.vue";
-import Test from "./components/Maintenance.vue";
+// import Test from "./components/Maintenance.vue";
+import Test from "./components/Test.vue";
+
 import QuickReport from "./components/QuickReport.vue";
 
 // import Error404 from "./components/error/404.vue";
@@ -168,15 +172,15 @@ const router = new VueRouter({
       }
     },
     {
-      path: "/manage_payables",
-      component: ManagePayables,
+      path: "/manage_receivingReports",
+      component: ManageReceives,
       meta: {
         forAuth: true
       }
     },
     {
-      path: "/manage_requests",
-      component: ManageRequests,
+      path: "/manage_itemReceipts",
+      component: ManageItemReceipt,
       meta: {
         forAuth: true
       }
@@ -184,6 +188,20 @@ const router = new VueRouter({
     {
       path: "/purchase_order/:purchase_order",
       component: CreatePurchaseOrder,
+      meta: {
+        forAuth: true
+      }
+    },
+    {
+      path: "/receiving",
+      component: CreateReceivingReport,
+      meta: {
+        forAuth: true
+      }
+    },
+    {
+      path: "/receiving/:receive",
+      component: CreateReceivingReport,
       meta: {
         forAuth: true
       }
@@ -311,6 +329,13 @@ const router = new VueRouter({
     {
       path: "/receive_items",
       component: CreateReceiveItems,
+      meta: {
+        forAuth: true
+      }
+    },
+    {
+      path: "/direct_receives",
+      component: ManageDirectReceives,
       meta: {
         forAuth: true
       }

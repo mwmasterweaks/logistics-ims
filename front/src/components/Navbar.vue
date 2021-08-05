@@ -81,13 +81,15 @@ export default {
     return {
       authenticatedUser: [],
       roles: [],
+      loading_count: 0,
+      loading_max: 10,
       notifications: [],
       alerts: []
     };
   },
 
   created() {
-    this.getNotification();
+    // this.getNotification();
     this.setAuthenticatedUser();
     this.boot();
   },
@@ -143,7 +145,7 @@ export default {
   },
 
   methods: {
-    notifyCreate() {
+    /*  notifyCreate() {
       //console.log("lalala");
       this.getNotification();
       this.liveUpdate();
@@ -167,7 +169,7 @@ export default {
       this.$http.get("api/delivery_receipt").then(response => {
         this.$global.setDeliveryReceipt(response.body);
       });
-    },
+    }, */
 
     logout() {
       this.$auth.destroyToken();
@@ -189,10 +191,14 @@ export default {
         .then(response => {
           this.$global.setRoles(response.body.roles);
           this.roles = this.$global.getRoles();
+
+          this.loading_count += 1;
+          if (this.loading_count == this.loading_max)
+            $(".page-loader-wrapper").fadeOut();
         });
     },
 
-    getNotification() {
+    /* getNotification() {
       this.$http.post("api/sales_order/notification").then(response => {
         this.notifications = response.body;
       });
@@ -200,44 +206,79 @@ export default {
       this.$http.post("api/sales_order/alert").then(response => {
         this.alerts = response.body;
       });
-    },
+    }, */
 
     boot() {
       this.$http.get("api/SalesReturns").then(response => {
         this.$global.setSalesReturn(response.body);
+
+        this.loading_count += 1;
+        if (this.loading_count == this.loading_max)
+          $(".page-loader-wrapper").fadeOut();
       });
 
       this.$http.get("api/users").then(response => {
         this.$global.setUsers(response.body);
+
+        this.loading_count += 1;
+        if (this.loading_count == this.loading_max)
+          $(".page-loader-wrapper").fadeOut();
       });
 
       this.$http.get("api/items").then(response => {
         this.$global.setItems(response.body);
+
+        this.loading_count += 1;
+        if (this.loading_count == this.loading_max)
+          $(".page-loader-wrapper").fadeOut();
       });
 
       this.$http.get("api/category").then(response => {
         this.$global.setCategories(response.body);
+
+        this.loading_count += 1;
+        if (this.loading_count == this.loading_max)
+          $(".page-loader-wrapper").fadeOut();
       });
 
       this.$http.get("api/warehouse").then(response => {
         this.$global.setWarehouses(response.body);
+
+        this.loading_count += 1;
+        if (this.loading_count == this.loading_max)
+          $(".page-loader-wrapper").fadeOut();
       });
 
       this.$http.get("api/type").then(response => {
         this.$global.setTypes(response.body);
+
+        this.loading_count += 1;
+        if (this.loading_count == this.loading_max)
+          $(".page-loader-wrapper").fadeOut();
       });
 
       this.$http.get("api/purchase_order").then(response => {
         this.$global.setPurchaseOrders(response.body);
+
+        this.loading_count += 1;
+        if (this.loading_count == this.loading_max)
+          $(".page-loader-wrapper").fadeOut();
       });
 
       this.$http.get("api/supplier").then(response => {
         this.$global.setSupplier(response.body);
+
+        this.loading_count += 1;
+        if (this.loading_count == this.loading_max)
+          $(".page-loader-wrapper").fadeOut();
       });
 
       this.$http.get("api/company_assets").then(response => {
         this.$global.setCompanyAssets(response.body);
-        $(".page-loader-wrapper").fadeOut();
+
+        this.loading_count += 1;
+        if (this.loading_count == this.loading_max)
+          $(".page-loader-wrapper").fadeOut();
       });
     }
   }

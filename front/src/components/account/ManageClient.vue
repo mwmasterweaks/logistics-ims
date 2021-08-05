@@ -253,31 +253,24 @@ export default {
 
   methods: {
     getClients() {
+      this.$root.$emit("pageLoading");
       this.$http.get("api/client").then(response => {
         console.log(response.body);
         this.clients = response.body;
+        this.$root.$emit("pageLoaded");
       });
     },
     getClient(client) {
       this.client = client;
-
-      // this.$http.get("api/client/" + id).then(response => {
-      //   this.client = response.body;
-      // });
     },
     updateClients() {
+      this.$root.$emit("pageLoading");
       this.$http.post("api/updateClients").then(response => {
         console.log(response.body);
         swal("Clients List", "Updated", "success");
+        this.getClients();
+        this.$root.$emit("pageLoaded");
       });
-      // .catch(response => {
-      //   swal({
-      //     title: "Error",
-      //     text: response.body.error,
-      //     icon: "error",
-      //     dangerMode: true
-      //   });
-      // });
     },
 
     update() {

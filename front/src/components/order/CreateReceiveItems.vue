@@ -15,9 +15,17 @@
             type="button"
             class="btn btn-lg btn-info waves-effect"
             @click="receive"
-            :disabled="data.receives.length < 1"
+            v-if="data.receives.length >= 1 && data.supplier != null"
           >
             <span>Receive items</span>
+          </button>
+          <!-- SELECT SUPPLIER -->
+          <button
+            class="btn btn-lg btn-default waves-effect"
+            data-toggle="modal"
+            data-target="#supplierModal"
+          >
+            <span>Select Supplier</span>
           </button>
         </div>
       </div>
@@ -25,8 +33,35 @@
     <div class="card">
       <div class="body">
         <div class="row clearfix">
-          <div class="col-md-12 col-sm-12">
-            <h4>Receive Items</h4>
+          <div class="col-md-6 col-sm-12">
+            <h4>Direct Receive Items</h4>
+          </div>
+        </div>
+        <div class="row clearfix" style="margin-top:-20px;display:flex">
+          <div style="width:15%">
+            <img src="../../img/logo.jpg" />
+          </div>
+          <div style="margin-top:14px;line-height:100%;width:40%">
+            Dctech Building, Shanghai Street,<br />Matina Aplaya, Davao City<br />Davao
+            Del Sur 8000, Philippines<br />Tel #: (082) 221-2380<br />VAT
+            Registered TIN: 003-375-571-000
+          </div>
+
+          <div
+            style="margin-top:14px;line-height:100%;width:30%;margin-left:150px"
+          >
+            <div v-if="data.supplier != null">
+              <b>{{ data.supplier.name }} </b><br />
+              Tel #:{{ data.supplier.contact }} <br />
+              {{ data.supplier.email }} <br />
+              {{ data.supplier.address }}<br />
+              Registered TIN:{{ data.supplier.tin }}
+            </div>
+            <div v-else>
+              <small>
+                <i>select supplier</i>
+              </small>
+            </div>
           </div>
         </div>
         <div class="row clearfix">
@@ -265,6 +300,63 @@
       </div>
     </div>
     <!-- END ITEM MODAL -->
+    <!-- START SUPPLIER MODAL -->
+    <div
+      class="modal fade"
+      id="supplierModal"
+      tabindex="-1"
+      role="dialog"
+      data-keyboard="false"
+    >
+      <div class="modal-dialog" role="document">
+        <div class="modal-content">
+          <div class="modal-header"></div>
+          <div class="modal-body">
+            <div class="row clearfix">
+              <div class="col-md-12">
+                <table
+                  id="table_id"
+                  class="table table-bordered table-condensed table-hover"
+                >
+                  <thead>
+                    <tr>
+                      <th class="text-center">Supplier</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr
+                      v-for="supplier in suppliers"
+                      :key="supplier.id"
+                      style="cursor: pointer"
+                      @click="selectSupplier(supplier)"
+                      data-dismiss="modal"
+                      aria-label="Close"
+                    >
+                      <td>{{ supplier.name }}</td>
+                    </tr>
+                    <tr v-show="suppliers.length < 1">
+                      <td class="text-center">No results found.</td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+
+          <!-- <button
+            type="button"
+            class="btn btn-secondary"
+            position="relative"
+            data-dismiss="modal"
+            left="80px"
+            width="50px"
+          >
+            DONE
+          </button> -->
+        </div>
+      </div>
+    </div>
+    <!-- END SUPPLIER MODAL-->
   </div>
 </template>
 <script>
@@ -287,6 +379,8 @@ export default {
   data() {
     return {
       data: {
+        user: [],
+        supplier: [],
         date_receive: null,
         receives: [],
         barcodes: null
@@ -295,20 +389,27 @@ export default {
         item: null
       },
       items: [],
-      warehouses: []
+      warehouses: [],
+      suppliers: []
     };
   },
 
   beforeMount() {},
 
   created() {
+    // this.getReceives();
     this.items = this.$global.getItems();
     this.warehouses = this.$global.getWarehouses();
+    this.suppliers = this.$global.getSupplier();
+    this.authenticatedUser = this.$global.getUser();
   },
 
   mounted() {},
 
   methods: {
+    getReceives() {
+      console.log(this.$route.params);
+    },
     selectFile() {
       document.getElementById("fileSelect").click();
     },
@@ -387,6 +488,7 @@ export default {
 
     receive() {
       console.log(this.data);
+      this.data.user = this.authenticatedUser;
       swal("Are you sure you want to receive the items?", {
         buttons: {
           receive: "Yes",
@@ -400,7 +502,7 @@ export default {
                 this.$http
                   .post("api/stocks/direct_receive", this.data)
                   .then(response => {
-                    console.log(response.body);
+                    // console.log(response.body);
                     if (response.body == "Serials already exist!") {
                       swal({
                         title: "Error",
@@ -417,9 +519,9 @@ export default {
                         this.$global.setItems(response.body);
                       });
                     }
-                    this.data.receives = [];
-                    this.data.barcodes = null;
-                    this.data.date_receive = null;
+                    // this.data.receives = [];
+                    // this.data.barcodes = null;
+                    // this.data.date_receive = null;
                   });
               }
             });
@@ -442,15 +544,18 @@ export default {
       }).then(value => {
         switch (value) {
           case "exit":
-            this.$router.push({
-              path: "/purchase_orders"
-            });
+            this.$router.go(-1);
             break;
 
           default:
             break;
         }
       });
+    },
+    selectSupplier(supplier) {
+      this.data.supplier = supplier;
+      console.log(supplier);
+      console.log(this.authenticatedUser);
     }
   }
 };

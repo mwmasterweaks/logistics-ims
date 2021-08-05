@@ -1,6 +1,5 @@
 <template>
   <div class="container-fluid">
-    <pre-loader></pre-loader>
     <div id="serialPrint" v-show="item.type.name == 'Serialize'">
       <table class="table table-condensed table-hover" id="tblSerial">
         <tbody>
@@ -121,7 +120,7 @@
                   ></model-list-select>
                 </div>
                 <div class="col-20" style="display:flex">
-                  <div style="width:50%;margin-right:5px">
+                  <div style="width:100%;margin-right:5px">
                     <button
                       type="button"
                       class="btn btn-lg btn-success waves-effect"
@@ -129,16 +128,6 @@
                       @click="reset"
                     >
                       <span>Clear Client</span>
-                    </button>
-                  </div>
-                  <div style="width:50%">
-                    <button
-                      type="button"
-                      class="btn btn-lg btn-dark waves-effect"
-                      style="width:100%"
-                      @click.prevent="printSummary"
-                    >
-                      <span>Print</span>
                     </button>
                   </div>
                 </div>
@@ -445,18 +434,37 @@
 
             <div style="float:right">
               <button
+                class="btn btn-info waves-effect"
+                data-toggle="modal"
+                title="Generate All"
+                @click.prevent="generateAll"
+              >
+                <i class="material-icons">assignment</i>
+              </button>
+              <button
                 class="btn btn-success waves-effect"
                 data-toggle="modal"
+                title="Client Summary"
                 data-target="#summary"
               >
-                Generate Summary
+                <i class="material-icons">summarize</i>
+              </button>
+
+              <button
+                type="submit"
+                class="btn btn-dark waves-effect"
+                title="Print Preview"
+                @click.prevent="printSummary"
+              >
+                <i class="material-icons">print</i>
               </button>
               <button
                 type="submit"
-                class="btn bg-black waves-effect waves-light"
-                @click.prevent="printSummary"
+                class="btn btn-dark waves-effect"
+                title="Export to Excel"
+                @click="itemsExcel('summaryTable')"
               >
-                Print
+                <i class="material-icons">publish</i>
               </button>
             </div>
           </div>
@@ -473,7 +481,7 @@
                 <h6>As of {{ this.report_date | moment("MMMM Do YYYY") }}</h6>
               </div>
               <div class="table-wrap">
-                <table class="table table-borderless">
+                <table class="table table-borderless" id="summaryTable">
                   <thead>
                     <tr>
                       <th>Type</th>
@@ -488,7 +496,10 @@
                     <!-- part 1-->
                     <template>
                       <tr>
-                        <td><strong>Inventory</strong></td>
+                        <td>
+                          <strong>Inventory</strong>
+                          <h6>(On Hand As Of {{ reports.dateStocks }})</h6>
+                        </td>
                         <td></td>
                         <td></td>
                         <td></td>
@@ -499,22 +510,34 @@
                       </tr>
                       <h6>{{ item.name }} - {{ item.description }}</h6>
                     </template>
+                    <!-- item receives -->
+                    <tr v-for="(report, i) in reports.receive" :key="`D-${i}`">
+                      <td>
+                        <p>{{ report.type }}</p>
+                      </td>
+                      <td>
+                        <p>{{ report.date_receive }}</p>
+                      </td>
+                      <td>
+                        <p>{{ report.purchase }}</p>
+                      </td>
+                      <td>
+                        <p>Logistics</p>
+                      </td>
+                      <td>
+                        <p>{{ item.description }}</p>
+                      </td>
+                      <td>
+                        <p>{{ report.stock_qty }}</p>
+                      </td>
+                    </tr>
 
                     <!-- invoice or delivery reciepts list -->
 
-                    <tr>
-                      <td>
-                        <h6>On Hand As Of {{ reports.dateStocks }}</h6>
-                      </td>
-                      <td></td>
-                      <td></td>
-                      <td></td>
-                      <td></td>
-                      <td>{{ reports.stocks }}</td>
-                    </tr>
-
                     <tr v-for="(report, i) in reports.data" :key="`A-${i}`">
-                      <td><p>Invoice</p></td>
+                      <td>
+                        <p>{{ report.type }}</p>
+                      </td>
                       <td>
                         <p>{{ report.date }}</p>
                       </td>
@@ -525,15 +548,37 @@
                         <p>{{ report.name }}</p>
                       </td>
                       <td>
-                        <p>{{ report.description }}</p>
+                        <p>{{ item.description }}</p>
                       </td>
                       <td>
                         <p>-{{ report.qty }}</p>
                       </td>
                     </tr>
+                    <!-- part 2 SALES RETURN -->
+                    <tr v-for="(report, i) in reports.return" :key="`B-${i}`">
+                      <td>
+                        <p>{{ report.type }}</p>
+                      </td>
+                      <td>
+                        <p>{{ report.date }}</p>
+                      </td>
+                      <td>
+                        <p>{{ report.return_id }}</p>
+                      </td>
+                      <td>
+                        <p>{{ report.name }}</p>
+                      </td>
+                      <td>
+                        <p>{{ item.description }}</p>
+                      </td>
+                      <td>
+                        <p>{{ report.qty }}</p>
+                      </td>
+                    </tr>
+
                     <tr>
                       <td>
-                        Tot On Hand As Of
+                        Total On Hand As Of
                         {{ this.report_date | moment("MMMM Do YYYY") }}
                       </td>
                       <td></td>
@@ -541,16 +586,16 @@
                       <td></td>
                       <td></td>
                       <td>
-                        <strong>{{ reports.totalQty }}</strong>
+                        <strong>{{ item.total_qty }}</strong>
                       </td>
                     </tr>
                     <br />
                     <br />
-                    <!-- part 2 -->
+                    <!-- part 3 SALES ORDER-->
                     <template>
                       <h6>On Sales Order</h6>
                     </template>
-                    <tr v-for="(report, i) in reports.data" :key="`B-${i}`">
+                    <tr v-for="(report, i) in reports.data" :key="`C-${i}`">
                       <td><p>Sales Order</p></td>
                       <td>
                         <p>{{ report.dateSales }}</p>
@@ -562,7 +607,7 @@
                         <p>{{ report.name }}</p>
                       </td>
                       <td>
-                        <p>{{ report.description }}</p>
+                        <p>{{ item.name }} - {{ item.description }}</p>
                       </td>
                       <td>
                         <p>0</p>
@@ -570,7 +615,7 @@
                     </tr>
                     <tr>
                       <td>
-                        Tot On Sales Order As of
+                        Total On Sales Order As of
                         {{ this.report_date | moment("MMMM Do YYYY") }}
                       </td>
                       <td></td>
@@ -674,13 +719,16 @@ import PreLoader from "../PreLoader.vue";
 import VueRangedatePicker from "vue-rangedate-picker";
 import { ModelListSelect } from "vue-search-select";
 import DateRangePicker from "vue-mj-daterangepicker";
+import JsonExcel from "vue-json-excel";
+import moment from "moment";
 
 export default {
   components: {
     "pre-loader": PreLoader,
     "rangedate-picker": VueRangedatePicker,
     "model-list-select": ModelListSelect,
-    "data-range-picker": DateRangePicker
+    "data-range-picker": DateRangePicker,
+    "json-excel": JsonExcel
   },
 
   data() {
@@ -708,9 +756,11 @@ export default {
       dateSelected: null,
       itemSelected: null,
       reports: [],
+      report_date_from: null,
       report_date: null,
       serial_to_print: [],
-      getSummary: {}
+      getSummary: {},
+      dataForExcel: []
     };
   },
 
@@ -746,6 +796,66 @@ export default {
   mounted() {},
 
   methods: {
+    itemsExcel(tbl) {
+      this.$nextTick(function() {
+        setTimeout(
+          function() {
+            var tab_text =
+              "<table><tr><th colspan='2' style='font-size: large;'>Inventory Item Quick Report</th></tr>" +
+              "<tr></tr><tr>" +
+              "<td> " +
+              " As of: " +
+              moment(String(this.report_date)).format("MM/DD/YYYY") +
+              "</td>" +
+              "</tr>" +
+              "<tr>" +
+              "<td>" +
+              "</td>" +
+              "</tr>";
+            var textRange;
+            var j = 0;
+            var tab = document.getElementById(tbl); // id of table
+            // var tab1 = document.getElementById("summaryTable3");
+
+            // for (j = 0; j < tab1.rows.length; j++) {
+            //   tab_text = tab_text + tab1.rows[j].innerHTML + "</tr>";
+            // }
+            tab_text = tab_text + "<tr></tr> <tr></tr>";
+            var j = 0;
+            for (j = 0; j < tab.rows.length; j++) {
+              tab_text = tab_text + tab.rows[j].innerHTML + "</tr>";
+            }
+
+            tab_text = tab_text + "</table>";
+            tab_text = tab_text.replace(/<A[^>]*>|<\/A>/g, ""); //remove if u want links in your table
+            tab_text = tab_text.replace(/<img[^>]*>/gi, ""); // remove if u want images in your table
+            tab_text = tab_text.replace(/<input[^>]*>|<\/input>/gi, ""); // reomves input params
+
+            var ua = window.navigator.userAgent;
+            var msie = ua.indexOf("MSIE ");
+
+            if (msie > 0 || !!navigator.userAgent.match(/Trident.*rv\:11\./)) {
+              // If Internet Explorer
+              txtArea1.document.open("txt/html", "replace");
+              txtArea1.document.write(tab_text);
+              txtArea1.document.close();
+              txtArea1.focus();
+              var sa = txtArea1.document.execCommand(
+                "SaveAs",
+                true,
+                "Say Thanks to Sumit.xls"
+              );
+            } //other browser not tested on IE 11
+            else
+              var sa = window.open(
+                "data:application/vnd.ms-excel," + encodeURIComponent(tab_text)
+              );
+            return sa;
+          }.bind(this),
+          1000
+        );
+      });
+    },
     printSummary() {
       this.$htmlToPaper("printable");
     },
@@ -953,6 +1063,21 @@ export default {
       // $("#summary").modal("hide");
       this.$root.$emit("pageLoaded");
       document.getElementById("dismiss").click();
+    },
+    generateAll() {
+      this.$root.$emit("pageLoading");
+      var today = new Date();
+      this.report_date = today;
+      console.log(this.report_date);
+      this.getSummary.itemSelected = this.item.id;
+      console.log(this.getSummary.itemSelected);
+      this.$http
+        .post("api/dashboard/showAllInventoryReport", this.getSummary)
+        .then(response => {
+          console.log(response.body);
+          this.reports = response.body;
+        });
+      this.$root.$emit("pageLoaded");
     }
   }
 };
@@ -1054,13 +1179,13 @@ textarea {
 
 .col-50 {
   float: left;
-  width: 60%;
+  width: 70%;
   margin-top: 6px;
   margin-left: -5px;
 }
 .col-20 {
   float: left;
-  width: 22%;
+  width: 13%;
   margin-top: 6px;
 }
 </style>

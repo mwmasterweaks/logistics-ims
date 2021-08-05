@@ -229,6 +229,7 @@
                   type="text"
                   class="form-control"
                   rows="5"
+                  v-validate="'required'"
                   v-model="dataStock.remarks"
                 ></textarea>
               </div>
@@ -268,6 +269,7 @@
                               class="form-control"
                               v-model="search.client"
                               autocomplete="off"
+                              @keyup="searchClient"
                             />
                           </div>
                         </div>
@@ -361,6 +363,7 @@
                               type="text"
                               class="form-control"
                               autocomplete="off"
+                              @keyup="searchItem"
                             />
                           </div>
                         </div>
@@ -508,7 +511,7 @@ export default {
             name: item.name,
             desc: item.description,
             qty: "1",
-            status: "",
+            status: "Stocked in",
             type: "serial",
             serial: "",
             received_to: null
@@ -559,9 +562,11 @@ export default {
       });
     },
     searchItem() {
-      this.$http.post("api/items/search", this.search).then(response => {
-        this.items = response.body;
-      });
+      this.$http
+        .post("api/sales_order/searchItem", this.search)
+        .then(response => {
+          this.items = response.body;
+        });
     },
     selectClient(id) {
       this.$http.get("api/client/" + id).then(response => {
@@ -576,8 +581,6 @@ export default {
     selectWarehouse(id) {
       this.$http.get("api/warehouse/" + id).then(response => {
         this.dataStock.received_to = response.body;
-
-        // $("#clientModal").modal("hide");
       });
     },
 
@@ -586,7 +589,6 @@ export default {
     },
 
     saleReturn_submit() {
-      console.log(this.dataStock.clientFrom);
       this.$validator.validateAll().then(result => {
         if (result) {
           swal("Return this items?", {
@@ -602,30 +604,34 @@ export default {
                   .post("api/SalesReturns", this.dataStock)
                   .then(response => {
                     console.log(response.body);
-                    this.clear();
-                    if (response.body == "Data doesn't exist!") {
-                      swal({
-                        title: "Error",
-                        text: response.body,
-                        icon: "error",
-                        dangerMode: true
-                      });
-                    } else {
-                      swal("Item Returned.", {
-                        icon: "success"
-                      });
 
-                      this.$http.get("api/SalesReturns").then(response => {
-                        this.$global.setSalesReturn(response.body);
-                      });
-                      this.$http.get("api/items").then(response => {
-                        this.$global.setItems(response.body);
+                    // this.clear();
+                    // if (response.body == "Data doesn't exist!") {
+                    //   swal({
+                    //     title: "Error",
+                    //     text: response.body,
+                    //     icon: "error",
+                    //     dangerMode: true
+                    //   });
+                    // } else {
+                    //   swal("Item Returned.", {
+                    //     icon: "success"
+                    //   });
 
-                        this.$router.push({
-                          path: "/list/sales_return"
-                        });
-                      });
-                    }
+                    // this.$http.get("api/SalesReturns").then(response => {
+                    //   this.$global.setSalesReturn(response.body);
+                    // });
+                    // this.$http.get("api/items").then(response => {
+                    //   this.$global.setItems(response.body);
+
+                    //   this.$router.push({
+                    //     path: "/list/sales_return"
+                    //   });
+                    // });
+
+                    swal("Created Successfully!", {
+                      icon: "success"
+                    });
                   });
                 break;
               default:

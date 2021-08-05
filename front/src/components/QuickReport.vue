@@ -12,15 +12,45 @@
                 class="btn btn-success waves-effect"
                 data-toggle="modal"
                 data-target="#summary"
+                title="Generate Summary"
               >
-                Create Report
+                <i class="material-icons">summarize</i>
+              </button>
+
+              <button
+                type="submit"
+                class="btn bg-black waves-effect waves-light"
+                title="Print Preview"
+                @click.prevent="print"
+              >
+                <i class="material-icons">print</i>
               </button>
               <button
                 type="submit"
                 class="btn bg-black waves-effect waves-light"
-                @click.prevent="print"
+                title="Export to Excel"
+                @click="deliveryExcel('summaryTable1')"
+                v-if="filterBy == 'deliverySum'"
               >
-                Print
+                <i class="material-icons">publish</i>
+              </button>
+              <button
+                type="submit"
+                class="btn bg-black waves-effect waves-light"
+                title="Export to Excel"
+                @click="returnExcel('summaryTable2')"
+                v-if="filterBy == 'salesReturn'"
+              >
+                <i class="material-icons">publish</i>
+              </button>
+              <button
+                type="submit"
+                class="btn bg-black waves-effect waves-light"
+                title="Export to Excel"
+                @click="itemsExcel('summaryTable3')"
+                v-if="filterBy == 'items'"
+              >
+                <i class="material-icons">publish</i>
               </button>
             </div>
           </div>
@@ -32,7 +62,6 @@
               id="summary"
               tabindex="-1"
               role="dialog"
-              data-backdrop="static"
               data-keyboard="false"
             >
               <div class="modal-dialog modal-lg" role="document">
@@ -56,12 +85,42 @@
                           <label class="labelNew">Filter By</label>
                         </div>
                         <div class="col-75">
-                          <select v-model="filterBy" @change="getSummary">
+                          <select
+                            v-model="filterBy"
+                            style="background:#e4e4e4;"
+                          >
+                            <option value="purchaseSum">Purchase Orders</option>
                             <option value="deliverySum"
-                              >Delivery Receipt</option
+                              >Delivery Receipts</option
                             >
                             <option value="salesReturn">Sales Returns</option>
+                            <option value="items">Items</option>
                           </select>
+                        </div>
+                      </div>
+                      <div class="row">
+                        <div class="col-25">
+                          <label class="labelNew">Select Supplier</label>
+                        </div>
+                        <div class="col-75">
+                          <div style="width:92%;float:left">
+                            <model-list-select
+                              :list="suppliers"
+                              v-model="supplierSelected"
+                              option-value="id"
+                              option-text="name"
+                              style="background:#e4e4e4;"
+                            ></model-list-select>
+                          </div>
+                          <div style="width:8%;float:left">
+                            <button
+                              class="btn btn-success waves-effect"
+                              title="Clear Supplier"
+                              @click="resetSupplier"
+                            >
+                              <i class="material-icons">backspace</i>
+                            </button>
+                          </div>
                         </div>
                       </div>
                       <div class="row">
@@ -69,25 +128,11 @@
                           <label for="subject">Select Date Range</label>
                         </div>
                         <div class="col-75">
-                          <!-- <rangedate-picker
-                            style="color:black; background-color:white"
-                            i18n="EN"
-                            @selected="onDateSelected"
-                          ></rangedate-picker> -->
                           <date-range-picker @update="onDateSelected" />
                         </div>
                       </div>
                       <div></div>
                       <br />
-
-                      <!-- <div style="float:right">
-                        <button
-                          class="btn btn-success waves-effect"
-                          data-dismiss="modal"
-                        >
-                          Done
-                        </button>
-                      </div> -->
                     </form>
                   </div>
                 </div>
@@ -95,6 +140,62 @@
             </div>
 
             <div class="col-md-12" style="background:green;height:100%">
+              <!-- PURCHASE ORDERS REPORT -->
+              <div class="card" id="printable" v-if="filterBy == 'purchaseSum'">
+                <div class="header text-center">
+                  <img src="./../img/logo.jpg" width="200px" />
+                  <br />
+                  <br />
+
+                  <h4 style="color:black">
+                    PURCHASE ORDERS
+                  </h4>
+                  <h6>
+                    As of
+                    {{ this.sumDateSelected.to | moment("MMMM Do YYYY") }}
+                  </h6>
+                </div>
+                <div class="table-wrap">
+                  <table
+                    class="table table-striped table-condensed"
+                    id="summaryTable1"
+                  >
+                    <thead>
+                      <tr>
+                        <th>P.O No.</th>
+                        <th>Supplier</th>
+                        <th>Total Amount</th>
+                        <th>Created Date</th>
+                        <th>Requested by</th>
+                        <th>Status</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      <template>
+                        <h4>
+                          {{ this.sumDateSelected.to | moment("MMMM YYYY") }}
+                        </h4>
+                      </template>
+
+                      <!-- DELIVERY RECEIPT  -->
+                      <tr v-for="report in reports.purchase" :key="report.num">
+                        <td>
+                          <a
+                            :href="'/purchase_order/' + report.num"
+                            target="_blank"
+                            >{{ report.number }}</a
+                          >
+                        </td>
+                        <td>{{ report.supplier }}</td>
+                        <td>{{ report.total }}</td>
+                        <td>{{ report.date }}</td>
+                        <td>{{ report.requestor }}</td>
+                        <td>{{ report.status }}</td>
+                      </tr>
+                    </tbody>
+                  </table>
+                </div>
+              </div>
               <!-- DELIVERY RECEIPTS REPORT -->
               <div class="card" id="printable" v-if="filterBy == 'deliverySum'">
                 <div class="header text-center">
@@ -107,11 +208,14 @@
                   </h4>
                   <h6>
                     As of
-                    {{ this.sumDateSelected.end | moment("MMMM Do YYYY") }}
+                    {{ this.sumDateSelected.to | moment("MMMM Do YYYY") }}
                   </h6>
                 </div>
                 <div class="table-wrap">
-                  <table class="table table-striped table-condensed">
+                  <table
+                    class="table table-striped table-condensed"
+                    id="summaryTable1"
+                  >
                     <thead>
                       <tr>
                         <th></th>
@@ -126,7 +230,7 @@
                     <tbody>
                       <template>
                         <h4>
-                          {{ this.sumDateSelected.end | moment("MMMM YYYY") }}
+                          {{ this.sumDateSelected.to | moment("MMMM YYYY") }}
                         </h4>
                       </template>
 
@@ -163,9 +267,7 @@
                       <tr>
                         <td>
                           Total As of
-                          {{
-                            this.sumDateSelected.end | moment("MMMM Do YYYY")
-                          }}
+                          {{ this.sumDateSelected.to | moment("MMMM Do YYYY") }}
                         </td>
                         <td></td>
                         <td></td>
@@ -190,11 +292,14 @@
                   </h4>
                   <h6>
                     As of
-                    {{ this.sumDateSelected.end | moment("MMMM Do YYYY") }}
+                    {{ this.sumDateSelected.to | moment("MMMM Do YYYY") }}
                   </h6>
                 </div>
                 <div class="table-wrap">
-                  <table class="table table-striped table-condensed">
+                  <table
+                    class="table table-striped table-condensed"
+                    id="summaryTable2"
+                  >
                     <thead>
                       <tr>
                         <th></th>
@@ -209,7 +314,7 @@
                     <tbody>
                       <template>
                         <h4>
-                          {{ this.sumDateSelected.end | moment("MMMM YYYY") }}
+                          {{ this.sumDateSelected.to | moment("MMMM YYYY") }}
                         </h4>
                       </template>
 
@@ -240,15 +345,64 @@
                       <tr>
                         <td>
                           Total As of
-                          {{
-                            this.sumDateSelected.end | moment("MMMM Do YYYY")
-                          }}
+                          {{ this.sumDateSelected.to | moment("MMMM Do YYYY") }}
                         </td>
                         <td></td>
                         <td></td>
                         <td></td>
                         <td></td>
                         <td>-{{ reports.totalQty }}</td>
+                      </tr>
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+              <!-- ALL ITEMS REPORT -->
+              <div class="card" id="printable" v-if="filterBy == 'items'">
+                <div class="header text-center">
+                  <img src="./../img/logo.jpg" width="200px" />
+                  <br />
+                  <br />
+
+                  <h4 style="color:black">
+                    PHYSICAL INVENTORY WORKSHEET
+                  </h4>
+                  <h6>
+                    As of
+                    {{ this.sumDateSelected.to | moment("MMMM Do YYYY") }}
+                  </h6>
+                </div>
+                <div class="table-wrap">
+                  <table
+                    class="table table-striped table-condensed"
+                    id="summaryTable3"
+                  >
+                    <thead>
+                      <tr>
+                        <th>Item</th>
+                        <th>Description</th>
+                        <th>Quantity On Hand</th>
+                        <!-- <th>Physical Count</th> -->
+                      </tr>
+                    </thead>
+                    <tbody>
+                      <template>
+                        <h4>
+                          {{ this.sumDateSelected.to | moment("MMMM Do YYYY") }}
+                        </h4>
+                      </template>
+                      <tr
+                        v-for="(report, index) in reports.items"
+                        :key="index"
+                        :hidden="filterBy != 'items'"
+                      >
+                        <td>{{ report.stock_id }}</td>
+                        <td>{{ report.stock_desc }}</td>
+                        <td style="text-align:right">
+                          <span style="float:left;width:100px">{{
+                            report.stock_qty
+                          }}</span>
+                        </td>
                       </tr>
                     </tbody>
                   </table>
@@ -267,13 +421,17 @@ import PreLoader from "./PreLoader.vue";
 import VueRangedatePicker from "vue-rangedate-picker";
 import { ModelListSelect } from "vue-search-select";
 import DateRangePicker from "vue-mj-daterangepicker";
+import JsonExcel from "vue-json-excel";
+import { ListGroupPlugin } from "bootstrap-vue";
+import moment from "moment";
 
 export default {
   components: {
     "pre-loader": PreLoader,
     "rangedate-picker": VueRangedatePicker,
     "model-list-select": ModelListSelect,
-    "rangedate-picker": VueRangedatePicker
+    "rangedate-picker": VueRangedatePicker,
+    "json-excel": JsonExcel
   },
 
   data() {
@@ -281,19 +439,23 @@ export default {
       loaded: false,
       reports: [],
       clients: [],
+      suppliers: [],
       filterBy: "",
       clientSelected: null,
+      supplierSelected: null,
       sumDateSelected: {},
       value: "",
       users: [],
       successful_order: [],
       sales_returns: [],
-      roles: []
+      roles: [],
+      dataForExcel: []
     };
   },
   created() {
     this.user = this.$global.getUser();
     this.roles = this.$global.getRoles();
+    this.suppliers = this.$global.getSupplier();
   },
   mounted() {},
 
@@ -301,20 +463,198 @@ export default {
     print() {
       this.$htmlToPaper("printable");
     },
+    deliveryExcel(tbl) {
+      this.$nextTick(function() {
+        setTimeout(
+          function() {
+            var tab_text =
+              "<table><tr><th colspan='2' style='font-size: large;'>Forms and Delivery Receipts</th></tr>" +
+              "<tr></tr><tr>" +
+              "<td>From: " +
+              moment(String(this.sumDateSelected.from)).format("MM/DD/YYYY") +
+              " To: " +
+              moment(String(this.sumDateSelected.to)).format("MM/DD/YYYY") +
+              "</td>" +
+              "</tr>" +
+              "<tr>" +
+              "<td>" +
+              "</td>" +
+              "</tr>";
+            var textRange;
+            var j = 0;
+            var tab = document.getElementById(tbl); // id of table
+            // var tab1 = document.getElementById("summaryTable1");
 
-    // onDateSelected(dateSelected) {
-    //   this.sumDateSelected = dateSelected;
-    //   console.log(this.sumDateSelected.end);
-    //   this.getSummary();
-    // },
+            // for (j = 0; j < tab1.rows.length; j++) {
+            //   tab_text = tab_text + tab1.rows[j].innerHTML + "</tr>";
+            // }
+            tab_text = tab_text + "<tr></tr> <tr></tr>";
+            var j = 0;
+            for (j = 0; j < tab.rows.length; j++) {
+              tab_text = tab_text + tab.rows[j].innerHTML + "</tr>";
+            }
+
+            tab_text = tab_text + "</table>";
+            tab_text = tab_text.replace(/<A[^>]*>|<\/A>/g, ""); //remove if u want links in your table
+            tab_text = tab_text.replace(/<img[^>]*>/gi, ""); // remove if u want images in your table
+            tab_text = tab_text.replace(/<input[^>]*>|<\/input>/gi, ""); // reomves input params
+
+            var ua = window.navigator.userAgent;
+            var msie = ua.indexOf("MSIE ");
+
+            if (msie > 0 || !!navigator.userAgent.match(/Trident.*rv\:11\./)) {
+              // If Internet Explorer
+              txtArea1.document.open("txt/html", "replace");
+              txtArea1.document.write(tab_text);
+              txtArea1.document.close();
+              txtArea1.focus();
+              var sa = txtArea1.document.execCommand(
+                "SaveAs",
+                true,
+                "Say Thanks to Sumit.xls"
+              );
+            } //other browser not tested on IE 11
+            else
+              var sa = window.open(
+                "data:application/vnd.ms-excel," + encodeURIComponent(tab_text)
+              );
+            return sa;
+          }.bind(this),
+          1000
+        );
+      });
+    },
+    returnExcel(tbl) {
+      this.$nextTick(function() {
+        setTimeout(
+          function() {
+            var tab_text =
+              "<table><tr><th colspan='2' style='font-size: large;'>Sales Returns Report</th></tr>" +
+              "<tr></tr><tr>" +
+              "<td>From: " +
+              moment(String(this.sumDateSelected.from)).format("MM/DD/YYYY") +
+              " To: " +
+              moment(String(this.sumDateSelected.to)).format("MM/DD/YYYY") +
+              "</td>" +
+              "</tr>" +
+              "<tr>" +
+              "<td>" +
+              "</td>" +
+              "</tr>";
+            var textRange;
+            var j = 0;
+            var tab = document.getElementById(tbl); // id of table
+            // var tab1 = document.getElementById("summaryTable2");
+
+            // for (j = 0; j < tab1.rows.length; j++) {
+            //   tab_text = tab_text + tab1.rows[j].innerHTML + "</tr>";
+            // }
+            tab_text = tab_text + "<tr></tr> <tr></tr>";
+            var j = 0;
+            for (j = 0; j < tab.rows.length; j++) {
+              tab_text = tab_text + tab.rows[j].innerHTML + "</tr>";
+            }
+
+            tab_text = tab_text + "</table>";
+            tab_text = tab_text.replace(/<A[^>]*>|<\/A>/g, ""); //remove if u want links in your table
+            tab_text = tab_text.replace(/<img[^>]*>/gi, ""); // remove if u want images in your table
+            tab_text = tab_text.replace(/<input[^>]*>|<\/input>/gi, ""); // reomves input params
+
+            var ua = window.navigator.userAgent;
+            var msie = ua.indexOf("MSIE ");
+
+            if (msie > 0 || !!navigator.userAgent.match(/Trident.*rv\:11\./)) {
+              // If Internet Explorer
+              txtArea1.document.open("txt/html", "replace");
+              txtArea1.document.write(tab_text);
+              txtArea1.document.close();
+              txtArea1.focus();
+              var sa = txtArea1.document.execCommand(
+                "SaveAs",
+                true,
+                "Say Thanks to Sumit.xls"
+              );
+            } //other browser not tested on IE 11
+            else
+              var sa = window.open(
+                "data:application/vnd.ms-excel," + encodeURIComponent(tab_text)
+              );
+            return sa;
+          }.bind(this),
+          1000
+        );
+      });
+    },
+    itemsExcel(tbl) {
+      this.$nextTick(function() {
+        setTimeout(
+          function() {
+            var tab_text =
+              "<table><tr><th colspan='2' style='font-size: large;'>PHYSICAL INVENTORY WORKSHEET</th></tr>" +
+              "<tr></tr><tr>" +
+              "<td>From: " +
+              moment(String(this.sumDateSelected.from)).format("MM/DD/YYYY") +
+              " To: " +
+              moment(String(this.sumDateSelected.to)).format("MM/DD/YYYY") +
+              "</td>" +
+              "</tr>" +
+              "<tr>" +
+              "<td>" +
+              "</td>" +
+              "</tr>";
+            var textRange;
+            var j = 0;
+            var tab = document.getElementById(tbl); // id of table
+            // var tab1 = document.getElementById("summaryTable3");
+
+            // for (j = 0; j < tab1.rows.length; j++) {
+            //   tab_text = tab_text + tab1.rows[j].innerHTML + "</tr>";
+            // }
+            tab_text = tab_text + "<tr></tr> <tr></tr>";
+            var j = 0;
+            for (j = 0; j < tab.rows.length; j++) {
+              tab_text = tab_text + tab.rows[j].innerHTML + "</tr>";
+            }
+
+            tab_text = tab_text + "</table>";
+            tab_text = tab_text.replace(/<A[^>]*>|<\/A>/g, ""); //remove if u want links in your table
+            tab_text = tab_text.replace(/<img[^>]*>/gi, ""); // remove if u want images in your table
+            tab_text = tab_text.replace(/<input[^>]*>|<\/input>/gi, ""); // reomves input params
+
+            var ua = window.navigator.userAgent;
+            var msie = ua.indexOf("MSIE ");
+
+            if (msie > 0 || !!navigator.userAgent.match(/Trident.*rv\:11\./)) {
+              // If Internet Explorer
+              txtArea1.document.open("txt/html", "replace");
+              txtArea1.document.write(tab_text);
+              txtArea1.document.close();
+              txtArea1.focus();
+              var sa = txtArea1.document.execCommand(
+                "SaveAs",
+                true,
+                "Say Thanks to Sumit.xls"
+              );
+            } //other browser not tested on IE 11
+            else
+              var sa = window.open(
+                "data:application/vnd.ms-excel," + encodeURIComponent(tab_text)
+              );
+            return sa;
+          }.bind(this),
+          1000
+        );
+      });
+    },
+
     onDateSelected(values) {
-      this.$root.$emit("pageLoading");
-      console.log(values);
       this.sumDateSelected = values;
       this.getSummary();
     },
     getSummary() {
+      this.$root.$emit("pageLoading");
       this.sumDateSelected.filterBy = this.filterBy;
+      this.sumDateSelected.supplierSelected = this.supplierSelected;
 
       console.log(this.sumDateSelected);
       this.$http
@@ -325,6 +665,9 @@ export default {
         });
       this.$root.$emit("pageLoaded");
       document.getElementById("dismiss").click();
+    },
+    resetSupplier() {
+      this.supplierSelected = "";
     }
   }
 };
@@ -348,7 +691,6 @@ select,
 textarea {
   width: 100%;
   padding: 5px;
-  border: 1px solid rgb(1, 235, 71);
   border-radius: 4px;
   resize: vertical;
 }
@@ -357,20 +699,6 @@ textarea {
   padding: 12px 12px 12px 0;
   display: inline-block;
 }
-/*
-input[type="submit"] {
-  background-color: #4caf50;
-  color: white;
-  padding: 12px 20px;
-  border: none;
-  border-radius: 4px;
-  cursor: pointer;
-  float: right;
-}
-
-input[type="submit"]:hover {
-  background-color: #45a049;
-} */
 
 .container {
   border-radius: 5px;

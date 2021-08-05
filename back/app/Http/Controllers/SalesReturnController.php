@@ -23,7 +23,7 @@ class SalesReturnController extends Controller
     public function index()
     {
         $SalesReturn = SalesReturn::all();
-        $container = array();
+        $container = [];
         foreach ($SalesReturn as $sret) {
             $clientFrom =  DB::table('clients')
                 ->where('id', $sret->from_client_id)->first();
@@ -90,7 +90,7 @@ class SalesReturnController extends Controller
             foreach ($items as $item) {
 
                 $item = (object)$item;
-                DB::table('sales_return_item')->insert(
+                DB::table('item_sales_return')->insert(
                     [
                         'sales_return_id' => $id,
                         'item_id' => $item->id,
@@ -117,7 +117,7 @@ class SalesReturnController extends Controller
             DB::beginTransaction();
 
 
-            $return1 = DB::table('sales_return_item')
+            $return1 = DB::table('item_sales_return')
                 ->where('sales_return_id', $id)
                 ->first();
 
@@ -240,8 +240,8 @@ class SalesReturnController extends Controller
         $clientTo =  DB::table('clients')
             ->where('id', $SalesReturn->to_client_id)->first();
         $items = DB::table('items')
-            ->join('sales_return_item', 'sales_return_item.item_id', 'items.id')
-            ->where('sales_return_item.sales_return_id', $SalesReturn->id)
+            ->join('item_sales_return', 'item_sales_return.item_id', 'items.id')
+            ->where('item_sales_return.sales_return_id', $SalesReturn->id)
             ->get();
         $container = (object)[
             'id' => $SalesReturn->id,
@@ -306,7 +306,7 @@ class SalesReturnController extends Controller
             foreach ($items as $item) {
 
                 $item = (object)$item;
-                DB::table('sales_return_item')
+                DB::table('item_sales_return')
                     ->where('item_id', '=', $item->id)
                     ->where('sales_return_id', '=', $request->id)
                     ->update(['status' => $request->itemStatus]);

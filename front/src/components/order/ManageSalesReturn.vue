@@ -86,7 +86,7 @@
             </div>
             <!-- END ORDER LIST TABLE-->
             <br />
-            <p>{{ sales_returns.length }} orders found.</p>
+            <p>{{ sales_returns.length }} transmittal found.</p>
           </div>
         </div>
       </div>
@@ -112,12 +112,18 @@ export default {
   },
 
   created() {
-    this.sales_returns = this.$global.getSalesReturn();
-    console.log(this.sales_returns);
     this.roles = this.$global.getRoles();
     this.authenticatedUser = this.$global.getUser();
+    this.loadReturns();
   },
   methods: {
+    loadReturns() {
+      this.$root.$emit("pageLoading");
+      this.$http.get("api/SalesReturns").then(response => {
+        this.sales_returns = response.body;
+        this.$root.$emit("pageLoaded");
+      });
+    },
     searchSalesReturnText() {
       var filter, table, tr, targetTableColCount;
       filter = this.search.sales_return.toUpperCase();
