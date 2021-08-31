@@ -1,25 +1,36 @@
 ﻿<template>
-  <nav class="navbar navbar-light">
-    <div class="container-fluid">
-      <pre-loader></pre-loader>
-      <div style="background:black">
-        <a href="javascript:void(0);" class="bars"></a>
+  <div>
+    <nav class="navbar navbar-light">
+      <div class="container-fluid">
+        <!-- <pre-loader></pre-loader> -->
+        <div style="background:black">
+          <a href="javascript:void(0);" class="bars"></a>
+        </div>
+        <div class="logo">
+          <router-link to="/">
+            <a class="navbar-brand" href="javascript:void(0);">
+              <img src="../img/ims.gif" width="150" alt="User" />
+            </a>
+          </router-link>
+        </div>
+        <div style="margin-right:12px">
+          <button
+            @click="logout"
+            title="Logout"
+            class="logout-btn btn waves-effect"
+          >
+            <i class="fas fa-sign-out-alt align-icon"></i>
+            <!-- <span><b>LOGOUT</b></span> -->
+          </button>
+        </div>
       </div>
-      <div class="logo">
-        <router-link to="/">
-          <a class="navbar-brand" href="javascript:void(0);">
-            <img src="../img/ims.gif" width="150" alt="User" />
-          </a>
-        </router-link>
-      </div>
-      <div style="margin-right:12px">
-        <button @click="logout" class="btn btn-success waves-effect">
-          <i class="material-icons">logout</i>
-          <span>Log out</span>
-        </button>
-      </div>
+    </nav>
+    <div class="footer">
+      <span class="center-span">
+        LOGISTICS IMS &copy;2021
+      </span>
     </div>
-  </nav>
+  </div>
 </template>
 
 <script>
@@ -82,7 +93,7 @@ export default {
       authenticatedUser: [],
       roles: [],
       loading_count: 0,
-      loading_max: 10,
+      loading_max: 1,
       notifications: [],
       alerts: []
     };
@@ -90,8 +101,12 @@ export default {
 
   created() {
     // this.getNotification();
-    this.setAuthenticatedUser();
-    this.boot();
+    this.authenticatedUser = this.$global.getUser();
+    this.roles = this.$global.getRoles();
+    // console.log(this.authenticatedUser);
+    // this.setAuthenticatedUser();
+    // this.boot();
+    console.log("NAVBAR VUE");
   },
 
   mounted() {
@@ -191,24 +206,20 @@ export default {
         .then(response => {
           this.$global.setRoles(response.body.roles);
           this.roles = this.$global.getRoles();
-
-          this.loading_count += 1;
-          if (this.loading_count == this.loading_max)
-            $(".page-loader-wrapper").fadeOut();
         });
-    },
+    }
 
     /* getNotification() {
-      this.$http.post("api/sales_order/notification").then(response => {
+      this.$http.post("api/notification").then(response => {
         this.notifications = response.body;
       });
 
-      this.$http.post("api/sales_order/alert").then(response => {
+      this.$http.post("api/notification/alert").then(response => {
         this.alerts = response.body;
       });
     }, */
 
-    boot() {
+    /* boot() {
       this.$http.get("api/SalesReturns").then(response => {
         this.$global.setSalesReturn(response.body);
 
@@ -280,7 +291,7 @@ export default {
         if (this.loading_count == this.loading_max)
           $(".page-loader-wrapper").fadeOut();
       });
-    }
+    } */
   }
 };
 
@@ -310,7 +321,8 @@ $(document).ready(function() {
   margin: 0px;
 }
 .navbar {
-  background-color: #2b982b;
+  background-color: #b7cdd3;
+  z-index: 22;
 }
 .icon {
   cursor: pointer;
@@ -397,5 +409,43 @@ $(document).ready(function() {
 .notifications-item .text p {
   color: #aaa;
   font-size: 12px;
+}
+.footer {
+  padding: 14px;
+  background: #d7e3e5;
+  color: #575757;
+  font-weight: bold;
+  font-family: "TW Cen MT";
+  letter-spacing: 0.15em;
+  width: 100%;
+  position: fixed;
+  bottom: 0;
+  display: flex;
+  z-index: 20;
+}
+.center-span {
+  flex: 1;
+  text-align: right;
+}
+.logout-btn {
+  transition: all 0.5s ease;
+  margin-right: 20px;
+  box-shadow: 3px 3px 3px 3px #000000;
+  border: 0;
+  letter-spacing: 0.1em;
+  color: #0f0f0f;
+  background: #90aeb6;
+  /* background-image: linear-gradient(to right, #abc3ca, #ffffff8c, #abc3ca); */
+  height: 35px;
+  padding-left: 11px;
+  padding-right: 8px;
+}
+.logout-btn:hover {
+  color: #000000;
+  background: #7e9da7;
+  /* background-image: linear-gradient(to right, #9fbac2, #ffffff99, #9fbac2); */
+}
+.align-icon {
+  margin-top: -3px;
 }
 </style>

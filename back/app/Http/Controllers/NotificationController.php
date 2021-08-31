@@ -29,6 +29,8 @@ class NotificationController extends Controller
     {
         $items = DB::table('items')->get();
         $returnVal = array();
+        $runningLow = array();
+        $outOfStock = array();
 
         foreach ($items as $item) {
             $del = DB::table('item_delivery_receipt')
@@ -93,11 +95,21 @@ class NotificationController extends Controller
                     'status' => $status,
                 ];
 
+                if ($totalQtyOfItem > 0)
+                    array_push($runningLow, $temp);
+                else if ($totalQtyOfItem < 1)
+                    array_push($outOfStock, $temp);
+
                 array_push($returnVal, $temp);
             }
         }
 
-        return response()->json($returnVal);
+        // return response()->json($returnVal);
+        return json_encode([
+            'alerts' => $returnVal,
+            'runningLow' => $runningLow,
+            'outOfStock' => $outOfStock
+        ]);
     }
 
     public function forecast($id)

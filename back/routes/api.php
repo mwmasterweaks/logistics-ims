@@ -104,8 +104,8 @@ Route::group(['middleware' => 'auth:api'], function () {
 
 
     //--------------------Notification------------------------------//
-    Route::post('sales_order/notification', 'NotificationController@notification');
-    Route::post('sales_order/alert', 'NotificationController@alert');
+    Route::post('notification', 'NotificationController@notification');
+    Route::post('notification/alert', 'NotificationController@alert');
     Route::put('sales_order/verify/{sales_order}', 'SalesOrderController@verify');
     Route::put('sales_order/cancel/{sales_order}', 'SalesOrderController@cancelOrder');
 

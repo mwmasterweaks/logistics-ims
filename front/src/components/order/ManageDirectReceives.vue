@@ -29,7 +29,7 @@
                     type="text"
                     class="form-control"
                     autocomplete="off"
-                    @keyup="searchText"
+                    @input="searchText"
                     v-model="search.text"
                   />
                 </div>
@@ -38,24 +38,18 @@
           </div>
         </form>
         <div class="table-wrap">
-          <table class="table table-striped table-condensed table-hover">
-            <thead>
+          <table class="table table-striped" id="itemTable">
+            <thead class="thead-dark">
               <tr>
                 <th>ID</th>
                 <th>User</th>
                 <th>Supplier</th>
+                <th>Total</th>
                 <th>Created At</th>
                 <th>Updated At</th>
               </tr>
             </thead>
             <tbody>
-              <!-- <router-link
-                tag="tr"
-                v-for="receive in receives.data"
-                :key="receive.id"
-                :to="'/receiving/' + receive.id"
-                style="cursor: pointer"
-              > -->
               <tr
                 v-for="(receive, index) in receives"
                 :key="index"
@@ -73,7 +67,9 @@
                 <td>
                   {{ receive.supplier.name }}
                 </td>
-
+                <td>
+                  {{ formatPrice(receive.total) }}
+                </td>
                 <td>
                   {{ receive.created_at }}
                 </td>
@@ -81,12 +77,17 @@
                   {{ receive.updated_at }}
                 </td>
                 <!-- <td>
-                  <b-button variant="success" @click="view(index)"
-                    >Receive</b-button
+                  <b-button
+                    variant="dark"
+                    title="View"
+                    @click="view(index)"
+                    data-toggle="modal"
+                    data-target="#reportModal"
+                    ><i class="material-icons">visibility</i></b-button
                   >
+
                 </td> -->
               </tr>
-              <!-- </router-link> -->
               <tr v-show="receives.length == 0">
                 <td colspan="6" class="text-center">No results found.</td>
               </tr>
@@ -101,8 +102,6 @@
         <div style="width:75%">
           <div class="modal-content">
             <div class="modal-header">
-              <b>Receiving Report</b>
-
               <button
                 type="button"
                 class="close"
@@ -116,9 +115,9 @@
               <div class="card">
                 <div class="body">
                   <div class="row clearfix">
-                    <div class="col-md-6 col-sm-12">
-                      <h4 style="float:left">Direct Receive Items</h4>
-                    </div>
+                    <p style="float:right;text-align:right">
+                      Ref.No.<b>{{ receive.id }}</b>
+                    </p>
                   </div>
                   <div
                     class="row clearfix"
@@ -148,7 +147,7 @@
                     </div>
                   </div>
                   <br />
-                  <div class="row clearfix">
+                  <div class="row clearfix" style="display:flex">
                     <div style="width:40%">
                       <p style="text-align:left">
                         Date Received
@@ -210,7 +209,7 @@
                         <tbody>
                           <tr></tr>
                           <tr>
-                            <th>Total:</th>
+                            <th>Total: {{ formatPrice(receive.total) }}</th>
                             <td></td>
                           </tr>
                         </tbody>
@@ -270,9 +269,11 @@ export default {
 
   methods: {
     loadReceives() {
+      this.$root.$emit("pageLoading");
       this.$http.get("api/direct_receives").then(response => {
         this.receives = response.body;
         // console.log(this.receives.data);
+        this.$root.$emit("pageLoaded");
         console.log(response.body);
       });
     },
@@ -305,6 +306,14 @@ export default {
     view(index) {
       this.receive = this.receives[index];
       console.log(this.receive);
+    },
+    formatPrice(value) {
+      var formatter = new Intl.NumberFormat("en-US", {
+        style: "currency",
+        currency: "PHP",
+        minimumFractionDigits: 2
+      });
+      return formatter.format(value);
     }
   }
 };

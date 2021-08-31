@@ -1,41 +1,53 @@
 <template>
   <div class="container-fluid">
-    <div
-      class="row clearfix"
-      style="background:yellow;width:10%;float:right;margin-right:3px;margin-top:-20px"
-    >
-      <b-button variant="dark" @click="quickReport">Quick Report</b-button>
+    <div class="qrBtn-div">
+      <b-button class="quickReport-btn" @click="quickReport"
+        >Quick Report</b-button
+      >
     </div>
 
     <!-- Summary reports-->
     <div class="row clearfix" style="margin-top:30px">
       <!-- stock monitoring table -->
-      <div class="col-md-12" style="max-height:520px">
-        <div class="card" style="height:100%;overflow-y:scroll">
+      <div class="col-md-12" style="height:520px">
+        <div class="card card-div">
           <div class="header">
             <h2>Latest Forecast</h2>
           </div>
-          <div class="table-wrap">
+          <div
+            class="table-wrap"
+            v-if="alerts.length == 0"
+            style="text-align: center;"
+          >
+            <img src="../img/bars.gif" height="50" /><br />
+            Fetching list...
+          </div>
+          <div class="table-wrap" v-else>
             <!-- running low forecast -->
-            <div style="padding:0;width:49.9%;float:left">
-              <div style="height:60px; background:#f8f8f8;">
-                <label
-                  class="gradient"
-                  style="color:#d46900;padding-left:12px;letter-spacing: 0.05em;display:block;display: table-cell; vertical-align: middle;height:42px"
-                  >Running Low</label
+            <div class="rlfMain-div">
+              <div class="rlflabel-div">
+                <label class="rlf-label"
+                  ><!-- <span
+                    ><i class="material-icons warning-icon">warning</i></span
+                  > -->
+                  &nbsp; Running Low</label
                 >
-                <label
+                <!-- <label
                   style="display:block;background: linear-gradient(to right, green, orange); height:8px"
-                ></label>
+                ></label> -->
               </div>
-              <table class="table table-borderless">
+              <table class="table table-borderless table-items">
                 <tbody>
+                  <div v-if="runningLow.length == 0" class="empty-div">
+                    <img src="../img/empty.gif" height="100" /><br />
+                    No data to display.
+                  </div>
                   <tr
-                    v-for="alert in alerts"
+                    v-for="alert in runningLow"
                     :key="alert.item_id"
                     v-show="alert.totalItem > 0 && alert.status == 'no'"
                   >
-                    <td>
+                    <td class="forecast-cell">
                       <a
                         :href="'/items/' + alert.item_id + '/edit'"
                         target="_blank"
@@ -43,8 +55,8 @@
                         {{ alert.item_id }}
                       </a>
                     </td>
-                    <td>
-                      <p>{{ alert.description }}</p>
+                    <td class="forecast-cell">
+                      {{ alert.description }}
                     </td>
                   </tr>
                 </tbody>
@@ -53,25 +65,29 @@
 
             <!-- out of stocks forecast -->
 
-            <div style="padding:0;width:49.9%;float:right">
-              <div style="height:60px; background:#f8f8f8;">
-                <label
-                  class="gradient"
-                  style="color:#cc2b00;padding-left:12px;letter-spacing: 0.05em;display:block;display: table-cell; vertical-align: middle;height:42px"
+            <div class="osfMain-div">
+              <div class="osflabel-div">
+                <label class="osf-label" style="font-size: small"
                   >Out of Stock</label
                 >
-                <label
+                <!-- <label
                   style="display:block;background: linear-gradient(to right, orange, #cc2b00); height:8px"
-                ></label>
+                ></label> -->
               </div>
-              <table class="table table-borderless">
+              <table
+                class="table table-borderless"
+                style="font-size: small; overflow-y: scroll"
+              >
                 <tbody>
+                  <div v-if="outOfStock.length == 0" style="text-align: center">
+                    No data to display.
+                  </div>
                   <tr
-                    v-for="alert in alerts"
+                    v-for="alert in outOfStock"
                     :key="alert.item_id"
                     v-show="alert.totalItem < 1 && alert.status == 'no'"
                   >
-                    <td style="display: table-cell; vertical-align: middle;">
+                    <td class="forecast-cell">
                       <a
                         :href="'/items/' + alert.item_id + '/edit'"
                         target="_blank"
@@ -79,8 +95,8 @@
                         {{ alert.item_id }}
                       </a>
                     </td>
-                    <td>
-                      <p>{{ alert.description }}</p>
+                    <td class="forecast-cell">
+                      {{ alert.description }}
                     </td>
                   </tr>
                 </tbody>
@@ -93,7 +109,7 @@
 
     <br />
 
-    <div class="footer">
+    <!-- <div class="footer">
       <div style="margin-left:40%">
         <img src="./../img/inet.gif" style="width:12%" />
         <img
@@ -102,7 +118,7 @@
         />
         <img src="./../img/solutions.gif" style="width:12%" />
       </div>
-    </div>
+    </div> -->
     <br />
     <br />
   </div>
@@ -126,7 +142,6 @@ export default {
       clientSelected: null,
       sumDateSelected: {},
       value: "",
-      clients: [],
       users: [],
       items: [],
       successful_order: [],
@@ -137,11 +152,13 @@ export default {
       notifications: [],
       roles: [],
       user: [],
-      alerts: []
+      runningLow: [],
+      outOfStock: []
     };
   },
   created() {
     this.user = this.$global.getUser();
+    console.log(this.$global.getUser());
     this.load();
     // this.roles = this.$global.getRoles();
   },
@@ -149,12 +166,14 @@ export default {
 
   methods: {
     load() {
-      this.$root.$emit("pageLoading");
-      this.$http.post("api/sales_order/alert").then(response => {
-        this.alerts = response.body;
-        this.$root.$emit("pageLoaded");
+      // this.$root.$emit("pageLoading");
+      this.$http.post("api/notification/alert").then(response => {
+        console.log(response.body);
+        this.alerts = response.body.alerts;
+        this.runningLow = response.body.runningLow;
+        this.outOfStock = response.body.outOfStock;
+        // this.$root.$emit("pageLoaded");
       });
-
       // this.$http.get("api/users/" + this.user.id).then(response => {
       //   this.$global.setRoles(response.body.roles);
       //   this.roles = this.$global.getRoles();
@@ -271,8 +290,84 @@ input[type="submit"]:hover {
   -webkit-transition-duration: 0.4s; /* Safari */
   transition-duration: 0.4s;
 }
-
-.footer {
+.qrBtn-div {
+  width: 100%;
+  text-align: right !important;
+}
+.quickReport-btn {
+  transition: all 0.5s ease;
+  width: 10%;
+  background: #5a5a5a;
+}
+.quickReport-btn:hover {
+  background: #363636;
+}
+.card-div {
+  height: 100%;
+  /* overflow-y: scroll; */
+}
+.rlfMain-div {
+  padding: 0;
+  width: 49.9%;
+  float: left;
+  height: 90%;
+  position: absolute;
+  overflow-y: auto;
+}
+.rlflabel-div {
+  background: #f8f8f8;
+}
+.rlf-label {
+  color: #d46900;
+  padding-left: 12px;
+  letter-spacing: 0.05em;
+  display: table-cell;
+  vertical-align: middle;
+  height: 35px;
+}
+.osfMain-div {
+  padding: 0;
+  right: 0;
+  width: 49.9%;
+  float: right;
+  height: 85%;
+  position: absolute;
+  overflow-y: auto;
+}
+.osflabel-div {
+  background: #f8f8f8;
+}
+.osf-label {
+  color: #cc2b00;
+  padding-left: 12px;
+  letter-spacing: 0.05em;
+  display: table-cell;
+  vertical-align: middle;
+  height: 35px;
+}
+.warning-icon {
+  background: gold;
+}
+.forecast-cell {
+  padding: 7px !important;
+  padding-left: 10px !important;
+  display: table-cell;
+  vertical-align: middle;
+}
+.empty-div {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  font-weight: bold;
+  letter-spacing: 0.05em;
+  flex-direction: column;
+  /* height: 100%; */
+  position: absolute;
+  height: 90%;
+  width: 100%;
+  opacity: 0.1;
+}
+/* .footer {
   position: fixed;
   left: 0;
   bottom: 0;
@@ -281,5 +376,5 @@ input[type="submit"]:hover {
   background-color: #fff;
   color: white;
   opacity: 0.5;
-}
+} */
 </style>

@@ -46,7 +46,7 @@ class DatabaseSeeder extends Seeder
         App\Role::create(['name' => 'create_company_assets']);
         App\Role::create(['name' => 'update_company_assets']);
         App\Role::create(['name' => 'delete_company_assets']);
-        App\Role::create(['name' => 'accounting_only']);
+        App\Role::create(['name' => 'create_item_receipt']);
 
 
         DB::table('role_user')->insert([

@@ -1099,7 +1099,6 @@ export default {
                       });
 
                     this.getPurchaseOrder();
-                    this.roles = this.$global.getRoles();
                     swal("Purchased order accepted!", {
                       icon: "success"
                     });
@@ -1137,7 +1136,6 @@ export default {
                 });
 
               this.getPurchaseOrder();
-              this.roles = this.$global.getRoles();
               swal("Purchase order declined!", {
                 dangerMode: true
               });
@@ -1180,7 +1178,6 @@ export default {
                       });
 
                     this.getPurchaseOrder();
-                    this.roles = this.$global.getRoles();
                     swal("Submitted for approval!", {
                       icon: "success"
                     });
@@ -1221,7 +1218,6 @@ export default {
                   });
 
                 this.getPurchaseOrder();
-                this.roles = this.$global.getRoles();
                 swal("Submitted to supplier!", {
                   icon: "success"
                 });

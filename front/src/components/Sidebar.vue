@@ -23,8 +23,8 @@
           <div class="btn-group user-helper-dropdown">
             <router-link to="/settings">
               <a href="javascript:void(0);" title="Profile Settings">
-                <!-- <i class="material-icons">settings</i> -->
-                <img src="../img/install.gif" width="28" height="28" />
+                <i class="material-icons setting-icon">settings</i>
+                <!-- <img src="../img/install.gif" width="28" height="28" /> -->
               </a>
             </router-link>
           </div>
@@ -49,12 +49,12 @@
               <router-link tag="li" to="/direct_receives">
                 <a href="javascript:void(0);">Direct Receive Items</a>
               </router-link>
-              <router-link tag="li" to="/manage_receivingReports">
+              <!-- <router-link tag="li" to="/manage_receivingReports">
                 <a href="javascript:void(0);">Receiving Reports</a>
               </router-link>
               <router-link tag="li" to="/manage_itemReceipts">
                 <a href="javascript:void(0);">Item Receipts</a>
-              </router-link>
+              </router-link> -->
             </ul>
           </li>
           <li>
@@ -141,7 +141,7 @@
       <!-- #Menu -->
       <!-- Footer -->
       <div class="legal">
-        <div class="copyright">LOGISTICS IMS &copy;2021</div>
+        <!-- <div class="copyright">LOGISTICS IMS &copy;2021</div> -->
         <div
           class="version"
           id="footerVersion"
@@ -200,118 +200,90 @@
                     <p>Updates:</p>
                   </b>
                   <b>
-                    <p>&nbsp;&nbsp; Sales Return:</p>
+                    <p class="twoSpace-span">Sales Return:</p>
                   </b>
-                  <p>
-                    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; - add manage sales
-                    return in this page user can view the list of the items that
-                    had returned.
+                  <p class="fiveSpace-span">
+                    - add manage sales return in this page user can view the
+                    list of the items that had returned.
                   </p>
-                  <p>
-                    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; - Create Sales return
-                    are now not only one item can be return.
+                  <p class="fiveSpace-span">
+                    - Create Sales return are now not only one item can be
+                    return.
                   </p>
-                  <p>
-                    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; - Create sales return
-                    are now more detailed.
+                  <p class="fiveSpace-span">
+                    - Create sales return are now more detailed.
                   </p>
                   <b>
-                    <p>&nbsp;&nbsp; Sales Order:</p>
+                    <p class="twoSpace-span">Sales Order:</p>
                   </b>
-                  <p>
-                    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; - Are now required to
-                    select client to send for approval.
+                  <p class="fiveSpace-span">
+                    - Are now required to select client to send for approval.
                   </p>
-                  <p>
-                    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; - Fix the search client
-                    at create sales order.
+                  <p class="fiveSpace-span">
+                    - Fix the search client at create sales order.
                   </p>
-                  <p>
-                    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; - Fix the search item
-                    at create sales order.
+                  <p class="fiveSpace-span">
+                    - Fix the search item at create sales order.
                   </p>
                   <b>
-                    <p>&nbsp;&nbsp; Delivery Receipts:</p>
+                    <p class="twoSpace-span">Delivery Receipts:</p>
                   </b>
-                  <p>
-                    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; - Add search for any
-                    keyword of the delivery receipts.
+                  <p class="fiveSpace-span">
+                    - Add search for any keyword of the delivery receipts.
                   </p>
-                  <p>
-                    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; - Add print preview and
-                    select column to print .
+                  <p class="fiveSpace-span">
+                    - Add print preview and select column to print .
                   </p>
-                  <p>
-                    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; - Add export to excel
-                    to all the data in the table.
+                  <p class="fiveSpace-span">
+                    - Add export to excel to all the data in the table.
                   </p>
                   <b>
-                    <p>&nbsp;&nbsp; Products:</p>
+                    <p class="twoSpace-span">Products:</p>
                   </b>
-                  <p>
-                    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; - Fix the search item
-                    more efficient
+                  <p class="fiveSpace-span">
+                    - Fix the search item more efficient
                   </p>
-                  <p>
-                    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; - Add print preview and
-                    select column to print .
+                  <p class="fiveSpace-span">
+                    - Add print preview and select column to print .
                   </p>
-                  <p>
-                    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; - Add export to excel
-                    to all the data in the table.
+                  <p class="fiveSpace-span">
+                    - Add export to excel to all the data in the table.
                   </p>
                   <b>
-                    <p>&nbsp;&nbsp; Category:</p>
+                    <p class="twoSpace-span">Category:</p>
                   </b>
-                  <p>
-                    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; - Change the Category
-                    to Category & type
+                  <p class="fiveSpace-span">
+                    - Change the Category to Category & type
                   </p>
-                  <p>
-                    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; - Add manage type for
-                    the company asset .
+                  <p class="fiveSpace-span">
+                    - Add manage type for the company asset .
                   </p>
-                  <p>
-                    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; - Add modify and delete
-                    for the company asset type.
+                  <p class="fiveSpace-span">
+                    - Add modify and delete for the company asset type.
                   </p>
                   <b>
-                    <p>&nbsp;&nbsp; Inventory Tab:</p>
+                    <p class="twoSpace-span">Inventory Tab:</p>
                   </b>
-                  <p>
-                    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; - Add Company Assets
+                  <p class="fiveSpace-span">- Add Company Assets</p>
+                  <p class="fiveSpace-span">
+                    - Add manage company asset in this page user can view and
+                    search all the company assets.
                   </p>
-                  <p>
-                    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; - Add manage company
-                    asset in this page user can view and search all the company
-                    assets.
-                  </p>
-                  <p>
-                    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; - Add create company
-                    asset
-                  </p>
-                  <p>
-                    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; - Add update company
-                    asset
-                  </p>
-                  <p>
-                    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; - Add delete company
-                    asset
-                  </p>
+                  <p class="fiveSpace-span">- Add create company asset</p>
+                  <p class="fiveSpace-span">- Add update company asset</p>
+                  <p class="fiveSpace-span">- Add delete company asset</p>
                   <b>
-                    <p>&nbsp;&nbsp; Accounts:</p>
+                    <p class="twoSpace-span">Accounts:</p>
                   </b>
-                  <p>
-                    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; - Add new Role namely
-                    Create Company Asset, Update and Delete Company Asset
+                  <p class="fiveSpace-span">
+                    - Add new Role namely Create Company Asset, Update and
+                    Delete Company Asset
                   </p>
-                  <p>
-                    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; - Add manage type for
-                    the company asset .
+                  <p class="fiveSpace-span">
+                    - Add manage type for the company asset .
                   </p>
-                  <p>
-                    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; - Add modify and delete
-                    for the company asset type.
+                  <p class="fiveSpace-span">
+                    - Add modify and delete for the company asset type.
                   </p>
                 </div>
               </div>
@@ -328,35 +300,28 @@
                     <p>Updates:</p>
                   </b>
                   <b>
-                    <p>&nbsp;&nbsp; Sales Order:</p>
+                    <p class="twoSpace-span">Sales Order:</p>
                   </b>
-                  <p>
-                    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; - Add item in create
-                    sales order are now more efficient. (big impact for
-                    helpdesk)
+                  <p class="fiveSpace-span">
+                    - Add item in create sales order are now more efficient.
+                    (big impact for helpdesk)
                   </p>
                   <b>
-                    <p>&nbsp;&nbsp; Delivery Receipts:</p>
+                    <p class="twoSpace-span">Delivery Receipts:</p>
                   </b>
-                  <p>
-                    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; - Print Preview add
-                    Check By.
-                  </p>
+                  <p class="fiveSpace-span">- Print Preview add Check By.</p>
                   <b>
-                    <p>&nbsp;&nbsp; Clients:</p>
+                    <p class="twoSpace-span">Clients:</p>
                   </b>
-                  <p>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; - Add client type.</p>
+                  <p class="fiveSpace-span">- Add client type.</p>
                   <b>
-                    <p>&nbsp;&nbsp; Others:</p>
+                    <p class="twoSpace-span">Others:</p>
                   </b>
-                  <p>
-                    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; - minimize the loading
-                    of the system/website.
+                  <p class="fiveSpace-span">
+                    - minimize the loading of the system/website.
                   </p>
-                  <p>
-                    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; - Add version history
-                  </p>
-                  <p>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; - Fix bugs.</p>
+                  <p class="fiveSpace-span">- Add version history</p>
+                  <p class="fiveSpace-span">- Fix bugs.</p>
                 </div>
               </div>
             </div>
@@ -372,47 +337,33 @@
                     <p>Updates:</p>
                   </b>
                   <b>
-                    <p>&nbsp;&nbsp; Dashboard</p>
+                    <p class="twoSpace-span">Dashboard</p>
                   </b>
-                  <p>
-                    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; - Displays forecast of
-                    items that are low on stock and out of stock.
+                  <p class="fiveSpace-span">
+                    - Displays forecast of items that are low on stock and out
+                    of stock.
                   </p>
-                  <p>
-                    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; - Quick Report: Can
-                    generate summary report filtered by sales order, delivery
-                    receipts, items and clients.
+                  <p class="fiveSpace-span">
+                    - Quick Report: Can generate summary report filtered by
+                    sales order, delivery receipts, items and clients.
                   </p>
-                  <b>
-                    &nbsp;&nbsp;Purchasing
-                  </b>
-                  <p>
-                    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; - Can generate report
-                    by supplier.
+                  <b class="twoSpace-span">Purchasing </b>
+                  <p class="fiveSpace-span">
+                    - Can generate report by supplier.
                   </p>
-                  <p>
-                    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; - Enabled import of
-                    serials in direct receive items.
+                  <p class="fiveSpace-span">
+                    - Enabled import of serials in direct receive items.
                   </p>
-                  <b>
-                    &nbsp;&nbsp; Sales Orders
-                  </b>
-                  <p>
-                    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; - Added Item Group
-                    button which enables users to choose a group depends on the
-                    items needed for S.O, typically used for sales orders which
-                    contains redundant items.
+                  <b class="twoSpace-span">Sales Orders </b>
+                  <p class="fiveSpace-span">
+                    - Added Item Group button which enables users to choose a
+                    group depends on the items needed for S.O, typically used
+                    for sales orders which contains redundant items.
                   </p>
-                  <b>
-                    &nbsp;&nbsp;Delivery Receipts
-                  </b>
-                  <p>
-                    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; -
-                  </p>
-                  <p>
-                    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; - Add version history
-                  </p>
-                  <p>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; - Fix bugs.</p>
+                  <b class="twoSpace-span">Delivery Receipts </b>
+                  <p class="fiveSpace-span">-</p>
+                  <p class="fiveSpace-span">- Add version history</p>
+                  <p class="fiveSpace-span">- Fix bugs.</p>
                 </div>
               </div>
             </div>
@@ -446,6 +397,11 @@ export default {
 
   created() {
     this.setAuthenticatedUser();
+    // console.log(this.$global.getUser());
+    console.log("SIDEBAR VUE");
+    // this.authenticatedUser = this.$global.getUser();
+    // this.roles = this.$global.getRoles();
+    // this.authenticatedUser = this.$global.getUser();
   },
 
   methods: {
@@ -461,6 +417,7 @@ export default {
 
     setAuthenticatedUser() {
       this.$http.get("api/user").then(response => {
+        // console.log(response.body);
         this.$global.setUser(response.body);
         this.authenticatedUser = this.$global.getUser();
         this.getUserRoles();
@@ -494,7 +451,7 @@ export default {
   -webkit-transition: all 0.5s;
   transition: all 0.5s;
   font-family: "Roboto", sans-serif;
-  background: #fdfdfd;
+  background: #fffefe;
   width: 280px !important;
   overflow: hidden;
   display: inline-block;
@@ -506,6 +463,12 @@ export default {
   -moz-box-shadow: 2px 2px 5px rgba(0, 0, 0, 0.1);
   -ms-box-shadow: 2px 2px 5px rgba(0, 0, 0, 0.1);
   box-shadow: 2px 2px 5px rgb(0 0 0 / 10%);
-  z-index: 11 !important;
+  z-index: 21 !important;
+}
+.twoSpace-span {
+  margin-left: 10px !important;
+}
+.fiveSpace-span {
+  margin-left: 24px !important;
 }
 </style>

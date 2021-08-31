@@ -233,7 +233,7 @@ export default {
 
   methods: {
     load() {
-      this.$http.post("api/sales_order/alert").then(response => {
+      this.$http.post("api/notification/alert").then(response => {
         this.alerts = response.body;
       });
 

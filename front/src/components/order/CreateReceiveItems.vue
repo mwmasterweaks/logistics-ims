@@ -105,20 +105,13 @@
                         v-validate="'required|min_value:1|numeric'"
                         v-bind:name="item.id + 'qty'"
                       />
-
-                      <!-- <p>
-                        <small
-                          class="text-danger"
-                          v-show="errors.has(item.id + 'qty')"
-                          >Qty is required</small
-                        >
-                      </p> -->
                     </td>
 
                     <td>
                       <input
                         type="text"
                         v-model="item.price"
+                        @keyup="subtotal"
                         v-validate="'required|min_value:0|decimal:2'"
                         v-bind:name="item.id + 'price'"
                       />
@@ -209,6 +202,18 @@
               <span>Add Items</span>
             </button>
             <hr />
+          </div>
+        </div>
+        <div class="col-md-7" style="float:right">
+          <div class="table-responsive">
+            <table class="table">
+              <tbody>
+                <tr>
+                  <th>Total Amount:</th>
+                  <td>{{ formatPrice(data.total) }}</td>
+                </tr>
+              </tbody>
+            </table>
           </div>
         </div>
       </div>
@@ -342,17 +347,6 @@
               </div>
             </div>
           </div>
-
-          <!-- <button
-            type="button"
-            class="btn btn-secondary"
-            position="relative"
-            data-dismiss="modal"
-            left="80px"
-            width="50px"
-          >
-            DONE
-          </button> -->
         </div>
       </div>
     </div>
@@ -383,7 +377,8 @@ export default {
         supplier: [],
         date_receive: null,
         receives: [],
-        barcodes: null
+        barcodes: null,
+        total: 0
       },
       search: {
         item: null
@@ -519,6 +514,9 @@ export default {
                         this.$global.setItems(response.body);
                       });
                     }
+                    this.$router.push({
+                      path: "/direct_receives"
+                    });
                     // this.data.receives = [];
                     // this.data.barcodes = null;
                     // this.data.date_receive = null;
@@ -556,6 +554,28 @@ export default {
       this.data.supplier = supplier;
       console.log(supplier);
       console.log(this.authenticatedUser);
+    },
+    subtotal() {
+      console.log(this.data.receives);
+      var total = 0;
+
+      for (var index = 0; index < this.data.receives.length; index++) {
+        if (this.data.receives[index].price && this.data.receives[index].qty) {
+          total +=
+            this.data.receives[index].price * this.data.receives[index].qty;
+        }
+      }
+
+      // console.log(total);
+      this.data.total = total;
+    },
+    formatPrice(value) {
+      var formatter = new Intl.NumberFormat("en-US", {
+        style: "currency",
+        currency: "PHP",
+        minimumFractionDigits: 2
+      });
+      return formatter.format(value);
     }
   }
 };

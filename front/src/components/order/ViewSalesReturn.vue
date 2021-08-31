@@ -184,9 +184,7 @@ export default {
   created() {
     this.roles = this.$global.getRoles();
   },
-  beforeMount() {
-    this.roles = this.$global.getRoles();
-  },
+  beforeMount() {},
 
   mounted() {
     this.loadData();

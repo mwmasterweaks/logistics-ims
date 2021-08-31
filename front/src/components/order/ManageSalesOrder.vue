@@ -221,6 +221,7 @@ export default {
     this.getSalesOrder();
     this.roles = this.$global.getRoles();
     this.authenticatedUser = this.$global.getUser();
+    console.log(this.authenticatedUser);
   },
 
   mounted() {
@@ -232,7 +233,8 @@ export default {
     getSalesOrder() {
       this.$http.get("api/sales_order").then(response => {
         this.sales_orders = response.body;
-        console.log(this.sales_orders);
+        console.log("sales orders");
+        console.log(response.body);
       });
     },
     liveUpdate() {

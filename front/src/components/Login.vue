@@ -1,95 +1,117 @@
 <template>
   <div class="container-fluid">
-    <div
-      class="row main-content bg-success text-center"
-      style="max-width:600px"
-    >
-      <div class="col-md-4 text-center company__info">
-        <div class="image" style="margin-top:-20px">
-          <img src="../img/ims.gif" width="180" alt="User" />
+    <div class="container-div">
+      <div class="formMiddle-div">
+        <div class="loginImg-div">
+          <img
+            src="../assets/lock.gif"
+            alt="LOGISTICS IMS"
+            class="loginTop-img"
+          />
         </div>
-        <div style="margin-top:40px">
-          <img src="../img/dctech.gif" width="150" alt="User" />
+        <form @submit.prevent="login" class="form-signin">
+          <div class="input-group field-div">
+            <span class="input-group-addon span-append" id="basic-addon1">
+              <i class="material-icons input-icon">email</i>
+            </span>
+            <input
+              type="text"
+              ref="email"
+              name="email"
+              class="form-control fields"
+              placeholder="Email"
+              v-model.trim="email"
+              v-validate="'required'"
+              autocomplete="off"
+              aria-describedby="basic-addon1"
+              autofocus
+              @keyup.enter="login"
+            />
+          </div>
+          <small class="text-danger error-span" v-show="errors.has('email')">
+            {{ errors.first("email") }}
+          </small>
+          <div v-if="!passwordHidden" class="field-div">
+            <div class="input-group">
+              <span class="input-group-addon span-append">
+                <i class="material-icons input-icon" style="color: #fff"
+                  >vpn_key
+                </i>
+              </span>
+              <input
+                type="text"
+                name="password"
+                class="form-control fields"
+                placeholder="Password"
+                aria-label="Password"
+                aria-describedby="basic-addon2"
+                v-model="password"
+                v-validate="'required'"
+                @keyup.enter="login"
+              />
+              <span @click="hidePassword" class="input-group-addon span-click">
+                <i class="material-icons">visibility_off</i>
+              </span>
+            </div>
+            <small
+              class="text-danger error-span error-span2"
+              v-show="errors.has('password')"
+            >
+              {{ errors.first("password") }}
+            </small>
+          </div>
+          <div v-if="passwordHidden" class="field-div">
+            <div class="input-group">
+              <span class="input-group-addon span-append">
+                <i class="material-icons input-icon">vpn_key</i>
+              </span>
+              <input
+                type="password"
+                name="password"
+                class="form-control fields"
+                placeholder="Password"
+                aria-label="Password"
+                aria-describedby="basic-addon2"
+                v-model="password"
+                v-validate="'required'"
+                @keyup.enter="login"
+              />
+              <span @click="showPassword" class="input-group-addon span-click">
+                <i class="material-icons">visibility</i>
+              </span>
+            </div>
+            <small
+              class="text-danger error-span error-span2"
+              v-show="errors.has('password')"
+            >
+              {{ errors.first("password") }}
+            </small>
+          </div>
+          <b-button class="login-btn" size="sm" type="submit" @click="login">
+            L O G I N
+          </b-button>
+          <small class="text-danger center-align" v-show="login_failed"
+            >Incorrect credentials.</small
+          >
+        </form>
+        <div class="loginImg-div">
+          <img
+            src="../assets/dctech logo.gif"
+            alt="STOCK INVENTORY MANAGEMENT SYSTEM"
+            class="loginBottom-img"
+          />
         </div>
       </div>
-      <div class="col-md-8 col-xs-12 col-sm-12 login_form">
-        <form @submit.prevent="login" class="form-signin">
-          <div>
-            <div class="body">
-              <div class="msg" style="margin-top:30px">
-                <h4>Sign in to start your session</h4>
-              </div>
-
-              <hr />
-
-              <div class="input-group">
-                <span class="input-group-addon">
-                  <i class="material-icons">email</i>
-                </span>
-                <div class="form-line">
-                  <input
-                    type="text"
-                    ref="email"
-                    name="email"
-                    class="form-control"
-                    v-model.trim="email"
-                    v-validate="'required'"
-                    placeholder="Email"
-                    autocomplete="off"
-                    @keyup.enter="login"
-                    autofocus
-                  />
-                </div>
-                <small
-                  class="text-danger pull-left"
-                  v-show="errors.has('email')"
-                  >{{ errors.first("email") }}</small
-                >
-              </div>
-
-              <div class="input-group">
-                <span class="input-group-addon">
-                  <i class="material-icons">lock</i>
-                </span>
-                <div class="form-line">
-                  <input
-                    name="password"
-                    type="password"
-                    class="form-control"
-                    v-validate="'required'"
-                    v-model.trim="password"
-                    @keyup.enter="login"
-                    placeholder="Password"
-                  />
-                </div>
-                <small
-                  class="text-danger pull-left"
-                  v-show="errors.has('password')"
-                  >{{ errors.first("password") }}</small
-                >
-              </div>
-
-              <div class="row">
-                <div class="col-md-6">
-                  <small class="text-danger" v-show="login_failed"
-                    >Login failed.</small
-                  >
-                </div>
-                <div
-                  class="col-md-6"
-                  style="margin-top:-8px;margin-bottom:10px"
-                >
-                  <button
-                    class="btn bg-black btn-lg waves-effect waves-light pull-right"
-                    type="submit"
-                  >
-                    LOGIN
-                  </button>
-                </div>
-              </div>
-            </div>
-          </div>
-        </form>
+      <div class="footer">
+        <!-- <span class="footerLeft-span">
+          LOGISTICS IMS
+        </span>
+        <span class="footerRight-span">
+          ©2021 VERSION 1.0
+        </span> -->
+        <span class="center-span">
+          LOGISTICS IMS ©2021 BETA VERSION
+        </span>
       </div>
     </div>
   </div>
@@ -106,13 +128,11 @@ export default {
       password: "",
       remember: "",
       isAuth: null,
-      amount: {
-        subtotal: "0.00",
-        tax: "0.00",
-        shipping: "0.00",
-        total: "0.00"
-      },
-      login_failed: false
+      login_failed: false,
+      passwordHidden: {
+        default: false,
+        type: Boolean
+      }
     };
   },
 
@@ -150,6 +170,7 @@ export default {
               console.log(response);
               this.$refs.email.focus();
               this.login_failed = true;
+              // swal("Error", "Incorrect credentials!", "error");
             });
         }
       });
@@ -159,96 +180,213 @@ export default {
         console.log(response.body);
       });
     },
-    switchVisibility() {
-      this.passwordFieldType =
-        this.passwordFieldType === "password" ? "text" : "password";
+    hidePassword() {
+      this.passwordHidden = true;
+    },
+    showPassword() {
+      this.passwordHidden = false;
     }
   }
 };
 </script>
 
 <style>
-.main-content {
-  width: 50%;
-  border-radius: 20px;
-  box-shadow: 0 5px 5px rgba(0, 0, 0, 0.4);
-  margin: 5em auto;
-  display: flex;
-}
-.company__info {
-  background-color: #2b982b;
-  border-top-left-radius: 20px;
-  border-bottom-left-radius: 20px;
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-  color: #fff;
-}
-.fa-android {
-  font-size: 3em;
-}
-@media screen and (max-width: 640px) {
-  .main-content {
-    width: 90%;
-  }
-  .company__info {
-    display: none;
-  }
-  .login_form {
-    border-top-left-radius: 20px;
-    border-bottom-left-radius: 20px;
+/* Extra small devices (phones, 600px and down) */
+@media only screen and (max-width: 600px) {
+  .formMiddle-div {
+    width: 96% !important;
+    padding-left: 10px !important;
+    padding-right: 10px !important;
   }
 }
-@media screen and (min-width: 642px) and (max-width: 800px) {
-  .main-content {
-    width: 70%;
+/* Small devices (portrait tablets and large phones, 600px and up) */
+@media only screen and (min-width: 600px) {
+  .formMiddle-div {
+    width: 96% !important;
+    padding-left: 10px !important;
+    padding-right: 10px !important;
   }
 }
-.row > h5 {
-  color: #777575;
-  margin-top: 20px;
+/* Medium devices (landscape tablets, 768px and up) */
+@media only screen and (min-width: 768px) {
+  .formMiddle-div {
+    width: 96% !important;
+    padding-left: 10px !important;
+    padding-right: 10px !important;
+  }
 }
-.login_form {
-  background-color: #fff;
-  border-top-right-radius: 20px;
-  border-bottom-right-radius: 20px;
-  border-top: 1px solid #ccc;
-  border-right: 1px solid #ccc;
+/* Large devices (laptops/desktops, 992px and up) */
+@media only screen and (min-width: 992px) {
+  .formMiddle-di {
+    width: 96% !important;
+    padding-left: 10px !important;
+    padding-right: 10px !important;
+  }
 }
-form {
-  padding: 0 2em;
+/* Extra large devices (large laptops and desktops, 1200px and up) */
+@media only screen and (min-width: 1200px) {
+  .formMiddle-div {
+    width: 30% !important;
+    padding: 50px !important;
+  }
 }
-.form__input {
+@media only screen and (min-width: 1500px) {
+  .formMiddle-div {
+    width: 25% !important;
+    padding: 50px !important;
+  }
+}
+.container-fluid {
+  height: 100%;
   width: 100%;
-  border: 0px solid transparent;
+  align-items: center;
+  justify-content: center;
+  background: #242424;
+}
+.container-div {
+  display: flex;
+  justify-content: center;
+  flex-direction: column;
+  width: 100%;
+  height: 100%;
+  align-items: center;
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  background-image: linear-gradient(#b7cdd3, #faf7f4);
+}
+.formMiddle-div {
+  width: 30%;
+  background: #ffffff66;
+  border-radius: 10px;
+  margin-top: 4px;
+  margin-bottom: 4px;
+  padding: 50px;
+}
+.version-div {
+  justify-content: flex-end;
+  align-self: flex-end;
+  margin-bottom: 5px;
+}
+.fields {
+  background-color: #ffffff;
+  font-size: small;
+  color: #1b1b1b;
+  border-radius: 0 0 0 0;
+  border: 0;
+  padding-right: 35px;
+  padding-left: 12px !important;
+}
+.error-span,
+.error-span2 {
+  display: block;
+  /* text-align: right; */
+  color: red;
+  margin-bottom: 12px;
+  margin-top: -10px;
+}
+.error-span2 {
+  margin-top: -19px;
+}
+.center-align {
+  font-weight: bold;
+  display: block;
+  text-align: center;
+  margin-top: 10px;
+  margin-bottom: -18px;
+}
+.pass-eye {
+  border-radius: 0 0 0 0;
+  border-width: 0 0 2px;
+  border-color: #ffffff;
+  padding-top: 0;
+  background-color: #ffffff;
+  color: #1b1b1b;
+}
+.fields:focus,
+.pass-eye:focus,
+.pass-eye:hover {
+  outline: none !important;
+  box-shadow: none;
+  background-color: #ffffff;
+  color: #1b1b1b;
+}
+.login-btn {
+  transition: all 0.5s ease;
+  color: #ffffff;
+  font-family: "TW Cen MT";
+  font-weight: bold;
+  background-color: #aa938f;
+  border: 0;
+  padding: 7px;
+  border-radius: 0 0 0 0;
+  width: 100%;
+  margin-top: 10px;
+}
+.login-btn:hover,
+.login-btn:focus {
+  background-color: #dabea6;
+  padding: 7px;
+  border: 0;
+  /* color: #19b45f; */
+  color: #ffffff;
+}
+.span-click {
+  cursor: pointer;
   border-radius: 0;
-  border-bottom: 1px solid #aaa;
-  padding: 1em 0.5em 0.5em;
-  padding-left: 2em;
-  outline: none;
-  margin: 1.5em auto;
-  transition: all 0.5s ease;
+  background: #f5f5f5 !important;
+  padding-left: 8px !important;
+  padding-right: 8px !important;
 }
-.form__input:focus {
-  border-bottom-color: #1cc470;
-  box-shadow: 0 0 5px rgba(51, 212, 105, 0.4);
-  border-radius: 4px;
+.span-append {
+  border-radius: 0;
+  background: #edd8c8 !important;
+  padding-right: 0;
+  padding-left: 0;
 }
-.btn {
-  transition: all 0.5s ease;
-  width: 50%;
-  border-radius: 30px;
-  color: #666363;
-  font-weight: 600;
-  background-color: #fff;
-  border: 1px solid #1cc470;
-  margin-top: 1.5em;
-  margin-bottom: 1em;
-  margin-left: 100px;
+.input-icon {
+  color: #ffffff !important;
+  margin-left: 8px;
+  margin-right: 8px;
 }
-.btn:hover,
-.btn:focus {
-  background-color: #1cc470;
-  color: #fff;
+.field-div {
+  margin-bottom: 12px;
+}
+.loginTop-img {
+  height: 60px;
+  margin-bottom: 40px;
+}
+.loginBottom-img {
+  height: 50px;
+  margin-top: 40px;
+}
+.loginImg-div {
+  width: 100%;
+  text-align: center;
+}
+.footer {
+  padding: 14px;
+  background: rgba(0, 0, 0, 0.1);
+  color: #ffffff;
+  font-weight: bold;
+  font-family: "TW Cen MT";
+  letter-spacing: 0.15em;
+  width: 100%;
+  position: absolute;
+  bottom: 0;
+  display: flex;
+}
+.footerLeft-span {
+  flex: 1;
+  text-align: left;
+}
+.footerRight-span {
+  flex: 1;
+  text-align: right;
+}
+.center-span {
+  flex: 1;
+  text-align: center;
 }
 </style>

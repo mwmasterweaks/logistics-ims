@@ -1,17 +1,17 @@
 <template>
   <div class="container-fluid">
-    <pre-loader></pre-loader>
+    <!-- <pre-loader></pre-loader> -->
     <div class="row clearfix">
       <div class="col-md-6">
         <div class="card">
           <div class="header">
-            <h2>
-              <i class="material-icons">notification_important</i> ALERTS
-            </h2>
+            <h2><i class="material-icons">notification_important</i> ALERTS</h2>
           </div>
           <div class="body">
             <div class="media" v-show="alerts.length < 1">
-              <div class="media-body text-center">No alert notification yet.</div>
+              <div class="media-body text-center">
+                No alert notification yet.
+              </div>
             </div>
             <div v-for="alert in alerts" :key="alert.id">
               <div
@@ -32,9 +32,7 @@
                       <strong>#{{ alert.item_id }}</strong>
                       {{ alert.description }}
                       is
-                      <strong
-                        class="col-red alert-link"
-                      >Out of stock!</strong>
+                      <strong class="col-red alert-link">Out of stock!</strong>
                       put quantity in it.
                     </router-link>
                   </div>
@@ -44,9 +42,7 @@
                       <strong>#{{ alert.item_id }}</strong>
                       {{ alert.description }}
                       is
-                      <strong
-                        class="col-red alert-link"
-                      >Out of stock!</strong>
+                      <strong class="col-red alert-link">Out of stock!</strong>
                       put quantity in it.
                     </span>
                   </div>
@@ -70,9 +66,9 @@
                       <strong>#{{ alert.item_id }}</strong>
                       {{ alert.description }}
                       is
-                      <strong
-                        class="col-orange alert-link"
-                      >running low!</strong>
+                      <strong class="col-orange alert-link"
+                        >running low!</strong
+                      >
                       add quantity in it.
                     </router-link>
                   </div>
@@ -82,9 +78,9 @@
                       <strong>#{{ alert.item_id }}</strong>
                       {{ alert.description }}
                       is
-                      <strong
-                        class="col-orange alert-link"
-                      >running low!</strong>
+                      <strong class="col-orange alert-link"
+                        >running low!</strong
+                      >
                       add quantity in it.
                     </span>
                   </div>
@@ -97,9 +93,7 @@
       <div class="col-md-6">
         <div class="card">
           <div class="header">
-            <h2>
-              <i class="material-icons">question_answer</i> ACTIVITY
-            </h2>
+            <h2><i class="material-icons">question_answer</i> ACTIVITY</h2>
           </div>
           <div class="body">
             <div
@@ -114,14 +108,24 @@
                   :to="'/sales_order/' + notification.id + '/edit'"
                   v-show="notification.status == 'approval'"
                 >
-                  <img class="media-object" src="http://placehold.it/32x32" width="32" height="32">
+                  <img
+                    class="media-object"
+                    src="http://placehold.it/32x32"
+                    width="32"
+                    height="32"
+                  />
                 </router-link>
                 <router-link
                   tag="a"
                   :to="'/list/sales_order'"
                   v-show="notification.status == 'approved'"
                 >
-                  <img class="media-object" src="http://placehold.it/32x32" width="32" height="32">
+                  <img
+                    class="media-object"
+                    src="http://placehold.it/32x32"
+                    width="32"
+                    height="32"
+                  />
                 </router-link>
               </div>
               <div class="media-body">
@@ -134,15 +138,18 @@
                   >
                     <b>{{ notification.user.name }}</b> submitted
                     <b>Sales Order #{{ notification.id }}</b> for approval.
-                    <br>
+                    <br />
                     <small>{{ notification.created_at }}</small>
                   </router-link>
                 </div>
                 <div v-else>
-                  <span v-show="notification.status == 'approval'" class="col-black">
+                  <span
+                    v-show="notification.status == 'approval'"
+                    class="col-black"
+                  >
                     <b>{{ notification.user.name }}</b> submitted
                     <b>Sales Order #{{ notification.id }}</b> for approval.
-                    <br>
+                    <br />
                     <small>{{ notification.created_at }}</small>
                   </span>
                 </div>
@@ -157,23 +164,28 @@
                     <b>Sales Order #{{ notification.id }}</b>
                     is ready for
                     <b>delivery</b>.
-                    <br>
+                    <br />
                     <small>{{ notification.created_at }}</small>
                   </router-link>
                 </div>
                 <div v-else>
-                  <span v-show="notification.status == 'approved'" class="col-black">
+                  <span
+                    v-show="notification.status == 'approved'"
+                    class="col-black"
+                  >
                     <b>Sales Order #{{ notification.id }}</b>
                     is ready for
                     <b>delivery</b>.
-                    <br>
+                    <br />
                     <small>{{ notification.created_at }}</small>
                   </span>
                 </div>
               </div>
             </div>
             <div class="media" v-show="notifications.length < 1">
-              <div class="media-body text-center">No activity notification yet.</div>
+              <div class="media-body text-center">
+                No activity notification yet.
+              </div>
             </div>
           </div>
         </div>
@@ -207,11 +219,11 @@ export default {
 
   methods: {
     getNotification() {
-      this.$http.post("api/sales_order/notification").then(response => {
+      this.$http.post("api/notification").then(response => {
         this.notifications = response.body;
       });
 
-      this.$http.post("api/sales_order/alert").then(response => {
+      this.$http.post("api/notification/alert").then(response => {
         this.alerts = response.body;
       });
     },
@@ -250,5 +262,3 @@ i {
   background-color: #ffefd9 !important;
 }
 </style>
-
-

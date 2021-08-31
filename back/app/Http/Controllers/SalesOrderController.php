@@ -22,7 +22,8 @@ class SalesOrderController extends Controller
     {
         $temp_sales_orders = [];
 
-        $sales_orders = SalesOrder::all();
+        $sales_orders = SalesOrder::with(['client', 'user'])->get();
+        // $sales_orders = DB::table('sales_orders')->get();
 
         foreach ($sales_orders as $sales_order) {
             $total_delivered_qty = 0;

@@ -9,10 +9,11 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Collection;
 
 class UserController extends Controller
-{public function index()
+{
+    public function index()
     {
-    $users = DB::table('users')->get();
-     return response()->json($users);
+        $users = DB::table('users')->get();
+        return response()->json($users);
     }
 
     public function show($id)
@@ -521,6 +522,22 @@ class UserController extends Controller
             $role = DB::table('roles')
                 ->select('id')
                 ->where('name', 'update_supplier')
+                ->first();
+
+            if (DB::table('role_user')
+                ->where('role_id', $role->id)
+                ->where('user_id', $id)
+                ->doesntExist()
+            ) {
+                DB::table('role_user')->insert(
+                    ['user_id' => $id, 'role_id' => $role->id]
+                );
+            }
+        }
+        if ($roles->create_item_receipt) {
+            $role = DB::table('roles')
+                ->select('id')
+                ->where('name', 'create_item_receipt')
                 ->first();
 
             if (DB::table('role_user')

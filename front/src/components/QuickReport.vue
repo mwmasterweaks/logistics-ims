@@ -9,7 +9,7 @@
 
             <div style="float:right">
               <button
-                class="btn btn-success waves-effect"
+                class="btn waves-effect toggle-btn"
                 data-toggle="modal"
                 data-target="#summary"
                 title="Generate Summary"
@@ -19,7 +19,7 @@
 
               <button
                 type="submit"
-                class="btn bg-black waves-effect waves-light"
+                class="btn waves-effect waves-light toggle-btn"
                 title="Print Preview"
                 @click.prevent="print"
               >
@@ -27,30 +27,30 @@
               </button>
               <button
                 type="submit"
-                class="btn bg-black waves-effect waves-light"
+                class="btn waves-effect waves-light toggle-btn"
                 title="Export to Excel"
                 @click="deliveryExcel('summaryTable1')"
                 v-if="filterBy == 'deliverySum'"
               >
-                <i class="material-icons">publish</i>
+                <i class="material-icons">file_download</i>
               </button>
               <button
                 type="submit"
-                class="btn bg-black waves-effect waves-light"
+                class="btn waves-effect waves-light toggle-btn"
                 title="Export to Excel"
                 @click="returnExcel('summaryTable2')"
                 v-if="filterBy == 'salesReturn'"
               >
-                <i class="material-icons">publish</i>
+                <i class="material-icons">file_download</i>
               </button>
               <button
                 type="submit"
-                class="btn bg-black waves-effect waves-light"
+                class="btn waves-effect waves-light toggle-btn"
                 title="Export to Excel"
                 @click="itemsExcel('summaryTable3')"
                 v-if="filterBy == 'items'"
               >
-                <i class="material-icons">publish</i>
+                <i class="material-icons">file_download</i>
               </button>
             </div>
           </div>
@@ -139,9 +139,13 @@
               </div>
             </div>
 
-            <div class="col-md-12" style="background:green;height:100%">
+            <div class="col-md-12" style="height:100%">
               <!-- PURCHASE ORDERS REPORT -->
-              <div class="card" id="printable" v-if="filterBy == 'purchaseSum'">
+              <div
+                class="card qr-div"
+                id="printable"
+                v-if="filterBy == 'purchaseSum'"
+              >
                 <div class="header text-center">
                   <img src="./../img/logo.jpg" width="200px" />
                   <br />
@@ -197,7 +201,11 @@
                 </div>
               </div>
               <!-- DELIVERY RECEIPTS REPORT -->
-              <div class="card" id="printable" v-if="filterBy == 'deliverySum'">
+              <div
+                class="card qr-div"
+                id="printable"
+                v-if="filterBy == 'deliverySum'"
+              >
                 <div class="header text-center">
                   <img src="./../img/logo.jpg" width="200px" />
                   <br />
@@ -281,7 +289,11 @@
                 </div>
               </div>
               <!-- SALES RETURN REPORT -->
-              <div class="card" id="printable" v-if="filterBy == 'salesReturn'">
+              <div
+                class="card qr-div"
+                id="printable"
+                v-if="filterBy == 'salesReturn'"
+              >
                 <div class="header text-center">
                   <img src="./../img/logo.jpg" width="200px" />
                   <br />
@@ -358,7 +370,11 @@
                 </div>
               </div>
               <!-- ALL ITEMS REPORT -->
-              <div class="card" id="printable" v-if="filterBy == 'items'">
+              <div
+                class="card qr-div"
+                id="printable"
+                v-if="filterBy == 'items'"
+              >
                 <div class="header text-center">
                   <img src="./../img/logo.jpg" width="200px" />
                   <br />
@@ -741,5 +757,9 @@ textarea {
   cursor: pointer;
   -webkit-transition-duration: 0.4s; /* Safari */
   transition-duration: 0.4s;
+}
+.qr-div {
+  box-shadow: none !important;
+  border: 0;
 }
 </style>
