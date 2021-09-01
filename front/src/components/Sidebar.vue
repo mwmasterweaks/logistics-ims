@@ -49,12 +49,12 @@
               <router-link tag="li" to="/direct_receives">
                 <a href="javascript:void(0);">Direct Receive Items</a>
               </router-link>
-              <router-link tag="li" to="/manage_receivingReports">
+              <!-- <router-link tag="li" to="/manage_receivingReports">
                 <a href="javascript:void(0);">Receiving Reports</a>
               </router-link>
               <router-link tag="li" to="/manage_itemReceipts">
                 <a href="javascript:void(0);">Item Receipts</a>
-              </router-link>
+              </router-link> -->
             </ul>
           </li>
           <li>

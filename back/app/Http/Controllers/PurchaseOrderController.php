@@ -123,6 +123,13 @@ class PurchaseOrderController extends Controller
             }
 
             try {
+                $collection->put('unit', $order->pivot->unit);
+            } catch (\Throwable $th) {
+                $collection->put('unit', null);
+            }
+
+
+            try {
                 $collection->put('price', $order->pivot->price);
             } catch (\Throwable $th) {
                 $collection->put('price', null);
@@ -143,6 +150,7 @@ class PurchaseOrderController extends Controller
                     'purchase_order_id' => $id,
                     'item_id' => $order->id,
                     'qty' => $order->qty,
+                    'unit' => $order->unit,
                     'price' => $order->price,
                     'tax_rate' => $order->tax,
                     'created_at' => \Carbon\Carbon::now(),

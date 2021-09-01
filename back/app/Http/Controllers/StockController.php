@@ -130,6 +130,7 @@ class StockController extends Controller
 
     public function directStore(Request $request)
     {
+        // return response()->json($request);
 
         try {
             DB::beginTransaction();
@@ -149,6 +150,7 @@ class StockController extends Controller
                     ->insertGetId([
                         'user_id' => $user->id,
                         'supplier_id' => $supplier->id,
+                        'total' => $request->total,
                         'created_at' => Carbon::now(),
                         'updated_at' => Carbon::now()
                     ]);
@@ -180,54 +182,54 @@ class StockController extends Controller
 
 
 
-                // if ($receive->type->name == "Serialize") {
+                if ($receive->type->name == "Serialize") {
 
 
-                //     if ($request->barcodes != null) {
+                    if ($request->barcodes != null) {
 
-                //         $data = [];
-                //         foreach ($receive->barcodes as $serial) {
-                //             $serial = (object) $serial;
-
-
-                //             $temp = [
-                //                 'stock_id' => $id,
-                //                 'serial' => $serial->serial,
-                //                 'status' => 'stocked in',
-                //             ];
-                //             array_push($data, $temp);
-                //         }
+                        $data = [];
+                        foreach ($receive->barcodes as $serial) {
+                            $serial = (object) $serial;
 
 
-                //         while (DB::table('stock_serial')->where('serial', $serial->serial)->exists()) {
-                //             return response()->json("Serials already exist!");
-                //         }
+                            $temp = [
+                                'stock_id' => $id,
+                                'serial' => $serial->serial,
+                                'status' => 'stocked in',
+                            ];
+                            array_push($data, $temp);
+                        }
 
-                //         DB::table('stock_serial')->insert(
-                //             $data
-                //         );
 
-                //         //   end of insert from file
+                        while (DB::table('stock_serial')->where('serial', $serial->serial)->exists()) {
+                            return response()->json("Serials already exist!");
+                        }
 
-                //     } else {
+                        DB::table('stock_serial')->insert(
+                            $data
+                        );
 
-                //         for ($i = 1; $i <= $receive->qty; $i++) {
-                //             $serial = strtoupper($receive->id . $id . substr(md5(uniqid('', true)), -8));
+                        //   end of insert from file
 
-                //             while (DB::table('stock_serial')->where('serial', $serial)->exists()) {
-                //                 $serial = strtoupper($receive->id . $id . substr(md5(uniqid('', true)), -8));
-                //             }
+                    } else {
 
-                //             DB::table('stock_serial')->insert(
-                //                 [
-                //                     'stock_id' => $id,
-                //                     'serial' => $serial,
-                //                     'status' => 'stocked in',
-                //                 ]
-                //             );
-                //         }
-                //     }
-                // }
+                        for ($i = 1; $i <= $receive->qty; $i++) {
+                            $serial = strtoupper($receive->id . $id . substr(md5(uniqid('', true)), -8));
+
+                            while (DB::table('stock_serial')->where('serial', $serial)->exists()) {
+                                $serial = strtoupper($receive->id . $id . substr(md5(uniqid('', true)), -8));
+                            }
+
+                            DB::table('stock_serial')->insert(
+                                [
+                                    'stock_id' => $id,
+                                    'serial' => $serial,
+                                    'status' => 'stocked in',
+                                ]
+                            );
+                        }
+                    }
+                }
             }
             DB::commit();
         } catch (\Exception $ex) {

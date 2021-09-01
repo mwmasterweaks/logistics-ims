@@ -352,8 +352,10 @@ export default {
       }
     },
     getDeliveryReceipts() {
+      this.$root.$emit("pageLoading");
       this.$http.get("api/delivery_receipt").then(response => {
         this.delivery_receipts = response.body;
+        this.$root.$emit("pageLoaded");
         this.fetchDataaa();
       });
     },

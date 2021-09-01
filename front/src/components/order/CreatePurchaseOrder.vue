@@ -20,6 +20,24 @@
           >
             Print Preview
           </button>
+          <!-- <button
+            class="btn btn-lg btn-warning waves-effect"
+            v-show="data.status == 'on order' && roles.approved_purchase_order"
+            data-toggle="modal"
+            data-target="#receivingReport"
+          >
+            Receiving Report
+          </button> -->
+          <button
+            class="btn btn-lg btn-sucess waves-effect"
+            v-show="
+              data.status == 'order complete' && roles.approved_purchase_order
+            "
+            data-toggle="modal"
+            data-target="#receivingReport"
+          >
+            Item Receipt
+          </button>
 
           <!-- SAVE BUTTON START -->
           <button
@@ -270,6 +288,7 @@
                             <th>Requested Item</th>
                             <th>Code#</th>
                             <th>Qty</th>
+                            <th>Unit of Measure</th>
                             <th>Received</th>
                             <th>Unit Price</th>
                             <th>Tax Rate (%)</th>
@@ -339,6 +358,33 @@
                                   class="text-danger"
                                   v-show="errors.has(order.id + 'qty')"
                                   >Qty is required</small
+                                >
+                              </p>
+                            </td>
+                            <td>
+                              <input
+                                type="text"
+                                v-model="order.pivot.unit"
+                                style="max-width: 120px"
+                                v-if="
+                                  data.status != 'on order' &&
+                                    data.status != 'order complete'
+                                "
+                                v-bind:name="order.id + 'unit'"
+                                :disabled="
+                                  data.status == 'approval' ||
+                                    data.status == 'approved' ||
+                                    data.status == 'declined' ||
+                                    data.status == 'on order' ||
+                                    data.status == 'order complete'
+                                "
+                              />
+                              <span v-else>{{ order.pivot.unit }}</span>
+                              <p>
+                                <small
+                                  class="text-danger"
+                                  v-show="errors.has(order.id + 'unit')"
+                                  >Unit of measure is required</small
                                 >
                               </p>
                             </td>
@@ -627,19 +673,19 @@
                 <tbody>
                   <tr>
                     <th>Subtotal:</th>
-                    <td>{{ data.amount.subtotal.toFixed(2) }}</td>
+                    <td>{{ formatPrice(data.amount.subtotal.toFixed(2)) }}</td>
                   </tr>
                   <tr>
                     <th>Freight Cost:</th>
-                    <td>{{ data.amount.shipping.toFixed(2) }}</td>
+                    <td>{{ formatPrice(data.amount.shipping.toFixed(2)) }}</td>
                   </tr>
                   <tr>
                     <th>Tax:</th>
-                    <td>{{ data.amount.tax.toFixed(2) }}</td>
+                    <td>{{ formatPrice(data.amount.tax.toFixed(2)) }}</td>
                   </tr>
                   <tr>
                     <th>Total:</th>
-                    <td>{{ data.amount.total.toFixed(2) }}</td>
+                    <td>{{ formatPrice(data.amount.total.toFixed(2)) }}</td>
                   </tr>
                 </tbody>
               </table>
@@ -687,7 +733,7 @@
                     </div>
                   </div>
                 </div>
-                <div class="col-md-2">
+                <div class="col-md-4">
                   <br />
                   <button class="btn btn-sm bg-black waves-effect waves-light">
                     Search
@@ -751,173 +797,193 @@
       data-backdrop="static"
       data-keyboard="false"
     >
-      <div class="modal-dialog modal-lg" role="document">
-        <div class="modal-content">
-          <div class="modal-header" style="background:gray">
-            <h4 class="modal-title">
-              Receive Items
-            </h4>
-            <button
-              type="button"
-              class="close"
-              data-dismiss="modal"
-              aria-label="Close"
-            >
-              <span aria-hidden="true">&times;</span>
-            </button>
-          </div>
-          <div class="modal-body">
-            <div class="row clearfix">
-              <div class="col-md-2 col-sm-12">
-                <p>
-                  Purchase Order
-                  <br />PO
-                  <b>#{{ $route.params.purchase_order }}</b>
-                </p>
-              </div>
+      <center>
+        <div style="width:75%">
+          <div class="modal-content">
+            <div class="modal-header">
+              <button
+                type="button"
+                class="close"
+                data-dismiss="modal"
+                aria-label="Close"
+              >
+                <span aria-hidden="true">&times;</span>
+              </button>
             </div>
-            <div class="row clearfix">
-              <div class="col-md-4 col-sm-12">
-                <p>
-                  Date Ordered
-                  <br />
-                  {{ data.created_at }}
-                </p>
+            <div class="modal-body">
+              <div class="row clearfix" style="margin-top:-20px;display:flex">
+                <div style="width:15%">
+                  <img src="../../img/logo.jpg" />
+                </div>
+                <div class="reportRow">
+                  Dctech Building, Shanghai Street,<br />Matina Aplaya, Davao
+                  City<br />Davao Del Sur 8000, Philippines<br />Tel #: (082)
+                  221-2380<br />VAT Registered TIN: 003-375-571-000
+                </div>
               </div>
-              <div class="col-md-6 col-sm-12" style="margin-right:-10px">
-                <p>
-                  Date Received
-                  <b-form-datepicker
-                    id="datepicker-valid"
-                    :state="true"
-                    v-model="data_receives.date_receive"
-                    v-validate="{
-                      required: data.status === 'on order' ? true : false
-                    }"
-                  ></b-form-datepicker>
-                  <small class="text-danger" v-show="errors.has('date_receive')"
-                    >Date receive is required.</small
-                  >
-                </p>
-              </div>
-            </div>
-            <hr />
-            <div class="row clearfix">
-              <div class="col-md-12">
-                <div class="table-wrap">
-                  <table class="table table-stripped">
-                    <thead>
-                      <tr>
-                        <th>Requested Item</th>
-                        <th>Code#</th>
-                        <th>Qty Ordered</th>
-                        <th>Qty Received</th>
-                        <th>Total Received</th>
-                        <th>Unit Price</th>
-                        <th>Receive To</th>
-                        <th>File Upload</th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      <tr
-                        v-for="receive in data_receives.receives"
-                        :key="receive.id"
-                        v-show="data_receives.receives.length > 0"
+              <center><h4>RECEIVING REPORT</h4></center>
+              <div class="receives">
+                <div class="reportRow">
+                  <div class="col-md-6 col-sm-6">
+                    <p>
+                      PURCHASE ORDER NO.:
+                      <b>{{ $route.params.purchase_order }}</b>
+                    </p>
+                  </div>
+                </div>
+                <div class="reportRow">
+                  <div class="col-md-6 col-sm-6">
+                    <p>
+                      DATE ORDERED:
+                      <b>{{ data.created_at }}</b>
+                    </p>
+                  </div>
+                </div>
+                <div class="reportRow">
+                  <div class="col-md-6 col-sm-6">
+                    <p>
+                      Date Received
+                      <b-form-datepicker
+                        id="datepicker-valid"
+                        :state="true"
+                        v-model="data_receives.date_receive"
+                        v-validate="{
+                          required: data.status === 'on order' ? true : false
+                        }"
+                      ></b-form-datepicker>
+                      <small
+                        class="text-danger"
+                        v-show="errors.has('date_receive')"
+                        >Date receive is required.</small
                       >
-                        <td>{{ receive.name }} - {{ receive.description }}</td>
-                        <td>{{ receive.id }}</td>
-                        <td>{{ receive.pivot.qty }}</td>
-                        <td>
-                          <input
-                            type="text"
-                            v-model="receive.qty_received"
-                            style="max-width: 40px"
-                            v-bind:name="receive.id + 'qty_receive'"
-                            v-validate="{
-                              required:
-                                data.status === 'on order' ? true : false,
-                              numeric:
-                                data.status === 'on order' ? true : false,
-                              min_value: 0,
-                              max_value:
-                                receive.pivot.qty - receive.total_qty_received
-                            }"
-                          />
-                          <p>
-                            <small
-                              class="text-danger"
-                              v-show="errors.has(receive.id + 'qty_receive')"
-                              >Qty is required, also require less than value
-                              needed.</small
+                    </p>
+                  </div>
+                </div>
+              </div>
+              <br />
+              <br />
+              <hr />
+              <div class="row clearfix">
+                <div class="col-md-12">
+                  <div class="table-wrap">
+                    <table class="table table-stripped">
+                      <thead>
+                        <tr>
+                          <th>Requested Item</th>
+                          <th>Code#</th>
+                          <th>Qty Ordered</th>
+                          <th>Unit of Measure</th>
+                          <th>Qty Received</th>
+                          <th>Total Received</th>
+                          <th>Unit Price</th>
+                          <th>Receive To</th>
+                          <th>File Upload</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        <tr
+                          v-for="receive in data_receives.receives"
+                          :key="receive.id"
+                          v-show="data_receives.receives.length > 0"
+                        >
+                          <td>
+                            {{ receive.name }} - {{ receive.description }}
+                          </td>
+                          <td>{{ receive.id }}</td>
+                          <td>{{ receive.pivot.qty }}</td>
+                          <td>{{ receive.pivot.unit }}</td>
+                          <td>
+                            <input
+                              type="text"
+                              v-model="receive.qty_received"
+                              style="max-width: 40px"
+                              v-bind:name="receive.id + 'qty_receive'"
+                              v-validate="{
+                                required:
+                                  data.status === 'on order' ? true : false,
+                                numeric:
+                                  data.status === 'on order' ? true : false,
+                                min_value: 0,
+                                max_value:
+                                  receive.pivot.qty - receive.total_qty_received
+                              }"
+                            />
+                            <p>
+                              <small
+                                class="text-danger"
+                                v-show="errors.has(receive.id + 'qty_receive')"
+                                >Qty is required, also require less than value
+                                needed.</small
+                              >
+                            </p>
+                          </td>
+                          <td>{{ receive.total_qty_received }}</td>
+                          <td>{{ receive.pivot.price }}</td>
+                          <td>
+                            <select
+                              v-model="receive.received_to"
+                              v-bind:name="receive.id + 'received_to'"
+                              v-validate="{
+                                required:
+                                  data.status === 'on order' ? true : false
+                              }"
                             >
-                          </p>
-                        </td>
-                        <td>{{ receive.total_qty_received }}</td>
-                        <td>{{ receive.pivot.price }}</td>
-                        <td>
-                          <select
-                            v-model="receive.received_to"
-                            v-bind:name="receive.id + 'received_to'"
-                            v-validate="{
-                              required:
-                                data.status === 'on order' ? true : false
-                            }"
-                          >
-                            <option
-                              v-for="warehouse in warehouses"
-                              :key="warehouse.id"
-                              v-bind:value="warehouse.id"
+                              <option
+                                v-for="warehouse in warehouses"
+                                :key="warehouse.id"
+                                v-bind:value="warehouse.id"
+                              >
+                                {{ warehouse.name }}
+                              </option>
+                            </select>
+                            <p>
+                              <small
+                                class="text-danger"
+                                v-show="errors.has(receive.id + 'received_to')"
+                                >Receiving is required</small
+                              >
+                            </p>
+                          </td>
+                          <td>
+                            <a
+                              href="javascript:void(0);"
+                              @click="selectFile"
+                              title="Import Serial"
                             >
-                              {{ warehouse.name }}
-                            </option>
-                          </select>
-                          <p>
-                            <small
-                              class="text-danger"
-                              v-show="errors.has(receive.id + 'received_to')"
-                              >Receiving is required</small
-                            >
-                          </p>
-                        </td>
-                        <td>
-                          <a
-                            href="javascript:void(0);"
-                            @click="selectFile"
-                            title="Import Serial"
-                          >
-                            <i
-                              class="material-icons text-success"
-                              style="font-size: 16px !important"
-                              >publish</i
-                            >
-                          </a>
-                          <h6>{{ file }}</h6>
-                          <input
-                            type="file"
-                            id="fileSelect"
-                            name="fileSelect"
-                            @change="previewFiles(receive, $event)"
-                            style="visibility:hidden;"
-                          />
-                        </td>
-                      </tr>
-                    </tbody>
-                  </table>
+                              <i
+                                class="material-icons text-success"
+                                style="font-size: 16px !important"
+                                >publish</i
+                              >
+                            </a>
+                            <h6>{{ file }}</h6>
+                            <input
+                              type="file"
+                              id="fileSelect"
+                              name="fileSelect"
+                              @change="previewFiles(receive, $event)"
+                              style="visibility:hidden;"
+                            />
+                          </td>
+                        </tr>
+                      </tbody>
+                    </table>
+                  </div>
                 </div>
               </div>
             </div>
-          </div>
-          <div class="modal-footer">
-            <button
-              type="button"
-              class="btn btn-default btn-lg waves-effect"
-              @click="receiveItem"
-            >
-              Receive Items
-            </button>
+            <div class="modal-footer">
+              <button
+                type="button"
+                class="btn btn-default btn-lg waves-effect"
+                @click="receiveItem"
+              >
+                Receive Items
+              </button>
+            </div>
           </div>
         </div>
-      </div>
+      </center>
     </div>
     <!-- END RECEIVE MODAL -->
     <!-- START SUPPLIER MODAL -->
@@ -962,21 +1028,96 @@
               </div>
             </div>
           </div>
-
-          <!-- <button
-            type="button"
-            class="btn btn-secondary"
-            position="relative"
-            data-dismiss="modal"
-            left="80px"
-            width="50px"
-          >
-            DONE
-          </button> -->
         </div>
       </div>
     </div>
     <!-- END SUPPLIER MODAL-->
+
+    <!-- <div class="modal fade" id="receivingReport" tabindex="-1">
+            <center>
+              <div style="width:75%">
+                <div class="modal-content">
+                  <div class="modal-header">
+                    <button
+                      type="button"
+                      class="close"
+                      data-dismiss="modal"
+                      aria-label="Close"
+                      id="dismiss"
+                    >
+                      <span aria-hidden="true">&times;</span>
+                    </button>
+                  </div>
+                  <div class="modal-body">
+                    <div class="card">
+                      <div class="body">
+                        <div
+                          class="row clearfix"
+                          style="margin-top:-20px;display:flex"
+                        >
+                          <div style="width:15%">
+                            <img src="../../img/logo.jpg" />
+                          </div>
+                          <div
+                            style="margin-top:14px;line-height:100%;width:40%;text-align:left"
+                          >
+                            Dctech Building, Shanghai Street,<br />Matina
+                            Aplaya, Davao City<br />Davao Del Sur 8000,
+                            Philippines<br />Tel #: (082) 221-2380<br />VAT
+                            Registered TIN: 003-375-571-000
+                          </div>
+                        </div>
+                        <center><h4>RECEIVING REPORT</h4></center>
+                        <div style="display:flex">
+                          <div style="width:50%">
+                            <div class="row clearfix">
+                              <div class="col-md-12" style="text-align:left">
+                                <div class="input-group">
+                                  <div class="form-line">
+                                    <span>RECEIVED FROM:</span>
+                                    <input
+                                      type="text"
+                                      ref="received_from"
+                                      name="received_from"
+                                      class="form-control"
+                                      v-validate="'required'"
+                                      v-model.trim="report.received_from"
+                                      autocomplete="off"
+                                      autofocus="on"
+                                    />
+                                  </div>
+                                  <small
+                                    class="text-danger pull-left"
+                                    v-show="errors.has('received_from')"
+                                    >Input here is required.</small
+                                  >
+                                </div>
+                              </div>
+                              <div class="col-md-12">
+                                <p style="text-align:left">
+                                  Date Received
+                                </p>
+                                <b-form-datepicker
+                                  id="datepicker-valid"
+                                  :state="true"
+                                  v-model="report.date_received"
+                                ></b-form-datepicker>
+                                <small
+                                  class="text-danger"
+                                  v-show="errors.has('date_receive')"
+                                  >Date receive is required.</small
+                                >
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </center>
+          </div> -->
   </div>
 </template>
 <script>
@@ -1025,7 +1166,13 @@ export default {
         barcodes: null
       },
       warehouses: [],
-      file: "File"
+      file: "File",
+      report: {
+        invoice_num: "",
+        freight: "",
+        received_from: "",
+        date_received: null
+      }
     };
   },
 
@@ -1497,6 +1644,14 @@ export default {
       }.bind(this);
 
       reader.readAsArrayBuffer(f);
+    },
+    formatPrice(value) {
+      var formatter = new Intl.NumberFormat("en-US", {
+        style: "currency",
+        currency: "PHP",
+        minimumFractionDigits: 2
+      });
+      return formatter.format(value);
     }
   }
 };
@@ -1547,5 +1702,19 @@ select {
 /* Handle on hover */
 ::-webkit-scrollbar-thumb:hover {
   background: #555;
+}
+
+/* for row in receiving report */
+.reportRow {
+  width: 50%;
+  text-align: left;
+  float: left;
+  margin-top: 14px;
+  line-height: 100%;
+  background: yellow;
+}
+.receives {
+  width: 100%;
+  background: lightblue;
 }
 </style>

@@ -54,17 +54,13 @@
           </div>
         </form>
         <div class="table-wrap">
-          <table
-            class="table table-striped table-condensed table-hover"
-            id="itemTable"
-            ref="itemTable"
-          >
-            <thead>
+          <table class="table table-striped" id="itemTable" ref="itemTable">
+            <thead class="thead-dark">
               <tr>
                 <th>Purchase Order</th>
                 <th>Supplier</th>
                 <th>Received</th>
-                <th>Expected Delivery</th>
+                <th>Total</th>
                 <th>Status</th>
               </tr>
             </thead>
@@ -100,15 +96,8 @@
                   }}%
                 </td>
                 <td v-else>0%</td>
-                <td v-if="purchase_order.delivery_date">
-                  <small>{{
-                    purchase_order.delivery_date.substring(0, 10)
-                  }}</small>
-                </td>
-                <td v-else>
-                  <small class="col-red">
-                    <i>no date selected</i>
-                  </small>
+                <td>
+                  <small>{{ formatPrice(purchase_order.total) }}</small>
                 </td>
                 <td class="bg-grey" v-show="purchase_order.status == 'draft'">
                   <span>Draft</span>
@@ -154,7 +143,6 @@
 <script>
 var moment = require("moment");
 moment().format();
-
 export default {
   data() {
     return {
@@ -228,6 +216,14 @@ export default {
           table.rows.item(i).style.display = "table-row";
         }
       }
+    },
+    formatPrice(value) {
+      var formatter = new Intl.NumberFormat("en-US", {
+        style: "currency",
+        currency: "PHP",
+        minimumFractionDigits: 2
+      });
+      return formatter.format(value);
     }
   }
 };

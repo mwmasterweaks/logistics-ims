@@ -41,20 +41,19 @@ export default {
     };
   },
 
+  created() {
+    this.isAuth = this.$auth.isAuthenticated();
+  },
   mounted() {
     this.$root.$on("pageLoading", () => {
       //console.log("pageLoading");
       this.pageBusy = true;
-      this.isAuth = null;
+      // this.isAuth = null;
     });
     this.$root.$on("pageLoaded", () => {
       //console.log("pageLoaded");
       this.pageBusy = false;
-      this.isAuth = this.$auth.isAuthenticated();
     });
-  },
-  created() {
-    this.isAuth = this.$auth.isAuthenticated();
   }
 };
 </script>

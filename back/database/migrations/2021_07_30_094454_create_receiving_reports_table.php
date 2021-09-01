@@ -16,7 +16,7 @@ class CreateReceivingReportsTable extends Migration
         Schema::create('receiving_reports', function (Blueprint $table) {
             $table->increments('id');
             $table->integer('user_id');
-            $table->integer('supplier_id')->nullable();
+            $table->string('received_from')->nullable();
             $table->integer('purchase_no')->nullable();
             $table->integer('stock_no')->nullable();
             $table->integer('invoice_num')->nullable();
