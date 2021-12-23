@@ -13,7 +13,7 @@ class SupplierController extends Controller
 {
     public function index()
     {
-        $suppliers = Supplier::with("locale")->get();
+        $suppliers = Supplier::with("locale")->take(10)->get();
         return response()->json($suppliers);
     }
 

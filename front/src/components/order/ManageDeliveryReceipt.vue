@@ -1,66 +1,151 @@
 <template>
   <div class="container-fluid">
-    <!-- <div class="block-header" id="sales_order_button" style="margin-top:-20px">
-      <div class="row clearfix">
-        <div class="col-lg-10 col-md-10">
-          <json-excel
-            :data="dataForExcel"
-            class="btn btn-lg btn-default waves-effect"
-          >
-            <span>Export to Excel</span>
-          </json-excel>
-        </div>
-      </div>
-    </div> -->
-
-    <div class="card">
+    <div class="card not-printable" id="not-printable">
       <div class="header">
         <h2>Manage Delivery Receipts</h2>
       </div>
       <div class="body">
-        <div class="row clearfix">
-          <div class="col-md-5">
-            <div class="form-group">
-              <div class="form-line">
-                <span>Search</span>
-                <input
-                  type="text"
-                  class="form-control"
-                  autocomplete="off"
-                  @keyup="searchText"
-                  v-model="search.text"
-                />
+        <form @submit.prevent="searchDelivery">
+          <div class="row clearfix" style="height:50px">
+            <div style="width:100%">
+              <div class="col-md-1">
+                <div class="form-group">
+                  <span>Sort By</span>
+                  <div class="form-line">
+                    <select class="form-control" v-model="search.sort">
+                      <option value="1">Latest</option>
+                      <option value="2">Oldest</option>
+                    </select>
+                  </div>
+                </div>
+              </div>
+              <div class="col-md-2">
+                <div class="form-group">
+                  <span>Filter By</span>
+                  <div class="form-line">
+                    <select class="form-control" v-model="search.filter">
+                      <option value="number">Delivery Receipt</option>
+                      <option value="sales_no">Sales Order</option>
+                      <option value="client">Client</option>
+                      <option value="date">Date Created</option>
+                      <option value="status">Status</option>
+                    </select>
+                  </div>
+                </div>
+              </div>
+              <div class="col-md-6" v-if="search.filter == 'date'">
+                <div>
+                  <span>Search</span>
+                </div>
+                <div class="form-group" style="display:flex;">
+                  <b-form-datepicker
+                    id="datepicker-valid"
+                    :state="true"
+                    v-model="search.date_from"
+                    class="date-range"
+                    placeholder="Date From"
+                  ></b-form-datepicker>
+                  <b-form-datepicker
+                    id="datepicker-valid"
+                    :state="true"
+                    v-model="search.date_to"
+                    class="date-range"
+                    placeholder="Date To"
+                  ></b-form-datepicker>
+                </div>
+              </div>
+              <div class="col-md-4" v-else-if="search.filter == 'client'">
+                <div class="form-group">
+                  <div class="form-line">
+                    <span>Search</span>
+                    <input
+                      type="text"
+                      class="form-control"
+                      autocomplete="off"
+                      v-model="search.text"
+                      @keyup="searchText"
+                      placeholder="Type client name"
+                    />
+                  </div>
+                </div>
+              </div>
+              <div class="col-md-4" v-else-if="search.filter == 'number'">
+                <div class="form-group">
+                  <div class="form-line">
+                    <span>Search</span>
+                    <input
+                      type="text"
+                      class="form-control"
+                      autocomplete="off"
+                      v-model="search.number"
+                      placeholder="All"
+                    />
+                  </div>
+                </div>
+              </div>
+              <div class="col-md-4" v-else-if="search.filter == 'sales_no'">
+                <div class="form-group">
+                  <div class="form-line">
+                    <span>Search</span>
+                    <input
+                      type="text"
+                      class="form-control"
+                      autocomplete="off"
+                      v-model="search.sales_no"
+                      placeholder="All"
+                    />
+                  </div>
+                </div>
+              </div>
+              <div class="col-md-4" v-else-if="search.filter == 'status'">
+                <div class="form-group">
+                  <div class="form-line">
+                    <span>Search</span>
+                    <select
+                      class="form-control"
+                      v-model="search.statusSelected"
+                    >
+                      <option value="for delivery">For Delivery</option>
+                      <option value="delivering">On Shipped</option>
+                      <option value="delivered">Delivered</option>
+                      <option selected>All</option>
+                    </select>
+                  </div>
+                </div>
+              </div>
+              <div class="col-md-2">
+                <br />
+                <button class="btn btn-sm bg-black waves-effect waves-light">
+                  Filter
+                </button>
+                <button
+                  class="btn btn-sm btn-success waves-effect"
+                  @click="resetSearch"
+                >
+                  Reset
+                </button>
               </div>
             </div>
           </div>
-          <!--
+        </form>
+        <div class="row clearfix">
+          <div class="col-md-10"></div>
           <div class="col-md-2">
-            <b>Filter by Last Date Updated</b>
-
-            <date-picker
-              v-model="filter.updated_at"
-              name="filter_updated_at"
-              :config="options"
-              autocomplete="off"
-            ></date-picker>
+            <span>Showing {{ delivery_receipts.length }} entries</span>
           </div>
-
-          <div class="col-md-2">
-            <b>Filter by Date Created</b>
-
-            <date-picker
-              v-model="filter.created_at"
-              name="filter_created_at"
-              :config="options"
-              autocomplete="off"
-            ></date-picker>
-          </div> -->
         </div>
         <div class="row clearfix">
           <div class="col-md-12">
             <!-- START ORDER LIST TABLE -->
             <div class="table-wrap">
-              <div class="table-responsive">
+              <div class="row clearfix" v-if="showLoading" style="width:100%">
+                <td colspan="14" class="text-center">
+                  <img src="../../img/bars.gif" height="50" />
+                  <br />
+                  Fetching list...
+                </td>
+              </div>
+              <div class="table-responsive" v-else>
                 <table
                   class="table table-striped table-condensed table-hover"
                   id="itemTable"
@@ -78,12 +163,20 @@
                     </tr>
                   </thead>
                   <tbody>
-                    <router-link
+                    <!-- <router-link
                       tag="tr"
                       :to="'/delivery_receipt/' + delivery_receipt.id"
                       v-for="delivery_receipt in delivery_receipts"
                       :key="delivery_receipt.id"
                       style="cursor: pointer;"
+                    > -->
+                    <tr
+                      v-for="delivery_receipt in delivery_receipts"
+                      :key="delivery_receipt.id"
+                      style="cursor: pointer;"
+                      @click="getIndex(delivery_receipt.id)"
+                      data-toggle="modal"
+                      data-target="#modalDeliveryReceipt"
                     >
                       <td>{{ delivery_receipt.id }}</td>
                       <td>
@@ -110,7 +203,7 @@
                         <span>Order: On Shipped</span>
                       </td>
                       <td
-                        class="bg-green"
+                        class="bg-blue"
                         v-show="delivery_receipt.status == 'delivered'"
                       >
                         <span>Order: Delivered</span>
@@ -118,7 +211,9 @@
                       <td>{{ delivery_receipt.updated_at }}</td>
                       <td>{{ delivery_receipt.created_at }}</td>
                       <td>{{ delivery_receipt.user.name }}</td>
-                    </router-link>
+                    </tr>
+
+                    <!-- </router-link> -->
                     <tr v-show="delivery_receipts.length == 0">
                       <td colspan="7" class="text-center">
                         <small class="col-red">
@@ -132,124 +227,568 @@
             </div>
             <!-- END ORDER LIST TABLE-->
             <br />
-            <p>{{ delivery_receipts.length }} items found.</p>
+            <p>{{ delivery_receipts.length }} receipts displayed.</p>
           </div>
         </div>
       </div>
-      <div class="modal fade" id="summary" tabindex="-1" role="dialog">
-        <!-- data-backdrop="static"
-        data-keyboard="false" -->
-        <div class="modal-dialog modal-lg" role="document">
-          <div class="modal-content">
-            <div class="modal-header">
-              <button
-                type="button"
-                class="close"
-                data-dismiss="modal"
-                aria-label="Close"
-              >
-                <span aria-hidden="true">&times;</span>
-              </button>
-            </div>
-            <div class="modal-body">
-              <form>
-                <div class="row clearfix">
-                  <div class="col-md-5">
-                    <div class="form-group">
-                      <span>Select Date Range</span>
-                      <rangedate-picker
-                        style="color:black; background-color:white"
-                        i18n="EN"
-                        @selected="onDateSelected"
-                      ></rangedate-picker>
+
+      <!-- delivery modal -->
+      <div
+        id="modalDeliveryReceipt"
+        class="modal fade"
+        tabindex="-1"
+        style="margin-top:-20px"
+      >
+        <center>
+          <div style="width:75%">
+            <div class="modal-content">
+              <div class="modal-header">
+                <button
+                  type="button"
+                  class="close"
+                  data-dismiss="modal"
+                  aria-label="Close"
+                  id="delivery-dismiss"
+                >
+                  <span aria-hidden="true">&times;</span>
+                </button>
+              </div>
+              <div class="modal-body delivery-body">
+                <div class="body">
+                  <div class="row clearfix">
+                    <div class="col-md-6 col-sm-6">
+                      <h4>DELIVERY RECEIPT</h4>
                     </div>
-                  </div>
-                  <div class="col-md-3">
-                    <div class="form-group">
-                      <span>Filter by</span>
-                      <div class="form-line">
-                        <select
-                          class="form-control"
-                          v-model="filterBy"
-                          @change="getSummary"
-                        >
-                          <option value="deliverySum">Delivery Receipt</option>
-                          <option value="clientSum">Clients</option>
-                          <option value="itemSum">Items</option>
-                          <option value="salesSum">Sales Orders</option>
-                        </select>
+                    <div class="col-md-6 col-sm-6">
+                      <div
+                        class="alert alert-warning"
+                        v-show="delivery_receipt.status == 'for delivery'"
+                      >
+                        <b>Status:</b> For Delivery
+                      </div>
+                      <div
+                        class="alert alert-success"
+                        v-show="delivery_receipt.status == 'delivering'"
+                      >
+                        <b>Status:</b> On Shipped
+                      </div>
+                      <div
+                        class="alert alert-success"
+                        v-show="delivery_receipt.status == 'delivered'"
+                      >
+                        <b>Status:</b> Delivered
                       </div>
                     </div>
                   </div>
-                  <div class="col-md-3" v-if="filterBy == 'clientSum'">
-                    <div class="form-group">
-                      <span>Clients</span>
-                      <div class="form-line">
-                        <select
-                          class="form-control"
-                          v-model="clientSelected"
-                          @change="getSummary"
-                        >
-                          <option
-                            v-for="client in clients"
-                            :value="client.id"
-                            :key="client.id"
-                            >{{ client.name }}</option
+                  <br />
+                  <div style="width:100%;display:flex">
+                    <div
+                      style="margin-top:-10px;width:25%"
+                      v-if="
+                        sales_order.client.class == 'INET CLIENTS' ||
+                          sales_order.client.class == ''
+                      "
+                    >
+                      <img src="../../img/email.gif" width="100%" />
+                    </div>
+                    <div
+                      style="margin-top:-10px;width:25%"
+                      v-if="sales_order.client.class == 'SOLUTIONS CLIENTS'"
+                    >
+                      <img src="../../img/soln.gif" width="100%" />
+                    </div>
+                    <div style="width:5%"></div>
+                    <div style="width:25%;text-align:left">
+                      From
+                      <br />
+                      <address>
+                        <strong>Dctech Microservices, Inc.</strong>
+                        <br />Dctech Building, Ponciano Reyes Street <br />Davao
+                        City, 8000, Philippines
+                      </address>
+                    </div>
+                    <div style="width:25%;text-align:left">
+                      To
+                      <br />
+                      <address>
+                        <strong>{{ sales_order.client.name }}</strong>
+                        <br />
+                        {{ sales_order.client.location }}
+                        <br />
+                        {{ sales_order.client.contact }}
+                      </address>
+                    </div>
+                    <div style="width:20%;text-align:left">
+                      <p>
+                        Delivery Receipt
+                        <b>#{{ delivery_receipt.id }}</b>
+                        <br />Material Request
+                        <b>#{{ sales_order.id }}</b>
+                        <br />
+                        Date: {{ delivery_receipt.created_at }}
+                        <br />
+                      </p>
+                    </div>
+                  </div>
+                  <br />
+                  <!-- START ORDER TABLE -->
+                  <div class="row clearfix">
+                    <div class="col-md-12 col-xs-12">
+                      <div class="table-wrap" style="height:auto">
+                        <div class="table-responsive">
+                          <table
+                            class="table table-striped table-condensed"
+                            style="height:auto"
                           >
-                        </select>
+                            <thead>
+                              <tr>
+                                <th>Code</th>
+                                <th>Name</th>
+                                <th>Description</th>
+                                <th>Qty</th>
+                                <th>Qty Return</th>
+                                <th>Note</th>
+                                <th>Price</th>
+                                <th>Amount</th>
+                              </tr>
+                            </thead>
+                            <tbody
+                              v-if="this.delivery_receipt.orders.length == 0"
+                            >
+                              <tr>
+                                <td colspan="9" class="text-center">
+                                  <small class="col-red">
+                                    <i>No orders yet.</i>
+                                  </small>
+                                </td>
+                              </tr>
+                            </tbody>
+                            <tbody v-else>
+                              <tr
+                                v-for="(order,
+                                index) in delivery_receipt.orders"
+                                :key="index"
+                              >
+                                <td>{{ order.id }}</td>
+                                <td>{{ order.name }}</td>
+                                <td>{{ order.description }}</td>
+
+                                <!-- <td v-if="order.type.name == 'Serialize'">
+                                  <span
+                                    v-for="(serial,
+                                    index) in order.ordered_serial.slice(0, 5)"
+                                    :key="index"
+                                  >
+                                    {{ serial }}
+
+                                    <br />
+                                  </span>
+                                  <span v-if="order.ordered_serial.length > 5">
+                                    + {{ order.ordered_serial.length - 5 }} more
+                                  </span>
+                                </td>
+                                <td v-else></td> -->
+                                <td v-if="order.type.name == 'Consumable'">
+                                  {{ order.delivering_qty }}
+                                </td>
+                                <td v-else>
+                                  {{ order.ordered_serial.length }}
+                                </td>
+                                <td>
+                                  {{ order.return_qty }}
+                                </td>
+                                <td>
+                                  {{ order.note }}
+                                </td>
+                                <td>{{ order.price }}</td>
+                                <td v-if="order.type.name == 'Consumable'">
+                                  {{ order.price * order.delivering_qty }}
+                                </td>
+                                <td v-else>
+                                  {{
+                                    order.price * order.ordered_serial.length
+                                  }}
+                                </td>
+                              </tr>
+                            </tbody>
+                          </table>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                  <!-- END ORDER TABLE -->
+
+                  <div class="signatories">
+                    <div class="row clearfix">
+                      <!-- REMARKS -->
+                      <div class="col-md-6 col-xs-6">
+                        <div class="row clearfix">
+                          <div
+                            class="col-md-8 col-xs-8"
+                            style="text-align:left"
+                          >
+                            <br />
+                            <label>Note:</label>
+                            <br />
+                            <p>{{ sales_order.note }}</p>
+                            <br />
+                            <label>Requested by:</label>
+                            <br />
+                            <p>{{ sales_order.requestor }}</p>
+                          </div>
+                        </div>
+                      </div>
+
+                      <!-- AMOUNT -->
+                      <div class="col-md-6 col-xs-6">
+                        <div class="table-responsive">
+                          <table class="table table-striped">
+                            <tbody>
+                              <tr>
+                                <th>Subtotal:</th>
+                                <td>
+                                  {{
+                                    delivery_receipt.amount.subtotal.toFixed(2)
+                                  }}
+                                </td>
+                              </tr>
+                              <tr>
+                                <th>Tax (0%):</th>
+                                <td>
+                                  {{ delivery_receipt.amount.tax.toFixed(2) }}
+                                </td>
+                              </tr>
+                              <tr>
+                                <th>Shipping:</th>
+                                <td>
+                                  {{
+                                    delivery_receipt.amount.shipping.toFixed(2)
+                                  }}
+                                </td>
+                              </tr>
+                              <tr>
+                                <th>Total:</th>
+                                <td>
+                                  {{ delivery_receipt.amount.total.toFixed(2) }}
+                                </td>
+                              </tr>
+                            </tbody>
+                          </table>
+                        </div>
+                      </div>
+                    </div>
+                    <hr />
+                    <div class="row clearfix">
+                      <center>
+                        <strong
+                          ><em
+                            >RECEIVED ABOVE ITEMS IN GOOD ORDER AND
+                            CONDITION</em
+                          ></strong
+                        >
+                      </center>
+                    </div>
+                    <hr />
+                    <br />
+
+                    <div class="row clearfix">
+                      <div class="col-xs-2">
+                        <b>Encoded By:</b>
+                        <br />
+                        <br />
+                        <br />
+                        <b>Checked By:</b>
+                      </div>
+                      <div class="col-xs-4">
+                        {{ delivery_receipt.user.name }}
+                        <br />
+                        <br />
+                        <br />
+                        Alvin Jay P. Angcon
+                      </div>
+                      <div class="col-xs-2">
+                        <b>Released By:</b>
+                        <br />
+                        <br />
+                        <br />
+                        <b>Received By:</b>
+                      </div>
+                      <div class="col-xs-4">
+                        <b v-if="sales_order.client.class == 'INET CLIENTS'"
+                          >Emmanuel G. Llabore Jr.</b
+                        >
+                        <b
+                          v-if="sales_order.client.class == 'SOLUTIONS CLIENTS'"
+                          >Gabriel Sanchez</b
+                        >
+                        <br />
+                        <br />
+                        <br />_________________________________
+                        <br />
+                        Signature over Printed Name/Date
                       </div>
                     </div>
                   </div>
                 </div>
-              </form>
+              </div>
+              <div class="modal-footer" v-show="roles.create_delivery_receipt">
+                <button
+                  class="btn btn-lg btn-info waves-effect"
+                  @click="printPreview"
+                >
+                  Print Preview
+                </button>
+              </div>
+            </div>
+          </div>
+        </center>
+      </div>
+    </div>
+    <!-- print area -->
+    <div class="printable">
+      <center>
+        <div style="width:85%">
+          <div class="body delivery-body">
+            <div class="row clearfix">
+              <h4>DELIVERY RECEIPT</h4>
+            </div>
+            <br />
+            <div class="row clearfix">
+              <div
+                class="col-md-3 "
+                style="margin-top:-10px;"
+                v-if="
+                  sales_order.client.class == 'INET CLIENTS' ||
+                    sales_order.client.class == ''
+                "
+              >
+                <img src="../../img/email.gif" width="100%" />
+              </div>
+              <div
+                class="col-md-3 "
+                style="margin-top:-10px;"
+                v-if="sales_order.client.class == 'SOLUTIONS CLIENTS'"
+              >
+                <img src="../../img/soln.gif" width="100%" />
+              </div>
+              <div class="col-md-3 " style="text-align:left">
+                From
+                <br />
+                <address>
+                  <strong>Dctech Microservices, Inc.</strong>
+                  <br />Dctech Building, Ponciano Reyes Street <br />Davao City,
+                  8000, Philippines
+                </address>
+              </div>
+              <div class="col-md-3 " style="text-align:left">
+                To
+                <br />
+                <address>
+                  <strong>{{ sales_order.client.name }}</strong>
+                  <br />
+                  {{ sales_order.client.location }}
+                  <br />
+                  {{ sales_order.client.contact }}
+                </address>
+              </div>
+              <div class="col-md-3 " style="text-align:left">
+                <p>
+                  Delivery Receipt
+                  <b>#{{ delivery_receipt.id }}</b>
+                  <br />Material Request
+                  <b>#{{ sales_order.id }}</b>
+                  <br />
+                  Date: {{ delivery_receipt.created_at }}
+                  <br />
+                </p>
+              </div>
+            </div>
+            <br />
+            <!-- START ORDER TABLE -->
+            <div class="row clearfix">
+              <div class="col-md-12 col-xs-12">
+                <div class="table-wrap" style="height:auto;min-height:40vh">
+                  <div class="table-responsive">
+                    <table
+                      class="table table-striped table-condensed"
+                      style="height:auto"
+                    >
+                      <thead>
+                        <tr>
+                          <th>Code</th>
+                          <th>Name</th>
+                          <th>Description</th>
+                          <th>Qty</th>
+                          <th>Qty Return</th>
+                          <th>Note</th>
+                          <th>Price</th>
+                          <th>Amount</th>
+                        </tr>
+                      </thead>
+                      <tbody v-if="this.delivery_receipt.orders.length == 0">
+                        <tr>
+                          <td colspan="9" class="text-center">
+                            <small class="col-red">
+                              <i>No orders yet.</i>
+                            </small>
+                          </td>
+                        </tr>
+                      </tbody>
+                      <tbody v-else>
+                        <tr
+                          v-for="(order, index) in delivery_receipt.orders"
+                          :key="index"
+                        >
+                          <td>{{ order.id }}</td>
+                          <td>{{ order.name }}</td>
+                          <td>{{ order.description }}</td>
+                          <!-- <td v-if="order.type.name == 'Serialize'">
+                            <span
+                              v-for="(serial,
+                              index) in order.ordered_serial.slice(0, 5)"
+                              :key="index"
+                            >
+                              {{ serial }}
 
+                              <br />
+                            </span>
+                            <span v-if="order.ordered_serial.length > 5">
+                              + {{ order.ordered_serial.length - 5 }} more
+                            </span>
+                          </td>
+                          <td v-else></td> -->
+                          <td v-if="order.type.name == 'Consumable'">
+                            {{ order.delivering_qty }}
+                          </td>
+                          <td v-else>
+                            {{ order.ordered_serial.length }}
+                          </td>
+                          <td>
+                            {{ order.return_qty }}
+                          </td>
+                          <td>{{ order.note }}</td>
+                          <td>{{ order.price }}</td>
+                          <td v-if="order.type.name == 'Consumable'">
+                            {{ order.price * order.delivering_qty }}
+                          </td>
+                          <td v-else>
+                            {{ order.price * order.ordered_serial.length }}
+                          </td>
+                        </tr>
+                      </tbody>
+                    </table>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <!-- END ORDER TABLE -->
+            <div class="signatories">
               <div class="row clearfix">
-                <div class="col-md-14">
-                  <div class="card">
-                    <div class="header text-center">
-                      <h3>DCTECH MICROSERVICES INC.</h3>
-                      <!-- <br /> -->
-                      <h4>INVENTORY ITEM QUICK REPORT</h4>
-                    </div>
-                    <div class="table-wrap">
-                      <table class="table table-striped table-condensed">
-                        <thead>
-                          <tr>
-                            <th>Date</th>
-                            <th>Sales Order No.</th>
-                            <th>Name</th>
-                            <th>Description</th>
-                            <th>Qty</th>
-                          </tr>
-                        </thead>
-                        <tbody>
-                          <tr v-for="report in reports" :key="report.id">
-                            <td>
-                              <p>{{ report.date }}</p>
-                            </td>
-                            <td>
-                              <p>{{ report.num }}</p>
-                            </td>
-                            <td>
-                              <p>{{ report.name }}</p>
-                            </td>
-                            <td>
-                              <p>{{ report.desc }}</p>
-                            </td>
-                            <td>
-                              <p>-{{ report.qty }}</p>
-                            </td>
-                          </tr>
-                        </tbody>
-                      </table>
+                <!-- REMARKS -->
+                <div class="col-md-6 col-xs-6">
+                  <div class="row clearfix">
+                    <div class="col-md-8 col-xs-8" style="text-align:left">
+                      <br />
+                      <label>Note:</label>
+                      <br />
+                      <p>{{ sales_order.note }}</p>
+                      <br />
+                      <label>Requested by:</label>
+                      <br />
+                      <p>{{ sales_order.requestor }}</p>
                     </div>
                   </div>
+                </div>
+
+                <!-- AMOUNT -->
+                <div class="col-md-6 col-xs-6">
+                  <div class="table-responsive">
+                    <table class="table table-striped">
+                      <tbody>
+                        <tr>
+                          <th>Subtotal:</th>
+                          <td>
+                            {{ delivery_receipt.amount.subtotal.toFixed(2) }}
+                          </td>
+                        </tr>
+                        <tr>
+                          <th>Tax (0%):</th>
+                          <td>
+                            {{ delivery_receipt.amount.tax.toFixed(2) }}
+                          </td>
+                        </tr>
+                        <tr>
+                          <th>Shipping:</th>
+                          <td>
+                            {{ delivery_receipt.amount.shipping.toFixed(2) }}
+                          </td>
+                        </tr>
+                        <tr>
+                          <th>Total:</th>
+                          <td>
+                            {{ delivery_receipt.amount.total.toFixed(2) }}
+                          </td>
+                        </tr>
+                      </tbody>
+                    </table>
+                  </div>
+                </div>
+              </div>
+              <hr />
+              <div class="row clearfix">
+                <center>
+                  <strong
+                    ><em
+                      >RECEIVED ABOVE ITEMS IN GOOD ORDER AND CONDITION</em
+                    ></strong
+                  >
+                </center>
+              </div>
+              <hr />
+              <br />
+              <br />
+              <div class="row clearfix">
+                <div class="col-xs-2">
+                  <label>Encoded By:</label>
+                  <br />
+                  <br />
+                  <br />
+
+                  <label>Checked By:</label>
+                </div>
+                <div class="col-xs-4">
+                  <label>{{ delivery_receipt.user.name }}</label>
+                  <br />
+                  <br />
+                  <br />
+                  <label>Alvin Jay P. Angcon</label>
+                </div>
+                <div class="col-xs-2">
+                  <label>Released By:</label>
+                  <br />
+                  <br />
+                  <br />
+                  <label>Received By:</label>
+                </div>
+                <div class="col-xs-4">
+                  <label v-if="sales_order.client.class == 'INET CLIENTS'">
+                    Emmanuel G. Llabore Jr.
+                  </label>
+                  <label v-if="sales_order.client.class == 'SOLUTIONS CLIENTS'">
+                    Gabriel Sanchez
+                  </label>
+                  <br />
+                  <br />
+                  <br />
+                  <br />_________________________________
+                  <br />
+                  <label>Signature over Printed Name/Date</label>
                 </div>
               </div>
             </div>
           </div>
         </div>
-      </div>
+      </center>
     </div>
   </div>
 </template>
@@ -262,23 +801,19 @@ moment().format();
 import datePicker from "vue-bootstrap-datetimepicker";
 import "pc-bootstrap4-datetimepicker/build/css/bootstrap-datetimepicker.css";
 import VueRangedatePicker from "vue-rangedate-picker";
+import { ModelListSelect } from "vue-search-select";
 
 export default {
   components: {
     "json-excel": JsonExcel,
     datePicker,
-    "rangedate-picker": VueRangedatePicker
+    "rangedate-picker": VueRangedatePicker,
+    "model-list-select": ModelListSelect
   },
   data() {
     return {
-      reports: [],
       clients: [],
       filterBy: "",
-      clientSelected: null,
-      sumDateSelected: {},
-      search: {
-        sort: "Delivery Receipts"
-      },
       printData: {
         id: true,
         client: true,
@@ -293,7 +828,14 @@ export default {
         created_at: ""
       },
       search: {
-        text: ""
+        text: "",
+        sort: "1",
+        filter: "client",
+        number: "",
+        sales_no: "",
+        statusSelected: "",
+        date_from: "",
+        date_to: ""
       },
       options: {
         format: "YYYY-MM-DD",
@@ -301,18 +843,54 @@ export default {
       },
       delivery_receipts: [],
       roles: [],
-      dataForExcel: []
+      dataForExcel: [],
+      showLoading: false,
+      sales_order: {
+        orders: [],
+        client: {
+          name: "",
+          address: "",
+          contact: ""
+        },
+        user: [],
+        amount: {
+          shipping: 0,
+          tax: 0,
+          subtotal: 0,
+          total: 0
+        },
+        status: "",
+        note: "",
+        requestor: "",
+        remarks: "",
+        id: ""
+      },
+      delivery_receipt: {
+        id: "",
+        orders: [],
+        user: [],
+        created_at: null,
+        delivered_at: null,
+        received_at: null,
+        status: "",
+        amount: {
+          subtotal: 0,
+          tax: 0,
+          shipping: 0,
+          total: 0
+        }
+      }
     };
   },
 
   beforeMount() {},
-  mounted() {},
+  mounted() {
+    this.getClients();
+  },
 
   created() {
-    //this.onDateSelected();
     this.getDeliveryReceipts();
     this.roles = this.$global.getRoles();
-    this.getClients();
   },
 
   methods: {
@@ -321,41 +899,12 @@ export default {
         this.clients = response.body;
       });
     },
-    onDateSelected(dateSelected) {
-      this.sumDateSelected = dateSelected;
-      this.getSummary();
-    },
-
-    getSummary() {
-      this.sumDateSelected.filterBy = this.filterBy;
-
-      console.log(this.sumDateSelected);
-      if (this.sumDateSelected.start != null) {
-        if (this.filterBy == "itemSum") {
-          this.$http
-            .post("api/dashboard/showItemInventoryReport", this.sumDateSelected)
-            .then(response => {
-              console.log(response.body);
-              this.reports = response.body;
-            });
-        }
-        if (this.filterBy == "clientSum" && this.clientSelected != null) {
-          this.sumDateSelected.client_id = this.clientSelected;
-          console.log(this.sumDateSelected);
-          this.$http
-            .post("api/dashboard/showItemInventoryReport", this.sumDateSelected)
-            .then(response => {
-              console.log(response.body);
-              this.reports = response.body;
-            });
-        }
-      }
-    },
     getDeliveryReceipts() {
-      this.$root.$emit("pageLoading");
+      this.showLoading = true;
       this.$http.get("api/delivery_receipt").then(response => {
+        console.log("delivery receipts");
         this.delivery_receipts = response.body;
-        this.$root.$emit("pageLoaded");
+        this.showLoading = false;
         this.fetchDataaa();
       });
     },
@@ -384,6 +933,28 @@ export default {
         });
       }
     },
+    searchDelivery() {
+      this.showLoading = true;
+      this.$http
+        .post("api/delivery_receipt/search", this.search)
+        .then(response => {
+          console.log(response.body);
+          this.delivery_receipts = response.body;
+          this.fetchDataaa();
+          this.showLoading = false;
+        });
+    },
+    resetSearch() {
+      this.search.text = "";
+      this.search.sort = "1";
+      this.search.filter = "number";
+      this.search.number = "";
+      this.search.sales_no = "";
+      this.search.statusSelected = "";
+      this.search.date_from = "";
+      this.search.date_to = "";
+      this.searchText();
+    },
     searchText() {
       var filter, table, tr, targetTableColCount;
       filter = this.search.text.toUpperCase();
@@ -410,75 +981,182 @@ export default {
         }
       }
     },
+
     printPreview() {
-      // $("#printModal").modal("hide");
-      var divToPrint = this.$refs.itemTable;
-      var newWin = window.open("");
-      newWin.document.write(
-        '<html><head><style>#itemTable {font-family: "Trebuchet MS", Arial, Helvetica, sans-serif;border-collapse: collapse;  width: 100%;}#itemTable td, #customers th {  border: 1px solid #ddd;  padding: 8px;}#itemTable tr:nth-child(even){background-color: #f2f2f2;}#itemTable tr:hover {background-color: #ddd;}#itemTable th {  padding-top: 12px;  padding-bottom: 12px;  text-align: left;  background-color: #4CAF50;  color: white;}</style></head><body>'
-      );
-      newWin.document.write(divToPrint.outerHTML);
+      $(".content").css("margin-left", "0px");
+      $(".content").css("margin-right", "0px");
+      $(".content").css("margin-top", "25px");
+      $("#leftsidebar").css("display", "none");
+      $("#header").css("display", "none");
+      // $("#card").css("display", "none");
+      // $("#print-area").css("display", "block");
+      // $("#modalAddDelivery").css("display", "none");
+      $(".navbar").css("display", "none");
+      $(".col-md-3").attr("class", "col-md-3 col-xs-3");
 
-      newWin.document.write(
-        "<p style='position: fixed; bottom: 10px;'>check by:________________</p>"
-      );
-      newWin.document.write("</body></html>");
+      window.print();
 
-      var tbl = newWin.document.getElementById("itemTable");
+      $(".col-md-3 col-xs-3").attr("class", "col-md-3");
+      $(".content").css("margin-left", "315px");
+      $(".content").css("margin-right", "15px");
+      $(".content").css("margin-top", "100px");
+      $("#leftsidebar").css("display", "block");
+      $("#header").css("display", "block");
+      // $("#modalAddRequest").css("display", "block");
+      // $("#card").css("display", "block");
+      $(".navbar").css("display", "block");
+    },
+    getIndex(id) {
+      console.log(id);
+      this.$http.get("api/delivery_receipt/" + id).then(response => {
+        console.log(response.body);
+        this.delivery_receipt.id = response.body.id;
+        this.delivery_receipt.orders = response.body.orders;
+        this.delivery_receipt.user = response.body.user;
+        this.delivery_receipt.status = response.body.status;
+        this.delivery_receipt.created_at = response.body.created_at;
+        this.delivery_receipt.received_at = response.body.received_at;
+        this.delivery_receipt.delivered_at = response.body.received_at;
+        this.delivery_receipt.return_qty = response.body.return_qty;
+        // this.delivery_receipt.orders.length = 1;
+        // this.item_selected.ordered_serial.length = 1;
+        // this.delivery_receipt.orders.ordered_serial.length = 1;
+        this.loadSalesOrder(response.body.sales_order_id);
+        this.compute();
+      });
+    },
+    loadSalesOrder(sales_order_id) {
+      this.$http
+        .get("api/sales_order/receipts/" + sales_order_id)
+        .then(response => {
+          this.sales_order.orders = response.body.sales_order_details;
+          if (response.body.client != null)
+            this.sales_order.client = response.body.client;
+          this.sales_order.user = response.body.user;
+          this.sales_order.note = response.body.note;
+          this.sales_order.requestor = response.body.requestor;
+          this.sales_order.status = response.body.status;
+          this.sales_order.created_at = response.body.created_at;
+          this.sales_order.remarks = response.body.remarks;
+          this.sales_order.id = response.body.id;
 
-      for (var i = 0; i < tbl.rows.length - 1; i++) {
-        // console.log(tbl.rows[i].cells[5].innerHTML);
-        if (!this.printData.status) {
-          if (i == 0) {
-            tbl.rows[0].cells[3].style.display = "none";
-          } else {
-            tbl.rows[i].cells[3].style.display = "none";
-            tbl.rows[i].cells[4].style.display = "none";
-            tbl.rows[i].cells[5].style.display = "none";
+          if (this.delivery_receipt.orders.length > 0) {
+            this.temp_orders = this.delivery_receipt.orders;
           }
-        }
+          console.log(this.sales_order);
 
-        if (!this.printData.created_by) {
-          if (i == 0) {
-            tbl.rows[0].cells[6].style.display = "none";
-          } else {
-            tbl.rows[i].cells[8].style.display = "none";
-          }
-        }
-
-        if (!this.printData.created_at) {
-          if (i == 0) {
-            tbl.rows[0].cells[5].style.display = "none";
-          } else {
-            tbl.rows[i].cells[7].style.display = "none";
-          }
-        }
-        if (!this.printData.updated_at) {
-          if (i == 0) {
-            tbl.rows[0].cells[4].style.display = "none";
-          } else {
-            tbl.rows[i].cells[6].style.display = "none";
-          }
-        }
-
-        if (!this.printData.soNum) {
-          tbl.rows[i].cells[2].style.display = "none";
-        }
-        if (!this.printData.client) {
-          tbl.rows[i].cells[1].style.display = "none";
-        }
-        if (!this.printData.id) {
-          tbl.rows[i].cells[0].style.display = "none";
+          $(".page-loader-wrapper").fadeOut();
+        });
+    },
+    compute() {
+      var sum = 0;
+      for (
+        var index = 0;
+        index < this.delivery_receipt.orders.length;
+        index++
+      ) {
+        if (this.delivery_receipt.orders[index].type.name == "Serialize") {
+          sum +=
+            parseFloat(this.delivery_receipt.orders[index].price) *
+            parseFloat(
+              this.delivery_receipt.orders[index].ordered_serial.length
+            );
+        } else {
+          sum +=
+            parseFloat(this.delivery_receipt.orders[index].price) *
+            parseFloat(this.delivery_receipt.orders[index].delivering_qty);
         }
       }
-      newWin.print();
-      newWin.close();
+
+      this.delivery_receipt.amount.shipping = 0;
+      this.delivery_receipt.amount.tax = 0;
+      this.delivery_receipt.amount.subtotal = sum;
+      this.delivery_receipt.amount.total = sum;
+    },
+    btnDelivered() {
+      //this.$route.params.order
+
+      swal("Change the status to DELIVERED?", {
+        icon: "warning",
+        buttons: {
+          yes: "Yes",
+          cancel: true
+        }
+      }).then(value => {
+        switch (value) {
+          case "yes":
+            this.$http
+              .post(
+                "api/delivery_receipt/change_status/" + this.delivery_receipt.id
+              )
+              .then(response => {
+                this.$http.get("api/delivery_receipt").then(response => {
+                  this.$global.setDeliveryReceipt(response.body);
+                  $(".page-loader-wrapper").fadeOut();
+                });
+
+                swal(
+                  "Delivery Receipt #" +
+                    this.delivery_receipt.id +
+                    " was succesfully changed!",
+                  {
+                    icon: "success"
+                  }
+                );
+                document.getElementById("delivery-dismiss").click();
+                this.getDeliveryReceipts();
+              });
+            break;
+
+          default:
+            break;
+        }
+      });
     }
   }
 };
 </script>
 
 <style scoped>
+@media screen {
+  .not-printable {
+    display: block;
+  }
+  .printable {
+    display: none;
+  }
+}
+
+@media print {
+  .not-printable {
+    display: none;
+  }
+  .printable {
+    display: block;
+    font-family: Arial, Helvetica, sans-serif;
+    font-size: 11px;
+  }
+}
+.signatories {
+  margin-top: 100px;
+}
+
+.alert {
+  border-radius: 4px;
+  padding: 10px;
+}
+.alert-warning {
+  background-color: #636363 !important;
+}
+
+.alert-approval {
+  background-color: #e2ac08;
+}
+
+.alert-default {
+  background-color: #d3d3d3;
+}
+
 .ready {
   font-size: 20px;
 }
@@ -512,5 +1190,31 @@ export default {
 /* Handle on hover */
 ::-webkit-scrollbar-thumb:hover {
   background: #555;
+}
+.search-list {
+  background: none;
+  border: none !important;
+  border-bottom: 1px solid black !important;
+  border-radius: 0 0 0 0 !important;
+  box-shadow: none !important;
+  width: 70%;
+}
+
+.date-range {
+  border: none !important;
+  border-bottom: 1px solid black !important;
+  box-shadow: none !important;
+  width: 50%;
+  margin-right: 5px;
+  border-radius: 0 0 0 0 !important;
+}
+.note-text {
+  margin: 0px 0px;
+  padding: 5px;
+  min-height: 16px;
+  line-height: 16px;
+  width: 96%;
+  display: block;
+  margin: 0px auto;
 }
 </style>

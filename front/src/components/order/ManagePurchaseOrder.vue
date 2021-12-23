@@ -9,24 +9,8 @@
             @click="createPurchaseOrder"
           >
             <i class="material-icons">note_add</i>
-            <span>New</span>
+            <span>Create New</span>
           </button>
-          <!-- <router-link
-            tag="button"
-            class="btn btn-default waves-effect"
-            to="/receive_items"
-          >
-            <i class="material-icons">call_received</i>
-            <span>Direct Receive Items</span>
-          </router-link> -->
-          <!-- <router-link
-            tag="button"
-            class="btn btn-default waves-effect"
-            to="/report"
-          >
-            <i class="material-icons">summarize</i>
-            <span>Generate Report</span>
-          </router-link> -->
         </div>
       </div>
     </div>
@@ -34,10 +18,60 @@
       <div class="header">
         <h2>Manage Purchase Orders</h2>
       </div>
+
       <div class="body">
-        <form>
-          <div class="row clearfix">
-            <div class="col-md-5">
+        <div class="row clearfix" style="height:50px">
+          <div style="width:80%">
+            <div class="col-md-2">
+              <div class="form-group">
+                <span>Filter By</span>
+                <div class="form-line">
+                  <select class="form-control" v-model="search.filter">
+                    <option value="number">Purchase No.</option>
+                    <option value="supplier">Supplier</option>
+                    <option value="date">Date Created</option>
+                    <option value="status">Status</option>
+                  </select>
+                </div>
+              </div>
+            </div>
+            <div class="col-md-8" v-if="search.filter == 'date'">
+              <div>
+                <span>Search</span>
+              </div>
+              <div class="form-group" style="display:flex;">
+                <b-form-datepicker
+                  id="datepicker-valid"
+                  :state="true"
+                  v-model="search.date_from"
+                  class="date-range"
+                  placeholder="Date From"
+                ></b-form-datepicker>
+                <b-form-datepicker
+                  id="datepicker-valid"
+                  :state="true"
+                  v-model="search.date_to"
+                  class="date-range"
+                  placeholder="Date To"
+                ></b-form-datepicker>
+              </div>
+            </div>
+            <div class="col-md-4" v-else-if="search.filter == 'supplier'">
+              <div class="form-group">
+                <div class="form-line">
+                  <span>Search</span>
+                  <model-list-select
+                    class="search-list"
+                    :list="suppliers"
+                    v-model="search.supplierSelected"
+                    option-value="id"
+                    option-text="name"
+                  >
+                  </model-list-select>
+                </div>
+              </div>
+            </div>
+            <div class="col-md-4" v-else-if="search.filter == 'number'">
               <div class="form-group">
                 <div class="form-line">
                   <span>Search</span>
@@ -45,16 +79,64 @@
                     type="text"
                     class="form-control"
                     autocomplete="off"
-                    @keyup="searchText"
-                    v-model="search.text"
+                    v-model="search.number"
                   />
                 </div>
               </div>
             </div>
+            <div class="col-md-4" v-else-if="search.filter == 'status'">
+              <div class="form-group">
+                <div class="form-line">
+                  <span>Search</span>
+                  <select class="form-control" v-model="search.statusSelected">
+                    <option value="draft">Draft</option>
+                    <option value="approval">For Approval</option>
+                    <option value="approved">Order Approved</option>
+                    <option value="declined">Declined</option>
+                    <option value="on order">On Order</option>
+                    <option value="order complete">Order Complete</option>
+                  </select>
+                </div>
+              </div>
+            </div>
+            <div class="col-md-2">
+              <br />
+              <button
+                class="btn btn-sm bg-black waves-effect waves-light"
+                @click="searchText"
+              >
+                Filter
+              </button>
+              <button
+                class="btn btn-sm btn-success waves-effect"
+                @click="resetSearch"
+              >
+                Reset
+              </button>
+            </div>
           </div>
-        </form>
+        </div>
+        <div class="row clearfix">
+          <div class="col-md-10"></div>
+          <div class="col-md-2">
+            <span>Showing {{ purchase_orders.length }} entries</span>
+          </div>
+        </div>
+
         <div class="table-wrap">
-          <table class="table table-striped" id="itemTable" ref="itemTable">
+          <div class="row clearfix" v-if="showLoading" style="width:100%">
+            <td colspan="14" class="text-center">
+              <img src="../../img/bars.gif" height="50" />
+              <br />
+              Fetching list...
+            </td>
+          </div>
+          <table
+            class="table table-striped"
+            id="itemTable"
+            ref="itemTable"
+            v-else
+          >
             <thead class="thead-dark">
               <tr>
                 <th>Purchase Order</th>
@@ -141,16 +223,27 @@
   </div>
 </template>
 <script>
+import { ModelListSelect } from "vue-search-select";
 var moment = require("moment");
 moment().format();
 export default {
+  components: {
+    "model-list-select": ModelListSelect
+  },
   data() {
     return {
       authenticatedUser: [],
       purchase_orders: [],
+      suppliers: [],
       search: {
-        text: ""
-      }
+        filter: "supplier",
+        number: "",
+        supplierSelected: "",
+        statusSelected: "",
+        date_from: "",
+        date_to: ""
+      },
+      showLoading: false
     };
   },
 
@@ -158,12 +251,20 @@ export default {
 
   created() {
     this.authenticatedUser = this.$global.getUser();
-    this.purchase_orders = this.$global.getPurchaseOrders();
+    this.suppliers = this.$global.getSupplier();
+    this.loadPurchase();
   },
 
   mounted() {},
 
   methods: {
+    loadPurchase() {
+      this.showLoading = true;
+      this.$http.get("api/purchase_order").then(response => {
+        this.purchase_orders = response.body;
+        this.showLoading = false;
+      });
+    },
     createPurchaseOrder() {
       swal("Create a new purchase order ?", {
         buttons: {
@@ -173,49 +274,27 @@ export default {
       }).then(value => {
         switch (value) {
           case "Yes":
-            this.$http
-              .post("api/purchase_order", this.authenticatedUser)
-              .then(response => {
-                this.$http.get("api/purchase_order").then(response => {
-                  this.$global.setPurchaseOrders(response.body);
-                });
+            // this.$http
+            //   .post("api/purchase_order", this.authenticatedUser)
+            //   .then(response => {
+            //     this.$http.get("api/purchase_order").then(response => {
+            //       this.$global.setPurchaseOrders(response.body);
+            //     });
 
-                this.$router.push({
-                  path: "purchase_order/" + response.body.id
-                });
-              });
+            //     this.$router.push({
+            //       path: "purchase_order/" + response.body.id
+            //     });
+            //   });
+
+            this.$router.push({
+              path: "/new_purchase_order"
+            });
             break;
 
           default:
             break;
         }
       });
-    },
-    searchText() {
-      var filter, table, tr, targetTableColCount;
-      filter = this.search.text.toUpperCase();
-      table = document.getElementById("itemTable");
-      tr = table.getElementsByTagName("tr");
-
-      for (var i = 0; i < tr.length - 1; i++) {
-        var rowData = "";
-
-        if (i == 0) {
-          targetTableColCount = 9; //table.rows.item(i).cells.length;
-
-          continue; //do not execute further code for header row.
-        }
-        for (var colIndex = 0; colIndex < targetTableColCount; colIndex++) {
-          //console.log(table.rows.item(i).cells.item(colIndex).textContent);
-          rowData += table.rows.item(i).cells.item(colIndex).textContent;
-        }
-
-        if (rowData.toUpperCase().indexOf(filter) == -1) {
-          table.rows.item(i).style.display = "none";
-        } else {
-          table.rows.item(i).style.display = "table-row";
-        }
-      }
     },
     formatPrice(value) {
       var formatter = new Intl.NumberFormat("en-US", {
@@ -224,6 +303,25 @@ export default {
         minimumFractionDigits: 2
       });
       return formatter.format(value);
+    },
+    searchText() {
+      this.showLoading = true;
+      this.$http
+        .post("api/purchase_order/search", this.search)
+        .then(response => {
+          console.log(response.body);
+          this.showLoading = false;
+          this.purchase_orders = response.body;
+        });
+    },
+    resetSearch() {
+      this.search.filter = "number";
+      this.search.number = "";
+      this.search.supplierSelected = "";
+      this.search.statusSelected = "";
+      this.search.date_to = "";
+      this.search.date_from = "";
+      this.purchase_orders = this.$global.getPurchaseOrders();
     }
   }
 };
@@ -255,5 +353,23 @@ export default {
 /* Handle on hover */
 ::-webkit-scrollbar-thumb:hover {
   background: #555;
+}
+
+.date-range {
+  border: none !important;
+  border-bottom: 1px solid black !important;
+  box-shadow: none !important;
+  width: 50%;
+  margin-right: 5px;
+  border-radius: 0 0 0 0 !important;
+}
+
+.search-list {
+  background: none;
+  border: none !important;
+  border-bottom: 1px solid black !important;
+  border-radius: 0 0 0 0 !important;
+  box-shadow: none !important;
+  width: 70%;
 }
 </style>

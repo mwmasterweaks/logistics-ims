@@ -14,7 +14,8 @@ class ItemGroupController extends Controller
      */
     public function index()
     {
-        //
+        $groups = item_group::all();
+        return response()->json($groups);
     }
 
     /**

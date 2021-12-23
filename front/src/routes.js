@@ -19,6 +19,7 @@ import ManageSalesReturn from "./components/order/ManageSalesReturn.vue";
 import ManagePurchaseOrder from "./components/order/ManagePurchaseOrder.vue";
 import ManageClient from "./components/account/ManageClient.vue";
 import ManageSupplier from "./components/account/ManageSupplier.vue";
+import ManageDepartment from "./components/account/ManageDepartment.vue";
 import ManageDeliveryReceipt from "./components/order/ManageDeliveryReceipt.vue";
 import ManageCompanyAssets from "./components/company_assets/ManageCompanyAssets.vue";
 import ViewSalesReturn from "./components/order/ViewSalesReturn.vue";
@@ -37,9 +38,11 @@ import CreateAccount from "./components/account/CreateAccounts.vue";
 import CreateClient from "./components/account/CreateClient.vue";
 import CreateSupplier from "./components/account/CreateSupplier.vue";
 import CreateDeliveryReceipt from "./components/order/CreateDeliveryReceipt.vue";
+import EditPurchaseOrder from "./components/order/EditPurchaseOrder.vue";
 import CreatePurchaseOrder from "./components/order/CreatePurchaseOrder.vue";
 import CreateReceiveItems from "./components/order/CreateReceiveItems.vue";
 import CreateReceivingReport from "./components/order/CreateReceivingReport.vue";
+import CreateMaterialRequest from "./components/order/CreateMaterialRequest.vue";
 
 import ModifyCompanyAssets from "./components/company_assets/ModifyCompanyAssets.vue";
 import EditItem from "./components/item/EditItem.vue";
@@ -61,7 +64,7 @@ const router = new VueRouter({
   routes: [
     {
       path: "/",
-      component: Dashboard,
+      component: QuickReport,
       meta: {
         forAuth: true
       }
@@ -158,6 +161,13 @@ const router = new VueRouter({
       }
     },
     {
+      path: "/material_request",
+      component: CreateMaterialRequest,
+      meta: {
+        forAuth: true
+      }
+    },
+    {
       path: "/purchase_orders",
       component: ManagePurchaseOrder,
       meta: {
@@ -186,8 +196,15 @@ const router = new VueRouter({
       }
     },
     {
-      path: "/purchase_order/:purchase_order",
+      path: "/new_purchase_order",
       component: CreatePurchaseOrder,
+      meta: {
+        forAuth: true
+      }
+    },
+    {
+      path: "/purchase_order/:purchase_order",
+      component: EditPurchaseOrder,
       meta: {
         forAuth: true
       }
@@ -223,6 +240,13 @@ const router = new VueRouter({
     {
       path: "/supplier",
       component: ManageSupplier,
+      meta: {
+        forAuth: true
+      }
+    },
+    {
+      path: "/department",
+      component: ManageDepartment,
       meta: {
         forAuth: true
       }

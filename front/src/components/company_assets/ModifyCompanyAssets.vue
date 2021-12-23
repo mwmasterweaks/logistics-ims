@@ -178,7 +178,7 @@
                     <button
                       @click="updateAsset"
                       class="btn btn-lg btn-info waves-effect waves-light"
-                      :disabled="!roles.update_company_assets"
+                      v-show="roles.update_comp"
                     >
                       Save Changes
                     </button>
@@ -186,7 +186,7 @@
                     <button
                       class="btn btn-lg btn-danger waves-effect waves-light"
                       @click="deleteAsset"
-                      :disabled="!roles.delete_company_assets"
+                      v-show="roles.delete_comp"
                     >
                       Delete
                     </button>

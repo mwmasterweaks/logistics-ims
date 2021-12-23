@@ -18,11 +18,11 @@
       <div class="col-md-8">
         <div class="card">
           <div class="header">
-            <h2>Creating Asset</h2>
+            <h2>Accountability</h2>
           </div>
           <div class="card">
             <div class="body">
-              <div class="row clearfix">
+              <!-- <div class="row clearfix">
                 <div class="col-sm-6">
                   <span>Date In</span>
                   <date-picker
@@ -39,14 +39,14 @@
                     >Date is required.</small
                   >
                 </div>
-              </div>
+              </div> -->
 
               <div class="row clearfix">
                 <div class="col-sm-6">
                   <br />
                   <span>Asset Name</span>
 
-                  <input
+                  <!-- <input
                     ref="name"
                     name="name"
                     type="text"
@@ -55,7 +55,18 @@
                     v-model.trim="asset.name"
                     autocomplete="off"
                     autofocus="on"
-                  />
+                  /> -->
+                  <model-list-select
+                    style="float:right"
+                    class="search-list"
+                    :list="items"
+                    option-value="id"
+                    option-text="description"
+                    :custom-text="getItemDesc"
+                    v-model="item"
+                    placeholder="Please select items.."
+                  >
+                  </model-list-select>
 
                   <small
                     class="text-danger pull-left"
@@ -179,6 +190,7 @@
                     value="Create"
                     @click="create"
                     class="btn btn-lg btn-info waves-effect waves-light pull-right"
+                    v-show="roles.create_comp"
                   />
                 </div>
               </div>
@@ -196,17 +208,22 @@ import PreLoader from "../PreLoader.vue";
 
 import datePicker from "vue-bootstrap-datetimepicker";
 import "pc-bootstrap4-datetimepicker/build/css/bootstrap-datetimepicker.css";
+import { ModelListSelect } from "vue-search-select";
 
 export default {
   components: {
     datePicker,
-    "pre-loader": PreLoader
+    "pre-loader": PreLoader,
+    "model-list-select": ModelListSelect
   },
   data() {
     return {
       categories: [],
+      roles: [],
       types: [],
       asset: {},
+      items: [],
+      item: "",
       options: {
         format: "YYYY-MM-DD",
         useCurrent: false
@@ -214,13 +231,25 @@ export default {
     };
   },
 
+  mounted() {
+    this.roles = this.$global.getRoles();
+  },
   created() {
     this.$http.get("api/company_assets_type").then(response => {
       this.types = response.body;
     });
+    this.loadItems();
   },
 
   methods: {
+    getItemDesc(item) {
+      return `${item.name} - ${item.description}`;
+    },
+    loadItems() {
+      this.$http.get("api/items").then(response => {
+        this.items = response.body;
+      });
+    },
     create() {
       this.$validator.validateAll().then(result => {
         if (result) {

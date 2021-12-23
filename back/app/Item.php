@@ -14,7 +14,7 @@ use Illuminate\Database\Eloquent\Model;
 class Item extends Model
 {
     protected $fillable = [
-        'name', 'description', 'category_id', 'type_id', 'image'
+        'name', 'description', 'category_id', 'type_id', 'image', 'price'
     ];
 
     public function type()
@@ -29,7 +29,7 @@ class Item extends Model
 
     public function stocks()
     {
-    	return $this->hasMany(Stock::class, 'item_id', 'id');
+        return $this->hasMany(Stock::class, 'item_id', 'id');
     }
 
     public function supplier()
@@ -37,10 +37,9 @@ class Item extends Model
         return $this->hasOne(Supplier::class, 'id', 'supplier_id');
     }
 
-     public function delivery_receipt_details()
+    public function delivery_receipt_details()
     {
-    	return $this->belongsToMany(DeliveryReceipt::class)
-                  ->withPivot('qty');
+        return $this->belongsToMany(DeliveryReceipt::class)
+            ->withPivot('qty');
     }
-
 }

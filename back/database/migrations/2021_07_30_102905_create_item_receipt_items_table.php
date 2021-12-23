@@ -18,7 +18,7 @@ class CreateItemReceiptItemsTable extends Migration
             $table->integer('item_id');
             $table->integer('qty');
             $table->decimal('price');
-            $table->integer('branch_id');
+            $table->integer('region_id');
         });
     }
 

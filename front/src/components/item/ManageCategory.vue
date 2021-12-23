@@ -41,7 +41,7 @@
                   class="btn btn-sm btn-default waves-effect"
                   data-toggle="modal"
                   data-target="#modalAddCategory"
-                  :disabled="!roles.create_category"
+                  :disabled="!roles.create_item"
                 >
                   <i class="material-icons">note_add</i>
                 </button>
@@ -70,9 +70,7 @@
                       v-validate="'required'"
                       v-model="category.name"
                       autocomplete="off"
-                      :disabled="
-                        !roles.update_category || !roles.delete_category
-                      "
+                      :disabled="!roles.update_item || !roles.delete_item"
                     />
                   </div>
                 </div>
@@ -83,7 +81,7 @@
                 <div class="pull-right">
                   <button
                     class="btn btn-info waves-effect waves-light"
-                    :disabled="!roles.update_category"
+                    :disabled="!roles.update_item"
                     @click="update"
                   >
                     Save Changes
@@ -91,7 +89,7 @@
                   <button
                     class="btn btn-danger waves-effect waves-light"
                     @click="deleteCategory"
-                    :disabled="!roles.delete_category"
+                    :disabled="!roles.delete_item"
                   >
                     Delete
                   </button>
@@ -143,7 +141,7 @@
                   class="btn btn-sm btn-default waves-effect"
                   data-toggle="modal"
                   data-target="#modalAddType"
-                  :disabled="!roles.create_category"
+                  :disabled="!roles.create_item"
                 >
                   <i class="material-icons">note_add</i>
                 </button>
@@ -169,9 +167,7 @@
                       v-validate="'required'"
                       v-model="type.type_name"
                       autocomplete="off"
-                      :disabled="
-                        !roles.update_category || !roles.delete_category
-                      "
+                      :disabled="!roles.update_item || !roles.delete_item"
                     />
                   </div>
                 </div>
@@ -182,7 +178,7 @@
                 <div class="pull-right">
                   <button
                     class="btn btn-info waves-effect waves-light"
-                    :disabled="!roles.update_category"
+                    :disabled="!roles.update_item"
                     @click="updateType"
                   >
                     Save Changes
@@ -190,7 +186,7 @@
                   <button
                     class="btn btn-danger waves-effect waves-light"
                     @click="deleteType"
-                    :disabled="!roles.delete_category"
+                    :disabled="!roles.delete_item"
                   >
                     Delete
                   </button>

@@ -1,0 +1,91 @@
+ $return_details = (object)$request->return_details;
+            $items = (object)$request->return_items;
+
+            $client = $return_details->from_id;
+
+            $tbl = DeliveryReceipt::with(['sales_order', 'delivery_receipt_details', 'client'])
+                ->whereHas("sales_order.client",  function ($query) use ($client) {
+                    $query->where("clients.id", $client);
+                });
+
+
+            $exist = $tbl->count();
+
+            if ($exist > 0) {
+
+
+                // updating sales return status
+                $approve = DB::table('sales_returns')
+                    ->where('id', $return_details->id)
+                    ->update([
+                        'status' => "Approved"
+                    ]);
+                return $approve;
+                // inserting to stocks
+                foreach ($items as $item) {
+                    $item = (object)$item;
+
+                    //    add sales_return to delivery_receipt
+                    DB::table('delivery_receipt_item')
+                        ->where("delivery_receipt_id", $tbl->id)
+                        ->where("item_id", $item->id)
+                        ->where("barcode", $item->serial)
+                        ->increment("qty_return", 1);
+
+                    // add defective to stocks
+                    if ($item->serial == null) {
+                        if ($item->status != 'Defective') {
+                            DB::table('stocks')->insert(
+                                [
+                                    'item_id' => $item->id,
+                                    'warehouse_id' => 1,
+                                    'received_at' => $return_details->date_recieve,
+                                    'qty_in' => $item->qty,
+                                    'created_at' => Carbon::now(),
+                                    'updated_at' => Carbon::now(),
+                                ]
+                            );
+                        }
+                    } else {
+
+                        $serial = DB::table('stock_serial')->where('serial', $item->serial)->first();
+
+
+                        if ($item->status == 'Defective') {
+
+                            DB::table('stock_serial')
+                                ->where('serial', $item->serial)
+                                ->update([
+                                    'status' => 'Defective'
+                                ]);
+                        } else {
+                            DB::table('stocks')
+                                ->where('id', $serial->stock_id)
+                                ->increment(
+                                    'qty_in',
+                                    $item->qty
+                                );
+
+                            DB::table('stock_serial')
+                                ->where('serial', $item->serial)
+                                ->update([
+                                    'status' => 'stocked in'
+                                ]);
+                        }
+                    }
+                    DB::table('logs')->insert(
+                        [
+                            'item_id' => $item->item_id,
+                            'serial' => $item->serial,
+                            'status' => $item->status,
+                            'remarks' => ' Return Quantity of ' . $item->qty,
+                            'created_at' => Carbon::now(),
+                            'updated_at' => Carbon::now(),
+                        ]
+                    );
+                }
+                return response()->json("Data inserted!");
+            } else {
+                return "Data doesn't exist!!";
+            }
+

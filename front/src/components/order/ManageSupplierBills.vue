@@ -692,7 +692,7 @@ export default {
 
   created() {
     this.getPurchaseOrder();
-    this.items = this.$global.getItems();
+    this.loadItems();
     this.suppliers = this.$global.getSupplier();
     this.warehouses = this.$global.getWarehouses();
     this.authenticatedUser = this.$global.getUser();
@@ -702,6 +702,11 @@ export default {
   mounted() {},
 
   methods: {
+    loadItems() {
+      this.$http.get("api/items").then(response => {
+        this.items = response.body;
+      });
+    },
     getPurchaseOrder() {
       this.$http
         .get("api/purchase_order/" + this.$route.params.purchase_order)

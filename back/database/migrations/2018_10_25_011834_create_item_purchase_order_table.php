@@ -16,6 +16,7 @@ class CreateItemPurchaseOrderTable extends Migration
         Schema::create('item_purchase_order', function (Blueprint $table) {
             $table->integer('purchase_order_id');
             $table->integer('item_id');
+            $table->string('unit');
             $table->integer('qty');
             $table->decimal('price');
             $table->integer('tax_rate');

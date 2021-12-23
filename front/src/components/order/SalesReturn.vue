@@ -73,7 +73,7 @@
 
             <div class="row clearfix">
               <div class="col-md-2">
-                <b>Date Receive:</b>
+                <b>Date Received:</b>
 
                 <date-picker
                   v-model="dataStock.date_recieve"
@@ -92,12 +92,19 @@
                 <b>Returnee:</b>
                 <br />
                 <input
+                  ref="returnee"
+                  name="returnee"
                   v-validate="'required'"
                   class="form-control"
                   type="text"
                   style="cursor:pointecr;"
                   v-model="dataStock.returnee"
                 />
+                <small
+                  class="text-danger pull-left"
+                  v-show="errors.has('returnee')"
+                  >Returnee name is required.</small
+                >
               </div>
               <div class="col-md-3">
                 <b>From:</b>
@@ -148,13 +155,14 @@
                               type="text"
                               v-show="item.type == 'serial'"
                               v-model="item.serial"
-                              @keyup="check_serial_exist(index)"
+                              
                             />
-                            <small
+                            <!-- add this to check serial existence @keyup="check_serial_exist(index)" -->
+                            <!-- <small
                               v-show="item.type == 'serial'"
                               id="serial_exist_tip"
                               >Serial is needed.</small
-                            >
+                            > -->
                           </td>
                           <td>{{ item.name }}</td>
                           <td>{{ item.desc }}</td>
@@ -226,12 +234,19 @@
               <div class="col-md-6">
                 <span>Remarks:</span>
                 <textarea
+                  ref="remarks"
+                  name="remarks"
                   type="text"
                   class="form-control"
                   rows="5"
                   v-validate="'required'"
                   v-model="dataStock.remarks"
                 ></textarea>
+                <small
+                  class="text-danger pull-left"
+                  v-show="errors.has('remarks')"
+                  >Remarks is required.</small
+                >
               </div>
             </div>
 
@@ -489,15 +504,21 @@ export default {
   },
 
   created() {
-    this.items = this.$global.getItems();
     this.roles = this.$global.getRoles();
+    this.authenticatedUser = this.$global.getUser();
     this.getClients();
+    this.loadItems();
     this.warehouses = this.$global.getWarehouses();
   },
 
   mounted() {},
 
   methods: {
+    loadItems() {
+      this.$http.get("api/items").then(response => {
+        this.items = response.body;
+      });
+    },
     getClients() {
       this.$http.get("api/client").then(response => {
         this.clients = response.body;
@@ -511,7 +532,7 @@ export default {
             name: item.name,
             desc: item.description,
             qty: "1",
-            status: "Stocked in",
+            status: "For Approval",
             type: "serial",
             serial: "",
             received_to: null
@@ -522,7 +543,7 @@ export default {
             name: item.name,
             desc: item.description,
             qty: "1",
-            status: "Stocked in",
+            status: "For Approval",
             type: "consumable",
             serial: "",
             received_to: null
@@ -600,6 +621,7 @@ export default {
             switch (value) {
               case "receive":
                 this.dataStock.items = this.itemsDis;
+                this.dataStock.user =  this.authenticatedUser;
                 this.$http
                   .post("api/SalesReturns", this.dataStock)
                   .then(response => {
@@ -629,8 +651,12 @@ export default {
                     //   });
                     // });
 
+this.$root.$emit("Sidebar");
                     swal("Created Successfully!", {
                       icon: "success"
+                    });
+                    this.$router.push({
+                      path: "/list/sales_return"
                     });
                   });
                 break;

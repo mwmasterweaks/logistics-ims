@@ -14,12 +14,69 @@
           </router-link>
         </div>
         <div style="margin-right:12px">
+          <ul class="notification-drop">
+            <li class="item">
+              <i class="material-icons col-black" title="Running Low"
+                >battery_alert</i
+              >
+              <span class="btn__badge pulse-button" title="Running Low">{{
+                runningLow.length
+              }}</span>
+              <ul style="overflow-y:scroll;max-height:300px">
+                <li><td>Running Low</td></li>
+                <li v-for="alert in runningLow" :key="alert.item_id">
+                  <td class="forecast-cell">
+                    <a
+                      :href="'/items/' + alert.item_id + '/edit'"
+                      target="_blank"
+                    >
+                      {{ alert.item_id }}
+                    </a>
+                  </td>
+                  <td class="forecast-cell">
+                    {{ alert.description }}
+                  </td>
+                </li>
+              </ul>
+            </li>
+          </ul>
+        </div>
+        <div style="margin-right:12px">
+          <ul class="notification-drop">
+            <li class="item">
+              <i class="material-icons col-black" title="Out of Stocks"
+                >remove_shopping_cart</i
+              >
+              <span class="btn__badge pulse-button " title="Out of Stocks">{{
+                outOfStock.length
+              }}</span>
+              <ul style="overflow-y:scroll;max-height:300px">
+                <li><td>Out of Stocks</td></li>
+                <li v-for="alert in outOfStock" :key="alert.item_id">
+                  <td class="forecast-cell">
+                    <a
+                      :href="'/items/' + alert.item_id + '/edit'"
+                      target="_blank"
+                    >
+                      {{ alert.item_id }}
+                    </a>
+                  </td>
+                  <td class="forecast-cell">
+                    {{ alert.description }}
+                  </td>
+                </li>
+              </ul>
+            </li>
+          </ul>
+        </div>
+        <div style="margin-right:12px">
           <button
             @click="logout"
             title="Logout"
             class="logout-btn btn waves-effect"
           >
             <i class="fas fa-sign-out-alt align-icon"></i>
+
             <!-- <span><b>LOGOUT</b></span> -->
           </button>
         </div>
@@ -95,97 +152,30 @@ export default {
       loading_count: 0,
       loading_max: 1,
       notifications: [],
-      alerts: []
+      alerts: [],
+      runningLow: [],
+      outOfStock: []
     };
   },
 
   created() {
-    // this.getNotification();
     this.authenticatedUser = this.$global.getUser();
     this.roles = this.$global.getRoles();
-    // console.log(this.authenticatedUser);
-    // this.setAuthenticatedUser();
-    // this.boot();
     console.log("NAVBAR VUE");
+    this.load();
   },
 
-  mounted() {
-    // channel.bind("NotifyCreatedSalesOrder", function(data) {
-    //   showNotification(
-    //     "bg-black",
-    //     data.sales_order.user.name + " requested SO#" + data.sales_order.id,
-    //     "top",
-    //     "left",
-    //     "animated bounceInLeft",
-    //     "animated fadeOutLeft"
-    //   );
-    // });
-    // channel.bind("NotifyUpdatedSalesOrder", function(data) {
-    //   switch (data.sales_order.order_status) {
-    //     case "approved":
-    //       showNotification(
-    //         "bg-black",
-    //         "SO#" + data.sales_order.id + " has been approved!",
-    //         "top",
-    //         "left",
-    //         "animated bounceInLeft",
-    //         "animated fadeOutLeft"
-    //       );
-    //       break;
-    //     case "order complete":
-    //       showNotification(
-    //         "bg-black",
-    //         "SO#" + data.sales_order.id + " is successfully completed",
-    //         "top",
-    //         "left",
-    //         "animated bounceInLeft",
-    //         "animated fadeOutLeft"
-    //       );
-    //       break;
-    //     case "declined":
-    //       showNotification(
-    //         "bg-black",
-    //         "SO#" + data.sales_order.id + " was declined!",
-    //         "top",
-    //         "left",
-    //         "animated bounceInLeft",
-    //         "animated fadeOutLeft"
-    //       );
-    //       break;
-    //   }
-    // });
-    // channel.bind("NotifyCreatedSalesOrder", this.notifyCreate);
-    // channel.bind("NotifyUpdatedSalesOrder", this.notifyUpdate);
-    // channel.bind("NotifyUpdatedItem", this.notifyItem);
-  },
+  mounted() {},
 
   methods: {
-    /*  notifyCreate() {
-      //console.log("lalala");
-      this.getNotification();
-      this.liveUpdate();
-    },
-
-    notifyUpdate() {
-      this.getNotification();
-      this.liveUpdate();
-    },
-
-    notifyItem() {
-      this.getNotification();
-      this.liveUpdate();
-    },
-
-    liveUpdate() {
-      this.$http.get("api/items").then(response => {
-        this.$global.setItems(response.body);
+    load() {
+      this.$http.post("api/notification/alert").then(response => {
+        console.log(response.body);
+        this.alerts = response.body.alerts;
+        this.runningLow = response.body.runningLow;
+        this.outOfStock = response.body.outOfStock;
       });
-
-      this.$http.get("api/delivery_receipt").then(response => {
-        this.$global.setDeliveryReceipt(response.body);
-      });
-    }, */
-
+    },
     logout() {
       this.$auth.destroyToken();
       this.$global.destroyGlobal();
@@ -208,90 +198,6 @@ export default {
           this.roles = this.$global.getRoles();
         });
     }
-
-    /* getNotification() {
-      this.$http.post("api/notification").then(response => {
-        this.notifications = response.body;
-      });
-
-      this.$http.post("api/notification/alert").then(response => {
-        this.alerts = response.body;
-      });
-    }, */
-
-    /* boot() {
-      this.$http.get("api/SalesReturns").then(response => {
-        this.$global.setSalesReturn(response.body);
-
-        this.loading_count += 1;
-        if (this.loading_count == this.loading_max)
-          $(".page-loader-wrapper").fadeOut();
-      });
-
-      this.$http.get("api/users").then(response => {
-        this.$global.setUsers(response.body);
-
-        this.loading_count += 1;
-        if (this.loading_count == this.loading_max)
-          $(".page-loader-wrapper").fadeOut();
-      });
-
-      this.$http.get("api/items").then(response => {
-        this.$global.setItems(response.body);
-
-        this.loading_count += 1;
-        if (this.loading_count == this.loading_max)
-          $(".page-loader-wrapper").fadeOut();
-      });
-
-      this.$http.get("api/category").then(response => {
-        this.$global.setCategories(response.body);
-
-        this.loading_count += 1;
-        if (this.loading_count == this.loading_max)
-          $(".page-loader-wrapper").fadeOut();
-      });
-
-      this.$http.get("api/warehouse").then(response => {
-        this.$global.setWarehouses(response.body);
-
-        this.loading_count += 1;
-        if (this.loading_count == this.loading_max)
-          $(".page-loader-wrapper").fadeOut();
-      });
-
-      this.$http.get("api/type").then(response => {
-        this.$global.setTypes(response.body);
-
-        this.loading_count += 1;
-        if (this.loading_count == this.loading_max)
-          $(".page-loader-wrapper").fadeOut();
-      });
-
-      this.$http.get("api/purchase_order").then(response => {
-        this.$global.setPurchaseOrders(response.body);
-
-        this.loading_count += 1;
-        if (this.loading_count == this.loading_max)
-          $(".page-loader-wrapper").fadeOut();
-      });
-
-      this.$http.get("api/supplier").then(response => {
-        this.$global.setSupplier(response.body);
-
-        this.loading_count += 1;
-        if (this.loading_count == this.loading_max)
-          $(".page-loader-wrapper").fadeOut();
-      });
-
-      this.$http.get("api/company_assets").then(response => {
-        this.$global.setCompanyAssets(response.body);
-
-        this.loading_count += 1;
-        if (this.loading_count == this.loading_max)
-          $(".page-loader-wrapper").fadeOut();
-      });
-    } */
   }
 };
 
@@ -309,6 +215,14 @@ $(document).ready(function() {
       $("#box").css("opacity", "1");
       down = true;
     }
+  });
+});
+
+$(document).ready(function() {
+  $(".notification-drop .item").on("click", function() {
+    $(this)
+      .find("ul")
+      .toggle();
   });
 });
 </script>
@@ -356,60 +270,6 @@ $(document).ready(function() {
   padding-top: 11px;
 }
 
-.notifications {
-  width: 300px;
-  height: 0px;
-  opacity: 0;
-  position: absolute;
-  top: 63px;
-  right: 62px;
-  border-radius: 5px 0px 5px 5px;
-  background-color: #fff;
-  box-shadow: 0 4px 8px 0 rgba(0, 0, 0, 0.2), 0 6px 20px 0 rgba(0, 0, 0, 0.19);
-}
-
-.notifications h2 {
-  font-size: 14px;
-  padding: 10px;
-  border-bottom: 1px solid #eee;
-  color: #999;
-}
-
-.notifications h2 span {
-  color: #f00;
-}
-
-.notifications-item {
-  display: flex;
-  border-bottom: 1px solid #eee;
-  padding: 6px 9px;
-  margin-bottom: 0px;
-  cursor: pointer;
-}
-
-.notifications-item:hover {
-  background-color: #eee;
-}
-
-.notifications-item img {
-  display: block;
-  width: 50px;
-  height: 50px;
-  margin-right: 9px;
-  border-radius: 50%;
-  margin-top: 2px;
-}
-
-.notifications-item .text h4 {
-  color: #777;
-  font-size: 16px;
-  margin-top: 3px;
-}
-
-.notifications-item .text p {
-  color: #aaa;
-  font-size: 12px;
-}
 .footer {
   padding: 14px;
   background: #d7e3e5;
@@ -447,5 +307,142 @@ $(document).ready(function() {
 }
 .align-icon {
   margin-top: -3px;
+}
+
+/* ALERT NOTIF  */
+ul {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.notification-drop {
+  font-family: "Ubuntu", sans-serif;
+  color: #444;
+}
+.notification-drop .item {
+  padding: 10px;
+  font-size: 18px;
+  position: relative;
+  border-bottom: 1px solid #ddd;
+}
+.notification-drop .item:hover {
+  cursor: pointer;
+}
+.notification-drop .item i {
+  margin-left: 10px;
+}
+.notification-drop .item ul {
+  display: none;
+  position: absolute;
+  top: 100%;
+  background: #fff;
+  left: -200px;
+  right: 0;
+  z-index: 1;
+  border-top: 1px solid #ddd;
+}
+.notification-drop .item ul li {
+  font-size: 16px;
+  padding: 15px 0 15px 25px;
+}
+.notification-drop .item ul li:hover {
+  background: #ddd;
+  color: rgba(0, 0, 0, 0.8);
+}
+
+@media screen and (min-width: 500px) {
+  .notification-drop {
+    display: flex;
+    justify-content: flex-end;
+  }
+  .notification-drop .item {
+    border: none;
+  }
+}
+
+.notification-bell {
+  font-size: 20px;
+}
+
+.btn__badge {
+  background: #ff5d5d;
+  color: white;
+  font-size: 10px;
+  position: absolute;
+  top: 0;
+  right: 0px;
+  padding: 3px 10px;
+  border-radius: 50%;
+}
+
+.pulse-button {
+  box-shadow: 0 0 0 0 rgba(255, 0, 0, 0.5);
+  -webkit-animation: pulse 3.5s infinite;
+}
+
+.pulse-button:hover {
+  -webkit-animation: none;
+}
+
+@-webkit-keyframes pulse {
+  0% {
+    -moz-transform: scale(0.9);
+    -ms-transform: scale(0.9);
+    -webkit-transform: scale(0.9);
+    transform: scale(0.9);
+  }
+  70% {
+    -moz-transform: scale(1);
+    -ms-transform: scale(1);
+    -webkit-transform: scale(1);
+    transform: scale(1);
+    box-shadow: 0 0 0 50px rgba(255, 0, 0, 0);
+  }
+  100% {
+    -moz-transform: scale(0.9);
+    -ms-transform: scale(0.9);
+    -webkit-transform: scale(0.9);
+    transform: scale(0.9);
+    box-shadow: 0 0 0 0 rgba(255, 0, 0, 0);
+  }
+}
+
+.notification-text {
+  font-size: 14px;
+  font-weight: bold;
+}
+
+.notification-text span {
+  float: right;
+}
+
+.forecast-cell {
+  padding: 1px !important;
+  padding-left: 10px !important;
+  display: table-cell;
+  vertical-align: middle;
+  font-size: 10px;
+  color: #000000 !important;
+}
+
+/* width */
+::-webkit-scrollbar {
+  width: 10px;
+}
+
+/* Track */
+::-webkit-scrollbar-track {
+  background: #f1f1f1;
+}
+
+/* Handle */
+::-webkit-scrollbar-thumb {
+  background: #888;
+}
+
+/* Handle on hover */
+::-webkit-scrollbar-thumb:hover {
+  background: #555;
 }
 </style>

@@ -5,7 +5,7 @@
         type="button"
         class="btn btn-default waves-effect"
         @click="createNewSupplier"
-        :disabled="!roles.create_supplier"
+        v-show="roles.create_supplier"
       >
         <i class="material-icons">note_add</i>
         <span>Create New Supplier</span>
@@ -92,7 +92,7 @@
               </div>
             </div>
             <hr />
-            <p>{{ suppliers.length }} supplier found.</p>
+            <p>{{ suppliers.length }} supplier displayed.</p>
           </div>
         </div>
       </div>
@@ -111,7 +111,7 @@
               <div class="row clearfix">
                 <div class="col-md-6">
                   <h2>
-                    <span v-show="roles.update_client">Edit</span> Supplier
+                    <span v-show="roles.update_supplier">Edit</span> Supplier
                     Details
                   </h2>
                 </div>
@@ -256,7 +256,7 @@
               <button
                 class="btn btn-lg btn-info waves-effect waves-light"
                 @click="update"
-                :disabled="!roles.update_supplier"
+                v-show="roles.update_supplier"
               >
                 Save Changes
               </button>
@@ -290,6 +290,7 @@ export default {
     this.suppliers = this.$global.getSupplier();
     this.authenticatedUser = this.$global.getUser();
     this.roles = this.$global.getRoles();
+    this.user = this.$global.getUser();
     this.getLocale();
   },
 

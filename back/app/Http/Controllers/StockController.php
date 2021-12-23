@@ -134,6 +134,23 @@ class StockController extends Controller
 
         try {
             DB::beginTransaction();
+            $supplier = (object) $request->supplier;
+            $user = (object) $request->user;
+            $receive_date = date_create($request->date_receive);
+            $receive_date = date_format($receive_date, "Y-m-d H:i:s");
+
+            $direct = DB::table('direct_receives')
+                ->insertGetId([
+                    'user_id' => $user->id,
+                    'supplier_id' => $supplier->id,
+                    'total' => $request->total,
+                    'class' => $request->class,
+                    'note' => $request->note,
+                    'received_date' => $receive_date,
+                    'created_at' => Carbon::now(),
+                    'updated_at' => Carbon::now()
+                ]);
+
             foreach ($request->receives as $receive) {
                 $receive = (object) $receive;
                 $receive->pivot = (object) $receive->pivot;
@@ -146,14 +163,7 @@ class StockController extends Controller
                 $receive_date = date_create($request->date_receive);
                 $receive_date = date_format($receive_date, "Y-m-d H:i:s");
 
-                $direct = DB::table('direct_receives')
-                    ->insertGetId([
-                        'user_id' => $user->id,
-                        'supplier_id' => $supplier->id,
-                        'total' => $request->total,
-                        'created_at' => Carbon::now(),
-                        'updated_at' => Carbon::now()
-                    ]);
+
 
                 DB::table('direct_receive_item')
                     ->insert([
@@ -171,6 +181,7 @@ class StockController extends Controller
                         'user' => $user->id,
                         'supplier' => $supplier->id,
                         'item_id' => $receive->id,
+                        'direct_receive_id' => $direct,
                         'warehouse_id' => $receive->received_to,
                         'price' => $receive->price,
                         'qty_in' => $receive->qty,
@@ -180,7 +191,11 @@ class StockController extends Controller
                     ]
                 );
 
+
+
                 if ($receive->type->name == "Serialize") {
+
+
                     if ($request->barcodes != null) {
 
                         $data = [];
@@ -195,6 +210,7 @@ class StockController extends Controller
                             ];
                             array_push($data, $temp);
                         }
+
 
                         while (DB::table('stock_serial')->where('serial', $serial->serial)->exists()) {
                             return response()->json("Serials already exist!");
@@ -243,19 +259,25 @@ class StockController extends Controller
     {
     }
 
-    public function getSerialsPerItem($id)
+    public function getSerialsPerItem(Request $request)
     {
-        // return "text";
-        $tbl = Stock::where('item_id', $id)
-            ->get();
+        $item = $request->id;
+        $qty = $request->delivering_qty;
+
+        $tbl = Stock::where('item_id', $item)->get();
 
         $ret = [];
         foreach ($tbl as $item) {
-            $temp = DB::table('stock_serial')->where('stock_id', $item->id)
+            $temp = DB::table('stock_serial')
+                ->where('stock_id', $item->id)
                 ->where('status', 'stocked in')
-                ->first();
-            array_push($ret, $temp);
+                ->take($qty)
+                ->get('serial');
+            // array_push($ret, $temp);
+            $collection = collect($temp);
         }
-        return $ret;
+
+
+        return $collection;
     }
 }

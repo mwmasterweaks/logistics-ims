@@ -170,6 +170,26 @@
 
                       <div class="row clearfix">
                         <div class="col-sm-12">
+                          <label>Department</label>
+                          <div class="input-group">
+                            <div class="form-line">
+                              <model-list-select
+                                class="search-list"
+                                :list="departments"
+                                option-value="id"
+                                option-text="name"
+                                v-model="user.department_id"
+                                v-validate="'required'"
+                                placeholder="Please select department .."
+                              >
+                              </model-list-select>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+
+                      <div class="row clearfix">
+                        <div class="col-sm-12">
                           <label>Email</label>
                           <div class="input-group">
                             <div class="form-line">
@@ -243,7 +263,7 @@
                         </div>
                       </div>
                       <div class="row clearfix">
-                        <div class="col-sm-4">
+                        <!-- <div class="col-sm-4">
                           <input
                             type="checkbox"
                             id="create_client"
@@ -251,80 +271,52 @@
                             v-model="user.roles.create_client"
                           />
                           <label for="create_client">Create Client</label>
-                        </div>
-                        <div class="col-sm-4">
+                        </div> -->
+                        <div class="col-sm-6">
                           <input
                             type="checkbox"
                             id="update_client"
                             class="filled-in chk-col-black"
                             v-model="user.roles.update_client"
                           />
-                          <label for="update_client">Update Client</label>
+                          <label for="update_client">Update Client List</label>
                         </div>
                       </div>
                       <hr />
 
-                      <!-- WAREHOUSE -->
+                      <!-- MANAGE SUPPLIER -->
                       <div class="row">
                         <div class="col-md-12">
-                          <h4>Manage Warehouse</h4>
+                          <h4>Manage Supplier</h4>
                         </div>
                       </div>
                       <div class="row clearfix">
                         <div class="col-sm-4">
                           <input
                             type="checkbox"
-                            id="create_warehouse"
+                            id="create_supplier"
                             class="filled-in chk-col-black"
-                            v-model="user.roles.create_warehouse"
+                            v-model="user.roles.create_supplier"
                           />
-                          <label for="create_warehouse">Create Warehouse</label>
+                          <label for="create_supplier">Create Supplier</label>
                         </div>
                         <div class="col-sm-4">
                           <input
                             type="checkbox"
-                            id="update_warehouse"
+                            id="update_supplier"
                             class="filled-in chk-col-black"
-                            v-model="user.roles.update_warehouse"
+                            v-model="user.roles.update_supplier"
                           />
-                          <label for="update_warehouse">Update Warehouse</label>
-                        </div>
-                      </div>
-                      <hr />
-
-                      <!-- CATEGORY -->
-                      <div class="row">
-                        <div class="col-md-12">
-                          <h4>Manage Category</h4>
-                        </div>
-                      </div>
-                      <div class="row clearfix">
-                        <div class="col-sm-4">
-                          <input
-                            type="checkbox"
-                            id="create_category"
-                            class="filled-in chk-col-black"
-                            v-model="user.roles.create_category"
-                          />
-                          <label for="create_category">Create Category</label>
+                          <label for="update_supplier">Update Supplier</label>
                         </div>
                         <div class="col-sm-4">
                           <input
                             type="checkbox"
-                            id="update_category"
+                            id="delete_supplier"
                             class="filled-in chk-col-black"
-                            v-model="user.roles.update_category"
+                            v-model="user.roles.delete_supplier"
                           />
-                          <label for="update_category">Update Category</label>
-                        </div>
-                        <div class="col-sm-4">
-                          <input
-                            type="checkbox"
-                            id="delete_category"
-                            class="filled-in chk-col-black"
-                            v-model="user.roles.delete_category"
-                          />
-                          <label for="delete_category">Delete Category</label>
+                          <label for="delete_supplier">Delete Supplier</label>
                         </div>
                       </div>
                       <hr />
@@ -362,6 +354,64 @@
                             v-model="user.roles.delete_item"
                           />
                           <label for="delete_item">Delete Item</label>
+                        </div>
+                      </div>
+                      <hr />
+
+                      <!-- COMPONENTS -->
+                      <div class="row">
+                        <div class="col-md-12">
+                          <h4>Manage Components</h4>
+                        </div>
+                      </div>
+                      <div class="row clearfix">
+                        <div class="col-sm-4">
+                          <input
+                            type="checkbox"
+                            id="create_comp"
+                            class="filled-in chk-col-black"
+                            v-model="user.roles.create_comp"
+                          />
+                          <label for="create_comp">Create Component</label>
+                        </div>
+                        <div class="col-sm-4">
+                          <input
+                            type="checkbox"
+                            id="update_comp"
+                            class="filled-in chk-col-black"
+                            v-model="user.roles.update_comp"
+                          />
+                          <label for="update_comp">Update Component</label>
+                        </div>
+                        <div class="col-sm-4">
+                          <input
+                            type="checkbox"
+                            id="delete_comp"
+                            class="filled-in chk-col-black"
+                            v-model="user.roles.delete_comp"
+                          />
+                          <label for="delete_comp">Delete Component</label>
+                        </div>
+                      </div>
+                      <hr />
+
+                      <!-- DIRECT RECEIVE -->
+                      <div class="row">
+                        <div class="col-md-12">
+                          <h4>Manage Direct Receive</h4>
+                        </div>
+                      </div>
+                      <div class="row clearfix">
+                        <div class="col-sm-6">
+                          <input
+                            type="checkbox"
+                            id="create_direct_receive"
+                            class="filled-in chk-col-black"
+                            v-model="user.roles.create_direct_receive"
+                          />
+                          <label for="create_direct_receive"
+                            >Create Direct Receive</label
+                          >
                         </div>
                       </div>
                       <hr />
@@ -449,6 +499,16 @@
                             >Approved Sales Order</label
                           >
                         </div>
+                      </div>
+                      <hr />
+
+                      <!-- DELIVERY RECEIPT -->
+                      <div class="row">
+                        <div class="col-md-12">
+                          <h4>Manage Delivery Receipt</h4>
+                        </div>
+                      </div>
+                      <div class="row clearfix">
                         <div class="col-sm-4">
                           <input
                             type="checkbox"
@@ -458,6 +518,17 @@
                           />
                           <label for="create_delivery_receipt"
                             >Create Delivery Receipt</label
+                          >
+                        </div>
+                        <div class="col-sm-4">
+                          <input
+                            type="checkbox"
+                            id="update_delivery_receipt"
+                            class="filled-in chk-col-black"
+                            v-model="user.roles.update_delivery_receipt"
+                          />
+                          <label for="update_delivery_receipt"
+                            >Update Delivery Receipt</label
                           >
                         </div>
                       </div>
@@ -481,78 +552,66 @@
                             >Create Sales Return</label
                           >
                         </div>
+                        <div class="col-sm-4">
+                          <input
+                            type="checkbox"
+                            id="update_sales_return"
+                            class="filled-in chk-col-black"
+                            v-model="user.roles.update_sales_return"
+                          />
+                          <label for="update_sales_return"
+                            >Update Sales Return</label
+                          >
+                        </div>
+                        <div class="col-sm-4">
+                          <input
+                            type="checkbox"
+                            id="approve_sales_return"
+                            class="filled-in chk-col-black"
+                            v-model="user.roles.approve_sales_return"
+                          />
+                          <label for="approve_sales_return"
+                            >Approve Sales Return</label
+                          >
+                        </div>
                       </div>
                       <hr />
 
-                      <!-- COMPANY ASSETS -->
+                      <!-- EMAIL  -->
+                      <div  v-if="roles.admin">
                       <div class="row">
                         <div class="col-md-12">
-                          <h4>Manage Company Assets</h4>
+                          <h4>Email</h4>
                         </div>
                       </div>
                       <div class="row clearfix">
                         <div class="col-sm-4">
                           <input
                             type="checkbox"
-                            id="create_company_asset"
+                            id="send_mr_email"
                             class="filled-in chk-col-black"
-                            v-model="user.roles.create_company_assets"
+                            v-model="user.roles.send_mr_email"
                           />
-                          <label for="create_company_asset"
-                            >Create Company Asset</label
+                          <label for="send_mr_email"
+                            >Email Material Request</label
                           >
                         </div>
                         <div class="col-sm-4">
                           <input
                             type="checkbox"
-                            id="update_company_asset"
+                            id="send_po_email"
                             class="filled-in chk-col-black"
-                            v-model="user.roles.update_company_assets"
+                            v-model="user.roles.send_po_email"
                           />
-                          <label for="update_company_asset"
-                            >update Company Asset</label
-                          >
-                        </div>
-                        <div class="col-sm-4">
-                          <input
-                            type="checkbox"
-                            id="delete_company_assets"
-                            class="filled-in chk-col-black"
-                            v-model="user.roles.delete_company_assets"
-                          />
-                          <label for="delete_company_assets"
-                            >Delete Company Asset</label
+                          <label for="send_po_email"
+                            >Email Purchase Order</label
                           >
                         </div>
                       </div>
-                      <hr />
-
-                      <!-- MANAGE SUPPLIER -->
-                      <div class="row">
-                        <div class="col-md-12">
-                          <h4>Manage Supplier</h4>
-                        </div>
+                       <hr />
                       </div>
-                      <div class="row clearfix">
-                        <div class="col-sm-4">
-                          <input
-                            type="checkbox"
-                            id="create_supplier"
-                            class="filled-in chk-col-black"
-                            v-model="user.roles.create_supplier"
-                          />
-                          <label for="create_supplier">Create Supplier</label>
-                        </div>
-                        <div class="col-sm-4">
-                          <input
-                            type="checkbox"
-                            id="update_supplier"
-                            class="filled-in chk-col-black"
-                            v-model="user.roles.update_supplier"
-                          />
-                          <label for="update_supplier">Update Supplier</label>
-                        </div>
-                      </div>
+                      
+                     
                     </div>
                   </div>
                 </div>
@@ -560,7 +619,7 @@
                   <button
                     class="btn btn-lg btn-info waves-effect waves-light pull-right"
                     @click="update"
-                    :disabled="user.id == 1"
+                    v-show="roles.create_account && roles.update_account"
                   >
                     Save Changes
                   </button>
@@ -577,8 +636,12 @@
 
 <script>
 import swal from "sweetalert";
+import { ModelListSelect } from "vue-search-select";
 
 export default {
+  components: {
+    "model-list-select": ModelListSelect
+  },
   data() {
     return {
       users: [],
@@ -590,13 +653,16 @@ export default {
       search: {
         user: null
       },
-      roles: []
+      roles: [],
+      departments: []
     };
   },
 
   created() {
     this.users = this.$global.getUsers();
     this.roles = this.$global.getRoles();
+    this.authenticatedUser = this.$global.getUser();
+    this.departments = this.$global.getDepartment();
   },
 
   methods: {
@@ -609,6 +675,7 @@ export default {
 
     update() {
       this.$validator.validateAll().then(result => {
+        this.user.authenticatedUser = this.authenticatedUser;
         if (!result) {
           swal("Ops! The was something wrong updating this user.", {
             dangerMode: true
@@ -617,6 +684,7 @@ export default {
           this.$http
             .put("api/users/" + this.user.id, this.user)
             .then(response => {
+              console.log(response.body);
               this.$global.setUsers(response.body.original);
               this.users = this.$global.getUsers();
 
@@ -712,5 +780,14 @@ textarea {
 /* Handle on hover */
 ::-webkit-scrollbar-thumb:hover {
   background: #555;
+}
+
+.search-list {
+  background: none;
+  border: none !important;
+  border-bottom: 1px solid black !important;
+  border-radius: 0 0 0 0 !important;
+  box-shadow: none !important;
+  width: 70%;
 }
 </style>

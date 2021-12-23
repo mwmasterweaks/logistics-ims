@@ -58,7 +58,7 @@
               Registered TIN:{{ data.supplier.tin }}
             </div>
             <div v-else>
-              <small>
+              <small style="color:red">
                 <i>select supplier</i>
               </small>
             </div>
@@ -82,7 +82,7 @@
         </div>
         <div class="row clearfix">
           <div class="col-md-12 col-sm-12">
-            <div class="table-wrap">
+            <div class="table-wrap" style="height:auto">
               <table class="table table-stripped">
                 <thead>
                   <tr>
@@ -204,7 +204,30 @@
             <hr />
           </div>
         </div>
-        <div class="col-md-7" style="float:right">
+        <div class="col-md-6 col-xs-6">
+          <b>Recipient:</b>
+          <div class="input-group">
+            <div class="form-line">
+              <textarea
+                type="text"
+                class="form-control"
+                v-model="data.class"
+              ></textarea>
+            </div>
+          </div>
+          <br />
+          <b>Memo:</b>
+          <div class="input-group">
+            <div class="form-line">
+              <textarea
+                type="text"
+                class="form-control"
+                v-model="data.note"
+              ></textarea>
+            </div>
+          </div>
+        </div>
+        <div class="col-md-6 col-xs-6">
           <div class="table-responsive">
             <table class="table">
               <tbody>
@@ -318,6 +341,38 @@
           <div class="modal-header"></div>
           <div class="modal-body">
             <div class="row clearfix">
+              <div class="col-md-5">
+                <div class="form-group">
+                  <div class="form-line">
+                    <span>Search</span>
+                    <input
+                      id="search"
+                      type="text"
+                      class="form-control"
+                      v-model="search.supplier"
+                      autocomplete="off"
+                      @keyup="searchSupplier"
+                    />
+                  </div>
+                </div>
+              </div>
+              <div class="col-md-7">
+                <br />
+                <button
+                  class="btn bg-black waves-effect waves-light"
+                  @click="searchSupplier()"
+                >
+                  Search
+                </button>
+                <button
+                  class="btn btn-success waves-effect"
+                  @click="resetSupplier()"
+                >
+                  Reset
+                </button>
+              </div>
+            </div>
+            <div class="row clearfix">
               <div class="col-md-12">
                 <table
                   id="table_id"
@@ -374,8 +429,10 @@ export default {
     return {
       data: {
         user: [],
-        supplier: [],
+        supplier: null,
         date_receive: null,
+        class: null,
+        note: null,
         receives: [],
         barcodes: null,
         total: 0
@@ -392,16 +449,30 @@ export default {
   beforeMount() {},
 
   created() {
-    // this.getReceives();
-    this.items = this.$global.getItems();
     this.warehouses = this.$global.getWarehouses();
-    this.suppliers = this.$global.getSupplier();
     this.authenticatedUser = this.$global.getUser();
+    this.loadItems();
+    this.loadSuppliers();
   },
 
   mounted() {},
 
   methods: {
+    loadSuppliers() {
+      this.$http.get("api/supplier").then(response => {
+        this.suppliers = response.body;
+      });
+    },
+    loadItems() {
+      this.$http.get("api/items").then(response => {
+        this.items = response.body;
+      });
+    },
+    searchSupplier() {
+      this.$http.post("api/supplier/search", this.search).then(response => {
+        this.suppliers = response.body;
+      });
+    },
     getReceives() {
       console.log(this.$route.params);
     },
@@ -483,7 +554,9 @@ export default {
 
     receive() {
       console.log(this.data);
-      this.data.user = this.authenticatedUser;
+      if (this.data.supplier == null) {
+        swal("Please Input Supplier!");
+      } else this.data.user = this.authenticatedUser;
       swal("Are you sure you want to receive the items?", {
         buttons: {
           receive: "Yes",
@@ -497,7 +570,7 @@ export default {
                 this.$http
                   .post("api/stocks/direct_receive", this.data)
                   .then(response => {
-                    // console.log(response.body);
+                    console.log(response.body);
                     if (response.body == "Serials already exist!") {
                       swal({
                         title: "Error",
@@ -509,7 +582,6 @@ export default {
                       swal("Items Received Succesfully.", {
                         icon: "success"
                       });
-
                       this.$http.get("api/items").then(response => {
                         this.$global.setItems(response.body);
                       });
@@ -517,9 +589,11 @@ export default {
                     this.$router.push({
                       path: "/direct_receives"
                     });
-                    // this.data.receives = [];
-                    // this.data.barcodes = null;
-                    // this.data.date_receive = null;
+                    this.data.receives = [];
+                    this.data.barcodes = null;
+                    this.data.date_receive = null;
+                    this.data.class = null;
+                    this.data.note = null;
                   });
               }
             });
@@ -576,6 +650,11 @@ export default {
         minimumFractionDigits: 2
       });
       return formatter.format(value);
+    },
+
+    resetSupplier() {
+      this.search.supplier = "";
+      this.searchSupplier();
     }
   }
 };
@@ -612,5 +691,49 @@ select {
   visibility: visible;
   -webkit-animation: fadein 1s, fadeout 1s 1s;
   animation: fadein 1s, fadeout 1s 1s;
+}
+
+@-webkit-keyframes fadein {
+  from {
+    top: 10px;
+    opacity: 0;
+  }
+  to {
+    top: 100px;
+    opacity: 1;
+  }
+}
+
+@keyframes fadein {
+  from {
+    top: 10px;
+    opacity: 0;
+  }
+  to {
+    top: 100px;
+    opacity: 1;
+  }
+}
+
+@-webkit-keyframes fadeout {
+  from {
+    top: 100px;
+    opacity: 1;
+  }
+  to {
+    top: 190px;
+    opacity: 0;
+  }
+}
+
+@keyframes fadeout {
+  from {
+    top: 100px;
+    opacity: 1;
+  }
+  to {
+    top: 190px;
+    opacity: 0;
+  }
 }
 </style>

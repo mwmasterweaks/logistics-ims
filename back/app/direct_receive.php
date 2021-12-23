@@ -10,7 +10,7 @@ use Illuminate\Database\Eloquent\Model;
 
 class direct_receive extends Model
 {
-    protected $fillable = ['user_id', 'supplier_id', 'total'];
+    protected $fillable = ['user_id', 'supplier_id', 'total', 'class', 'note', 'received_date'];
 
     public function user()
     {

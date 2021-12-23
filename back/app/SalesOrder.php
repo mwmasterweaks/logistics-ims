@@ -15,18 +15,23 @@ class SalesOrder extends Model
 
     public function sales_order_details()
     {
-    	return $this->belongsToMany(Item::class)
-                  ->withPivot('qty')
-                  ->orderBy('id');
+        return $this->belongsToMany(Item::class)
+            ->withPivot('qty')
+            ->orderBy('id');
     }
 
     public function client()
     {
-    	return $this->hasOne(Client::class, 'id', 'client_id');
+        return $this->hasOne(Client::class, 'id', 'client_id');
     }
 
     public function user()
     {
-    	return $this->hasOne(User::class, 'id', 'user_id');
+        return $this->hasOne(User::class, 'id', 'user_id');
+    }
+
+    public function dr_client()
+    {
+        return $this->hasMany(Client::class, 'client_id', 'id');
     }
 }

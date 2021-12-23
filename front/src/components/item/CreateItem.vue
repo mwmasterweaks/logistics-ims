@@ -171,6 +171,7 @@ export default {
   created() {
     this.categories = this.$global.getCategories();
     this.types = this.$global.getTypes();
+    this.user = this.$global.getUser();
     this.types[0].name = this.types[0].name + "(modem, switch, printer)";
     this.types[1].name = this.types[1].name + "(paper, cable, accessories)";
     //console.log(this.types);
@@ -188,7 +189,7 @@ export default {
                 icon: "success"
               });
 
-              this.$global.setItems(response.body);
+              // this.$global.setItems(response.body);
 
               this.$router.push({
                 path: "/inventory"

@@ -18,7 +18,7 @@
           <button
             type="button"
             class="btn bg-black waves-effect waves-light"
-            :disabled="!roles.create_client"
+            v-show="roles.update_client"
             @click="updateClients"
           >
             <i class="material-icons">cached</i>
@@ -61,7 +61,14 @@
         <div class="row clearfix">
           <div class="col-md-12">
             <div class="table-wrap">
-              <div class="table-responsive">
+              <div class="row clearfix" v-if="showLoading" style="width:100%">
+                <td colspan="14" class="text-center">
+                  <img src="../../img/bars.gif" height="50" />
+                  <br />
+                  Fetching list...
+                </td>
+              </div>
+              <div class="table-responsive" v-else>
                 <table class="table table-striped table-condensed table-hover">
                   <thead>
                     <tr>
@@ -144,7 +151,7 @@
                             class="form-control"
                             v-model="client.account_no"
                             autocomplete="off"
-                            :disabled="!roles.update_client"
+                            disabled
                           />
                         </div>
                       </div>
@@ -161,7 +168,7 @@
                             class="form-control"
                             v-model="client.name"
                             autocomplete="off"
-                            :disabled="!roles.update_client"
+                            disabled
                           />
                         </div>
 
@@ -184,7 +191,7 @@
                             class="form-control"
                             v-model="client.contact"
                             autocomplete="off"
-                            :disabled="!roles.update_client"
+                            disabled
                           />
                         </div>
                       </div>
@@ -201,7 +208,7 @@
                             class="form-control"
                             v-model="client.location"
                             rows="2"
-                            :disabled="!roles.update_client"
+                            disabled
                           ></textarea>
                         </div>
                       </div>
@@ -241,35 +248,33 @@ export default {
       client: [],
       search: {
         client: null
-      }
+      },
+      showLoading: false
     };
   },
-
   created() {
-    this.getClients();
     this.authenticatedUser = this.$global.getUser();
+    this.getClients();
     this.roles = this.$global.getRoles();
   },
 
   methods: {
     getClients() {
-      this.$root.$emit("pageLoading");
+      this.showLoading = true;
       this.$http.get("api/client").then(response => {
-        console.log(response.body);
         this.clients = response.body;
-        this.$root.$emit("pageLoaded");
+        this.showLoading = false;
       });
     },
     getClient(client) {
       this.client = client;
     },
     updateClients() {
-      this.$root.$emit("pageLoading");
+      this.showLoading = true;
       this.$http.post("api/updateClients").then(response => {
-        console.log(response.body);
         swal("Clients List", "Updated", "success");
         this.getClients();
-        this.$root.$emit("pageLoaded");
+        this.showLoading = false;
       });
     },
 

@@ -82,49 +82,39 @@ export default {
       });
     },
     boot() {
-      this.$http.get("api/SalesReturns").then(response => {
-        this.$global.setSalesReturn(response.body);
+      this.$http.get("api/users").then(response => {
+        this.$global.setUsers(response.body);
         console.log("1");
       });
 
-      this.$http.get("api/users").then(response => {
-        this.$global.setUsers(response.body);
+      this.$http.get("api/supplier").then(response => {
+        this.$global.setSupplier(response.body);
         console.log("2");
       });
 
-      this.$http.get("api/items").then(response => {
-        this.$global.setItems(response.body);
+      this.$http.get("api/department").then(response => {
+        this.$global.setDepartment(response.body);
         console.log("3");
       });
 
       this.$http.get("api/category").then(response => {
         this.$global.setCategories(response.body);
-        console.log("4");
+        console.log("5");
       });
 
       this.$http.get("api/warehouse").then(response => {
         this.$global.setWarehouses(response.body);
-        console.log("5");
+        console.log("6");
       });
 
       this.$http.get("api/type").then(response => {
         this.$global.setTypes(response.body);
-        console.log("6");
-      });
-
-      this.$http.get("api/purchase_order").then(response => {
-        this.$global.setPurchaseOrders(response.body);
         console.log("7");
-      });
-
-      this.$http.get("api/supplier").then(response => {
-        this.$global.setSupplier(response.body);
-        console.log("8");
       });
 
       this.$http.get("api/company_assets").then(response => {
         this.$global.setCompanyAssets(response.body);
-        console.log("9");
+        console.log("8");
       });
     }
   }

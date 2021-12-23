@@ -4,12 +4,14 @@ namespace App\Http\Controllers;
 
 use App\User;
 use App\Role;
+use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Collection;
 
 class UserController extends Controller
 {
+    private $cname = "UserController";
     public function index()
     {
         $users = DB::table('users')->get();
@@ -52,10 +54,14 @@ class UserController extends Controller
     public function store(Request $request)
     {
         $user = User::where('email', '=', $request->email)->first();
+        $auth_user = (object)$request->authenticatedUser;
+        $auth_user_name = $auth_user->name;
+        $auth_user_id = $auth_user->id;
 
         if (empty($user)) {
-            DB::table('users')->insert([
+            $data = DB::table('users')->insert([
                 [
+                    'department_id' => $request->department_id,
                     'name' => $request->name,
                     'email' => $request->email,
                     'password' => bcrypt($request->password),
@@ -65,33 +71,65 @@ class UserController extends Controller
                 ]
             ]);
 
+            \Logger::instance()->log(
+                Carbon::now(),
+                $auth_user_id,
+                $auth_user_name,
+                $this->cname,
+                "store",
+                "message",
+                "Create new User: " . $request->name
+            );
+
+
             return response()->json($this->index());
         } else {
+
             return response()->json(['error' => 'Email already exists!'], 500);
         }
     }
 
     public function update(Request $request, $id)
     {
+        $auth_user = (object)$request->authenticatedUser;
+        $auth_user_name = $auth_user->name;
+        $auth_user_id = $auth_user->id;
+
+        // return $request;
+
+
+        $old_roles = DB::table('role_user')->where('user_id', $id)->get();
 
         if (empty($request->password)) {
-            DB::table('users')
+            $new_data = DB::table('users')
                 ->where('id', $id)
                 ->update([
+                    'department_id' => $request->department_id,
                     'name' => $request->name,
                     'email' => $request->email,
                     'updated_at' => \Carbon\Carbon::now()
                 ]);
         } else {
-            DB::table('users')
+            $new_data = DB::table('users')
                 ->where('id', $id)
                 ->update([
+                    'department_id' => $request->department_id,
                     'name' => $request->name,
                     'email' => $request->email,
                     'password' => bcrypt($request->password),
                     'updated_at' => \Carbon\Carbon::now()
                 ]);
         }
+
+        \Logger::instance()->log(
+            Carbon::now(),
+            $auth_user_id,
+            $auth_user_name,
+            $this->cname,
+            "update",
+            "message",
+            "Update User Details ID: " . $id
+        );
 
         if (!empty($request->roles)) {
             DB::table('role_user')->where('user_id', $id)->delete();
@@ -110,6 +148,8 @@ class UserController extends Controller
 
     public function setRoles($roles, $id)
     {
+
+        // manage accounts
         if ($roles->create_account) {
             $role = DB::table('roles')
                 ->select('id')
@@ -144,23 +184,7 @@ class UserController extends Controller
             }
         }
 
-        if ($roles->create_client) {
-            $role = DB::table('roles')
-                ->select('id')
-                ->where('name', 'create_client')
-                ->first();
-
-            if (DB::table('role_user')
-                ->where('role_id', $role->id)
-                ->where('user_id', $id)
-                ->doesntExist()
-            ) {
-                DB::table('role_user')->insert(
-                    ['user_id' => $id, 'role_id' => $role->id]
-                );
-            }
-        }
-
+        // manage client
         if ($roles->update_client) {
             $role = DB::table('roles')
                 ->select('id')
@@ -178,40 +202,7 @@ class UserController extends Controller
             }
         }
 
-        if ($roles->create_warehouse) {
-            $role = DB::table('roles')
-                ->select('id')
-                ->where('name', 'create_warehouse')
-                ->first();
-
-            if (DB::table('role_user')
-                ->where('role_id', $role->id)
-                ->where('user_id', $id)
-                ->doesntExist()
-            ) {
-                DB::table('role_user')->insert(
-                    ['user_id' => $id, 'role_id' => $role->id]
-                );
-            }
-        }
-
-        if ($roles->update_warehouse) {
-            $role = DB::table('roles')
-                ->select('id')
-                ->where('name', 'update_warehouse')
-                ->first();
-
-            if (DB::table('role_user')
-                ->where('role_id', $role->id)
-                ->where('user_id', $id)
-                ->doesntExist()
-            ) {
-                DB::table('role_user')->insert(
-                    ['user_id' => $id, 'role_id' => $role->id]
-                );
-            }
-        }
-
+        // manage items
         if ($roles->create_item) {
             $role = DB::table('roles')
                 ->select('id')
@@ -263,10 +254,11 @@ class UserController extends Controller
             }
         }
 
-        if ($roles->create_category) {
+        // manage components
+        if ($roles->create_comp) {
             $role = DB::table('roles')
                 ->select('id')
-                ->where('name', 'create_category')
+                ->where('name', 'create_comp')
                 ->first();
 
             if (DB::table('role_user')
@@ -280,10 +272,10 @@ class UserController extends Controller
             }
         }
 
-        if ($roles->update_category) {
+        if ($roles->update_comp) {
             $role = DB::table('roles')
                 ->select('id')
-                ->where('name', 'update_category')
+                ->where('name', 'update_comp')
                 ->first();
 
             if (DB::table('role_user')
@@ -297,10 +289,10 @@ class UserController extends Controller
             }
         }
 
-        if ($roles->delete_category) {
+        if ($roles->delete_comp) {
             $role = DB::table('roles')
                 ->select('id')
-                ->where('name', 'delete_category')
+                ->where('name', 'delete_comp')
                 ->first();
 
             if (DB::table('role_user')
@@ -314,6 +306,25 @@ class UserController extends Controller
             }
         }
 
+        //manage direct receieve
+        if ($roles->create_direct_receive) {
+            $role = DB::table('roles')
+                ->select('id')
+                ->where('name', 'create_direct_receive')
+                ->first();
+
+            if (DB::table('role_user')
+                ->where('role_id', $role->id)
+                ->where('user_id', $id)
+                ->doesntExist()
+            ) {
+                DB::table('role_user')->insert(
+                    ['user_id' => $id, 'role_id' => $role->id]
+                );
+            }
+        }
+
+        // manage s.o
         if ($roles->create_sales_order) {
             $role = DB::table('roles')
                 ->select('id')
@@ -348,6 +359,24 @@ class UserController extends Controller
             }
         }
 
+        if ($roles->approved_sales_order) {
+            $role = DB::table('roles')
+                ->select('id')
+                ->where('name', 'approved_sales_order')
+                ->first();
+
+            if (DB::table('role_user')
+                ->where('role_id', $role->id)
+                ->where('user_id', $id)
+                ->doesntExist()
+            ) {
+                DB::table('role_user')->insert(
+                    ['user_id' => $id, 'role_id' => $role->id]
+                );
+            }
+        }
+
+        // manage d.r
         if ($roles->create_delivery_receipt) {
             $role = DB::table('roles')
                 ->select('id')
@@ -364,7 +393,24 @@ class UserController extends Controller
                 );
             }
         }
+        if ($roles->update_delivery_receipt) {
+            $role = DB::table('roles')
+                ->select('id')
+                ->where('name', 'update_delivery_receipt')
+                ->first();
 
+            if (DB::table('role_user')
+                ->where('role_id', $role->id)
+                ->where('user_id', $id)
+                ->doesntExist()
+            ) {
+                DB::table('role_user')->insert(
+                    ['user_id' => $id, 'role_id' => $role->id]
+                );
+            }
+        }
+
+        // manage p.o
         if ($roles->create_purchase_order) {
             $role = DB::table('roles')
                 ->select('id')
@@ -416,23 +462,8 @@ class UserController extends Controller
             }
         }
 
-        if ($roles->approved_sales_order) {
-            $role = DB::table('roles')
-                ->select('id')
-                ->where('name', 'approved_sales_order')
-                ->first();
 
-            if (DB::table('role_user')
-                ->where('role_id', $role->id)
-                ->where('user_id', $id)
-                ->doesntExist()
-            ) {
-                DB::table('role_user')->insert(
-                    ['user_id' => $id, 'role_id' => $role->id]
-                );
-            }
-        }
-
+        // manage sales return
         if ($roles->create_sales_return) {
             $role = DB::table('roles')
                 ->select('id')
@@ -449,11 +480,26 @@ class UserController extends Controller
                 );
             }
         }
-
-        if ($roles->create_company_assets) {
+        if ($roles->update_sales_return) {
             $role = DB::table('roles')
                 ->select('id')
-                ->where('name', 'create_company_assets')
+                ->where('name', 'update_sales_return')
+                ->first();
+
+            if (DB::table('role_user')
+                ->where('role_id', $role->id)
+                ->where('user_id', $id)
+                ->doesntExist()
+            ) {
+                DB::table('role_user')->insert(
+                    ['user_id' => $id, 'role_id' => $role->id]
+                );
+            }
+        }
+        if ($roles->approve_sales_return) {
+            $role = DB::table('roles')
+                ->select('id')
+                ->where('name', 'approve_sales_return')
                 ->first();
 
             if (DB::table('role_user')
@@ -467,40 +513,7 @@ class UserController extends Controller
             }
         }
 
-        if ($roles->update_company_assets) {
-            $role = DB::table('roles')
-                ->select('id')
-                ->where('name', 'update_company_assets')
-                ->first();
-
-            if (DB::table('role_user')
-                ->where('role_id', $role->id)
-                ->where('user_id', $id)
-                ->doesntExist()
-            ) {
-                DB::table('role_user')->insert(
-                    ['user_id' => $id, 'role_id' => $role->id]
-                );
-            }
-        }
-
-        if ($roles->delete_company_assets) {
-            $role = DB::table('roles')
-                ->select('id')
-                ->where('name', 'delete_company_assets')
-                ->first();
-
-            if (DB::table('role_user')
-                ->where('role_id', $role->id)
-                ->where('user_id', $id)
-                ->doesntExist()
-            ) {
-                DB::table('role_user')->insert(
-                    ['user_id' => $id, 'role_id' => $role->id]
-                );
-            }
-        }
-
+        // manage supplier
         if ($roles->create_supplier) {
             $role = DB::table('roles')
                 ->select('id')
@@ -534,6 +547,24 @@ class UserController extends Controller
                 );
             }
         }
+        if ($roles->delete_supplier) {
+            $role = DB::table('roles')
+                ->select('id')
+                ->where('name', 'delete_supplier')
+                ->first();
+
+            if (DB::table('role_user')
+                ->where('role_id', $role->id)
+                ->where('user_id', $id)
+                ->doesntExist()
+            ) {
+                DB::table('role_user')->insert(
+                    ['user_id' => $id, 'role_id' => $role->id]
+                );
+            }
+        }
+
+        // manage i.r
         if ($roles->create_item_receipt) {
             $role = DB::table('roles')
                 ->select('id')

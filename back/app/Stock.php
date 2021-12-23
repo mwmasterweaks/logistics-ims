@@ -7,18 +7,20 @@ use App\Warehouse;
 use App\Supplier;
 use App\PurchaseOrder;
 use App\stock_serial;
+use DB;
 use Illuminate\Database\Eloquent\Model;
 
 class Stock extends Model
 {
     protected $fillable = [
-        'item_id', 'warehouse_id', 'purchase_order_id', 'price', 'qty_in', 'qty_out', 'received_at'
+        'item_id', 'warehouse_id', 'purchase_order_id', 'direct_receive_id', 'unit_price', 'qty_in', 'qty_out', 'received_at'
     ];
 
     public function item()
     {
         return $this->belongsTo(Item::class, 'item_id', 'id');
     }
+
 
     public function purchase_order()
     {
@@ -29,5 +31,4 @@ class Stock extends Model
     {
         return $this->hasOne(Warehouse::class, 'warehouse_id', 'id');
     }
-
 }

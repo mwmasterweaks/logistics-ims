@@ -1,8 +1,7 @@
 <template>
   <div class="container-fluid">
-    <pre-loader></pre-loader>
     <div class="block-header">
-      <div class="row clearfix">
+      <div class="row clearfix" id="purchase_button">
         <div class="col-lg-9 col-md-9">
           <button
             type="button"
@@ -13,47 +12,12 @@
             <i class="material-icons">keyboard_backspace</i>
             <span>Back</span>
           </button>
-
-          <button
-            class="btn btn-lg btn-default waves-effect"
-            @click.prevent="print"
-          >
-            Print Preview
-          </button>
-          <button
-            class="btn btn-lg btn-warning waves-effect"
-            :hidden="
-              data.status != 'order complete' && !roles.approved_purchase_order
-            "
-            data-toggle="modal"
-            data-target="#receivingReport"
-          >
-            Receiving Report
-          </button>
-
-          <!-- SAVE BUTTON START -->
-          <button
-            type="button"
-            class="btn btn-lg btn-info waves-effect"
-            @click="savePurchaseOrder"
-            :hidden="data.status != 'draft'"
-          >
-            <span>Save</span>
-          </button>
-
           <!-- SELECT SUPPLIER -->
           <button
+            type="button"
             class="btn btn-lg btn-default waves-effect"
             data-toggle="modal"
             data-target="#supplierModal"
-            :hidden="
-              data.status != 'draft' ||
-                data.status == 'approval' ||
-                data.status == 'declined' ||
-                data.status == 'on order' ||
-                data.status == 'approved' ||
-                data.status == 'order complete'
-            "
           >
             <span>Select Supplier</span>
           </button>
@@ -61,332 +25,40 @@
           <!-- APPROVAL BUTTON START -->
           <button
             type="button"
-            class="btn btn-lg btn-default waves-effect"
+            class="btn btn-lg btn-success waves-effect"
             @click="submitApproval"
-            :hidden="
-              data.status != 'draft' ||
-                data.status == 'approval' ||
-                data.status == 'declined' ||
-                data.status == 'on order' ||
-                data.status == 'approved' ||
-                data.status == 'order complete'
-            "
             :disabled="data.orders.length < 1"
           >
             <span>Submit For Approval</span>
           </button>
-          <!-- SUPPLIER BUTTON START -->
-          <button
-            type="button"
-            class="btn btn-lg btn-default waves-effect"
-            @click="submitSupplier"
-            :hidden="
-              data.status == 'draft' ||
-                data.status == 'approval' ||
-                data.status == 'declined' ||
-                data.status == 'on order' ||
-                data.status == 'order complete' ||
-                data.orders.length < 1
-            "
-          >
-            <span>Submit For Supplier</span>
-          </button>
-
-          <button
-            type="button"
-            class="btn btn-lg btn-danger waves-effect"
-            :hidden="data.status != 'draft'"
-            @click="deleteDraft(data.id)"
-          >
-            <span>Delete Draft</span>
-          </button>
-
-          <div style="float:right; display:block;margin-right:-250px">
-            <button
-              type="button"
-              class="btn btn-lg btn-success waves-effect"
-              @click="acceptPurchaseOrder"
-              v-show="
-                data.status == 'approval' &&
-                  roles.approved_purchase_order &&
-                  data.orders.length > 0
-              "
-            >
-              <span>Accept</span>
-            </button>
-            <button
-              type="button"
-              class="btn btn-lg btn-danger waves-effect"
-              @click="declinePurchaseOrder"
-              v-show="
-                data.status == 'approval' && roles.approved_purchase_order
-              "
-            >
-              <span>Decline</span>
-            </button>
-          </div>
-
-          <!-- MODAL FOR CREATING RECEIVING REPORT -->
-          <div class="modal fade" id="receivingReport" tabindex="-1">
-            <center>
-              <div style="width:75%">
-                <div class="modal-content">
-                  <div class="modal-header">
-                    <button
-                      type="button"
-                      class="close"
-                      data-dismiss="modal"
-                      aria-label="Close"
-                      id="dismiss"
-                    >
-                      <span aria-hidden="true">&times;</span>
-                    </button>
-                  </div>
-                  <div class="modal-body">
-                    <div class="card">
-                      <div class="body">
-                        <div
-                          class="row clearfix"
-                          style="margin-top:-20px;display:flex"
-                        >
-                          <div style="width:15%">
-                            <img src="../../img/logo.jpg" />
-                          </div>
-                          <div
-                            style="margin-top:14px;line-height:100%;width:40%;text-align:left"
-                          >
-                            Dctech Building, Shanghai Street,<br />Matina
-                            Aplaya, Davao City<br />Davao Del Sur 8000,
-                            Philippines<br />Tel #: (082) 221-2380<br />VAT
-                            Registered TIN: 003-375-571-000
-                          </div>
-                        </div>
-                        <center><h4>RECEIVING REPORT</h4></center>
-                        <div style="display:flex">
-                          <div style="width:50%">
-                            <div class="row clearfix">
-                              <div class="col-md-12" style="text-align:left">
-                                <div class="input-group">
-                                  <div class="form-line">
-                                    <span>RECEIVED FROM:</span>
-                                    <input
-                                      type="text"
-                                      ref="received_from"
-                                      name="received_from"
-                                      class="form-control"
-                                      v-validate="'required'"
-                                      v-model.trim="report.received_from"
-                                      autocomplete="off"
-                                      autofocus="on"
-                                    />
-                                  </div>
-                                  <small
-                                    class="text-danger pull-left"
-                                    v-show="errors.has('received_from')"
-                                    >Input here is required.</small
-                                  >
-                                </div>
-                              </div>
-                              <!-- <div class="col-md-12">
-                                <p style="text-align:left">
-                                  Date Received
-                                </p>
-                                <b-form-datepicker
-                                  id="datepicker-valid"
-                                  :state="true"
-                                  v-model="report.date_received"
-                                ></b-form-datepicker>
-                                <small
-                                  class="text-danger"
-                                  v-show="errors.has('date_receive')"
-                                  >Date receive is required.</small
-                                >
-                              </div> -->
-                            </div>
-                          </div>
-                        </div>
-                        <div class="row clearfix">
-                          <div class="col-md-12">
-                            <div class="table-wrap">
-                              <table class="table table-stripped">
-                                <thead>
-                                  <tr>
-                                    <th>Requested Item</th>
-                                    <th>Code#</th>
-                                    <th>Qty Ordered</th>
-                                    <th>Qty Received</th>
-                                    <th>Total Received</th>
-                                    <th>Unit Price</th>
-                                    <th>Receive To</th>
-                                    <th>File Upload</th>
-                                  </tr>
-                                </thead>
-                                <tbody>
-                                  <tr
-                                    v-for="receive in data_receives.receives"
-                                    :key="receive.id"
-                                    v-show="data_receives.receives.length > 0"
-                                  >
-                                    <td>
-                                      {{ receive.name }} -
-                                      {{ receive.description }}
-                                    </td>
-                                    <td>{{ receive.id }}</td>
-                                    <td>{{ receive.pivot.qty }}</td>
-                                    <td>
-                                      <input
-                                        type="text"
-                                        v-model="receive.qty_received"
-                                        style="max-width: 40px"
-                                        v-bind:name="receive.id + 'qty_receive'"
-                                        v-validate="{
-                                          required:
-                                            data.status === 'on order'
-                                              ? true
-                                              : false,
-                                          numeric:
-                                            data.status === 'on order'
-                                              ? true
-                                              : false,
-                                          min_value: 0,
-                                          max_value:
-                                            receive.pivot.qty -
-                                            receive.total_qty_received
-                                        }"
-                                      />
-                                      <p>
-                                        <small
-                                          class="text-danger"
-                                          v-show="
-                                            errors.has(
-                                              receive.id + 'qty_receive'
-                                            )
-                                          "
-                                          >Qty is required, also require less
-                                          than value needed.</small
-                                        >
-                                      </p>
-                                    </td>
-                                    <td>{{ receive.total_qty_received }}</td>
-                                    <td>{{ receive.pivot.price }}</td>
-                                    <td>
-                                      <select
-                                        v-model="receive.received_to"
-                                        v-bind:name="receive.id + 'received_to'"
-                                        v-validate="{
-                                          required:
-                                            data.status === 'on order'
-                                              ? true
-                                              : false
-                                        }"
-                                      >
-                                        <option
-                                          v-for="warehouse in warehouses"
-                                          :key="warehouse.id"
-                                          v-bind:value="warehouse.id"
-                                        >
-                                          {{ warehouse.name }}
-                                        </option>
-                                      </select>
-                                      <p>
-                                        <small
-                                          class="text-danger"
-                                          v-show="
-                                            errors.has(
-                                              receive.id + 'received_to'
-                                            )
-                                          "
-                                          >Receiving is required</small
-                                        >
-                                      </p>
-                                    </td>
-                                    <td>
-                                      <a
-                                        href="javascript:void(0);"
-                                        @click="selectFile"
-                                        title="Import Serial"
-                                      >
-                                        <i
-                                          class="material-icons text-success"
-                                          style="font-size: 16px !important"
-                                          >publish</i
-                                        >
-                                      </a>
-                                      <h6>{{ file }}</h6>
-                                      <input
-                                        type="file"
-                                        id="fileSelect"
-                                        name="fileSelect"
-                                        @change="previewFiles(receive, $event)"
-                                        style="visibility:hidden;"
-                                      />
-                                    </td>
-                                  </tr>
-                                </tbody>
-                              </table>
-                            </div>
-                          </div>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </center>
-          </div>
-          <!-- END OF MODAL FOR CREATING RECEIVING REPORT -->
         </div>
       </div>
     </div>
 
-    <div class="card" id="printable">
+    <div class="card">
       <div class="body">
         <div class="row clearfix">
-          <div class="col-md-8 col-sm-12">
-            <h4>Purchase Order #{{ $route.params.purchase_order }}</h4>
-            <p>Date Created:{{ data.created_at }}</p>
+          <div class="col-md-4 col-sm-4">
+            <h4>PURCHASE ORDER</h4>
+            <!-- <p>Date Created:{{ data.created_at }}</p> -->
           </div>
-          <div class="col-md-4 col-sm-12">
-            <div class="alert alert-warning" v-show="data.status == 'draft'">
-              <b>Status:</b> Draft
-            </div>
-            <div
-              class="alert alert-approval"
-              v-show="data.status == 'approval'"
-            >
-              <b>Status:</b> For Approval
-            </div>
-            <div class="alert alert-success" v-show="data.status == 'approved'">
-              <b>Status:</b> Order Approved
-            </div>
-            <div class="alert alert-danger" v-show="data.status == 'declined'">
-              <b>Status:</b> Order Declined
-            </div>
-            <div class="alert alert-success" v-show="data.status == 'on order'">
-              <b>Status:</b> On Order
-            </div>
-            <div
-              class="alert alert-success"
-              v-show="data.status == 'order complete'"
-            >
-              <b>Status:</b> Order fulfilled
-            </div>
+          <div class="col-md-8 col-sm-8" id="purchase_notification">
+            <div class="alert alert-warning"><b>Status:</b> Draft</div>
           </div>
         </div>
 
-        <div class="row clearfix" style="margin-top:-20px;display:flex">
-          <div style="width:15%">
-            <img src="../../img/logo.jpg" />
+        <div class="row clearfix">
+          <div class="col-md-3 col-sm-12" style="margin-top:-10px">
+            <img src="../../img/email.gif" style="width:100%" />
           </div>
-          <div style="margin-top:14px;line-height:100%;width:40%">
+
+          <div class="col-md-3">
             Dctech Building, Shanghai Street,<br />Matina Aplaya, Davao City<br />Davao
             Del Sur 8000, Philippines<br />Tel #: (082) 221-2380<br />VAT
             Registered TIN: 003-375-571-000
           </div>
 
-          <div
-            style="margin-top:14px;line-height:100%;width:30%;margin-left:150px"
-          >
+          <div class="col-md-3">
             <div v-if="data.supplier != null">
               <b>{{ data.supplier.name }} </b><br />
               Tel #:{{ data.supplier.contact }} <br />
@@ -395,8 +67,8 @@
               Registered TIN:{{ data.supplier.tin }}
             </div>
             <div v-else>
-              <small>
-                <i>select supplier</i>
+              <small style="color:red">
+                <i>please select supplier</i>
               </small>
             </div>
           </div>
@@ -411,13 +83,6 @@
                 :state="true"
                 v-model="data.delivery_date"
                 name="expected_date"
-                :disabled="
-                  data.status == 'approval' ||
-                    data.status == 'approved' ||
-                    data.status == 'declined' ||
-                    data.status == 'on order' ||
-                    data.status == 'order complete'
-                "
               ></b-form-datepicker>
             </p>
           </div>
@@ -426,7 +91,7 @@
         <div class="row clearfix">
           <div class="col-md-12">
             <!-- NAVIGATION -->
-            <ul class="nav nav-tabs tab-nav-right" role="tablist">
+            <ul class="nav nav-tabs tab-nav-right" role="tablist" id="panels">
               <li role="presentation" class="active">
                 <a href="#items" data-toggle="tab" aria-expanded="true"
                   >Line Items</a
@@ -448,41 +113,7 @@
               <div role="tabpanel" class="tab-pane fade active in" id="items">
                 <div class="row clearfix">
                   <div class="col-md-12">
-                    <div
-                      class="alert alert-default"
-                      v-show="
-                        data.status == 'on order' &&
-                          data_receives.receives.length < 1
-                      "
-                    >
-                      <button
-                        type="button"
-                        class="btn btn-default waves-effect disabled"
-                      >
-                        <span>Receive checked items</span>
-                      </button>
-                    </div>
-                    <div
-                      class="alert alert-default"
-                      v-show="
-                        data.status == 'on order' &&
-                          data_receives.receives.length > 0
-                      "
-                    >
-                      <button
-                        type="button"
-                        class="btn btn-default waves-effect"
-                        data-toggle="modal"
-                        data-target="#receiveModal"
-                      >
-                        <span>Receive checked items</span>
-                      </button>
-                    </div>
-                  </div>
-                </div>
-                <div class="row clearfix">
-                  <div class="col-md-12">
-                    <div class="table-wrap">
+                    <div class="table-wrap" style="height:auto">
                       <table class="table table-stripped">
                         <thead>
                           <tr>
@@ -490,6 +121,7 @@
                             <th>Requested Item</th>
                             <th>Code#</th>
                             <th>Qty</th>
+                            <th>Unit of Measure</th>
                             <th>Received</th>
                             <th>Unit Price</th>
                             <th>Tax Rate (%)</th>
@@ -504,33 +136,6 @@
                             :key="order.id"
                             v-show="data.orders.length > 0"
                           >
-                            <td v-show="data.status == 'on order'">
-                              <input
-                                type="checkbox"
-                                v-bind:id="order.id"
-                                class="chk-col-light-blue"
-                                v-bind:value="order"
-                                v-model="data_receives.receives"
-                                v-show="
-                                  order.pivot.qty != order.total_qty_received
-                                "
-                              />
-
-                              <input
-                                type="text"
-                                v-model="order.pivot.qty"
-                                @keyup="subtotal"
-                                style="max-width: 40px"
-                                v-if="
-                                  data.status != 'on order' &&
-                                    data.status != 'order complete'
-                                "
-                                v-validate="'required|min_value:1|numeric'"
-                                v-bind:name="order.id + 'qty'"
-                              />
-
-                              <label v-bind:for="order.id"></label>
-                            </td>
                             <td>{{ order.name }} - {{ order.description }}</td>
                             <td>{{ order.id }}</td>
                             <td>
@@ -539,26 +144,29 @@
                                 v-model="order.pivot.qty"
                                 @keyup="subtotal"
                                 style="max-width: 40px"
-                                v-if="
-                                  data.status != 'on order' &&
-                                    data.status != 'order complete'
-                                "
                                 v-validate="'required|min_value:1|numeric'"
                                 v-bind:name="order.id + 'qty'"
-                                :disabled="
-                                  data.status == 'approval' ||
-                                    data.status == 'approved' ||
-                                    data.status == 'declined' ||
-                                    data.status == 'on order' ||
-                                    data.status == 'order complete'
-                                "
                               />
-                              <span v-else>{{ order.pivot.qty }}</span>
                               <p>
                                 <small
                                   class="text-danger"
                                   v-show="errors.has(order.id + 'qty')"
                                   >Qty is required</small
+                                >
+                              </p>
+                            </td>
+                            <td>
+                              <input
+                                type="text"
+                                v-model="order.pivot.unit"
+                                style="max-width: 120px"
+                                v-bind:name="order.id + 'unit'"
+                              />
+                              <p>
+                                <small
+                                  class="text-danger"
+                                  v-show="errors.has(order.id + 'unit')"
+                                  >Unit of measure is required</small
                                 >
                               </p>
                             </td>
@@ -569,21 +177,9 @@
                                 v-model="order.pivot.price"
                                 style="max-width: 100px"
                                 @keyup="subtotal"
-                                v-if="
-                                  data.status != 'on order' &&
-                                    data.status != 'order complete'
-                                "
                                 v-validate="'required|min_value:0|decimal:2'"
                                 v-bind:name="order.id + 'price'"
-                                :disabled="
-                                  data.status == 'approval' ||
-                                    data.status == 'approved' ||
-                                    data.status == 'declined' ||
-                                    data.status == 'on order' ||
-                                    data.status == 'order complete'
-                                "
                               />
-                              <span v-else>{{ order.pivot.price }}</span>
                               <p>
                                 <small
                                   class="text-danger"
@@ -663,26 +259,16 @@
                   </div>
                 </div>
                 <div class="row clearfix">
-                  <div class="col-md-12">
-                    <button
-                      type="button"
-                      class="btn btn-sm btn-default waves-effect disabled"
-                      v-if="
-                        data.status == 'on order' ||
-                          data.status == 'order complete'
-                      "
-                    >
-                      <i class="material-icons">note_add</i>
-                    </button>
+                  <div class="col-md-12" id="btn-Add">
                     <button
                       type="button"
                       class="btn btn-sm btn-default waves-effect"
                       data-toggle="modal"
                       data-target="#itemModal"
-                      :hidden="data.status != 'draft'"
-                      v-else
+                      v-show="data.supplier != null"
                     >
                       <i class="material-icons">note_add</i>
+                      Add Items
                     </button>
                     <span class="pull-right" v-show="data.orders.length < 1"
                       >{{ data.orders.length }} item.</span
@@ -717,22 +303,10 @@
                           <tr>
                             <td>Tax</td>
                             <td>
-                              <input
-                                type="text"
-                                :disabled="
-                                  data.status == 'on order' ||
-                                    data.status == 'order complete'
-                                "
-                              />
+                              <input type="text" />
                             </td>
                             <td>
-                              <input
-                                type="text"
-                                :disabled="
-                                  data.status == 'on order' ||
-                                    data.status == 'order complete'
-                                "
-                              />
+                              <input type="text" />
                               %
                             </td>
                             <td>
@@ -740,10 +314,6 @@
                                 type="text"
                                 v-model="data.amount.tax_overide"
                                 @keyup="subtotal"
-                                :disabled="
-                                  data.status == 'on order' ||
-                                    data.status == 'order complete'
-                                "
                               />
                             </td>
                             <td>
@@ -753,10 +323,6 @@
                                   id="basic_checkbox_1"
                                   v-model="data.amount.overide"
                                   @keyup="subtotal"
-                                  :disabled="
-                                    data.status == 'on order' ||
-                                      data.status == 'order complete'
-                                  "
                                 />
                                 <label for="basic_checkbox_1"
                                   >Overide tax amount</label
@@ -767,32 +333,16 @@
                           <tr>
                             <td>Freight Cost</td>
                             <td>
-                              <input
-                                type="text"
-                                :disabled="
-                                  data.status == 'on order' ||
-                                    data.status == 'order complete'
-                                "
-                              />
+                              <input type="text" />
                             </td>
                             <td>
-                              <input
-                                type="text"
-                                :disabled="
-                                  data.status == 'on order' ||
-                                    data.status == 'order complete'
-                                "
-                              />
+                              <input type="text" />
                             </td>
                             <td>
                               <input
                                 type="text"
                                 v-model="data.amount.shipping_cost"
                                 @keyup="subtotal"
-                                :disabled="
-                                  data.status == 'on order' ||
-                                    data.status == 'order complete'
-                                "
                               />
                             </td>
                             <td></td>
@@ -812,12 +362,12 @@
                   <div class="col-md-12">
                     <div class="table-wrap">
                       <p>
-                        Created by: {{ data.user.name }}
+                        Created by:
                         <br />
                         <br />
-                        Date created: {{ data.created_at }}
+                        Date created:
                         <br />
-                        Last update: {{ data.updated_at }}
+                        Last update:
                       </p>
                     </div>
                   </div>
@@ -828,20 +378,7 @@
           </div>
         </div>
         <div class="row clearfix">
-          <div class="col-md-5">
-            <p>
-              <small class="text-danger" v-show="errors.has('qty')"
-                >Quantity is required, minimum value 1.</small
-              >
-              <small class="text-danger" v-show="errors.has('price')">
-                <br />Price is required, minimum value 0.
-              </small>
-              <small class="text-danger" v-show="errors.has('tax')">
-                <br />Tax is required, minimum value 0.
-              </small>
-            </p>
-          </div>
-          <div class="col-md-7">
+          <div class="col-md-6 col-xs-6">
             <div class="table-responsive">
               <table class="table">
                 <tbody>
@@ -891,6 +428,7 @@
             </button>
           </div>
           <div class="modal-body">
+            <div id="snackbar">Item Added</div>
             <form @submit.prevent="searchItem">
               <div class="row clearfix">
                 <div class="col-md-4">
@@ -907,7 +445,7 @@
                     </div>
                   </div>
                 </div>
-                <div class="col-md-2">
+                <div class="col-md-4">
                   <br />
                   <button class="btn btn-sm bg-black waves-effect waves-light">
                     Search
@@ -962,184 +500,6 @@
       </div>
     </div>
     <!-- END ITEM MODAL -->
-    <!-- START RECEIVE MODAL -->
-    <div
-      class="modal fade"
-      id="receiveModal"
-      tabindex="-1"
-      role="dialog"
-      data-backdrop="static"
-      data-keyboard="false"
-    >
-      <div class="modal-dialog modal-lg" role="document">
-        <div class="modal-content">
-          <div class="modal-header" style="background:gray">
-            <h4 class="modal-title">
-              Receive Items
-            </h4>
-            <button
-              type="button"
-              class="close"
-              data-dismiss="modal"
-              aria-label="Close"
-            >
-              <span aria-hidden="true">&times;</span>
-            </button>
-          </div>
-          <div class="modal-body">
-            <div class="row clearfix">
-              <div class="col-md-2 col-sm-12">
-                <p>
-                  Purchase Order
-                  <br />PO
-                  <b>#{{ $route.params.purchase_order }}</b>
-                </p>
-              </div>
-            </div>
-            <div class="row clearfix">
-              <div class="col-md-4 col-sm-12">
-                <p>
-                  Date Ordered
-                  <br />
-                  {{ data.created_at }}
-                </p>
-              </div>
-              <div class="col-md-6 col-sm-12" style="margin-right:-10px">
-                <p>
-                  Date Received
-                  <b-form-datepicker
-                    id="datepicker-valid"
-                    :state="true"
-                    v-model="data_receives.date_receive"
-                    v-validate="{
-                      required: data.status === 'on order' ? true : false
-                    }"
-                  ></b-form-datepicker>
-                  <small class="text-danger" v-show="errors.has('date_receive')"
-                    >Date receive is required.</small
-                  >
-                </p>
-              </div>
-            </div>
-            <hr />
-            <div class="row clearfix">
-              <div class="col-md-12">
-                <div class="table-wrap">
-                  <table class="table table-stripped">
-                    <thead>
-                      <tr>
-                        <th>Requested Item</th>
-                        <th>Code#</th>
-                        <th>Qty Ordered</th>
-                        <th>Qty Received</th>
-                        <th>Total Received</th>
-                        <th>Unit Price</th>
-                        <th>Receive To</th>
-                        <th>File Upload</th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      <tr
-                        v-for="receive in data_receives.receives"
-                        :key="receive.id"
-                        v-show="data_receives.receives.length > 0"
-                      >
-                        <td>{{ receive.name }} - {{ receive.description }}</td>
-                        <td>{{ receive.id }}</td>
-                        <td>{{ receive.pivot.qty }}</td>
-                        <td>
-                          <input
-                            type="text"
-                            v-model="receive.qty_received"
-                            style="max-width: 40px"
-                            v-bind:name="receive.id + 'qty_receive'"
-                            v-validate="{
-                              required:
-                                data.status === 'on order' ? true : false,
-                              numeric:
-                                data.status === 'on order' ? true : false,
-                              min_value: 0,
-                              max_value:
-                                receive.pivot.qty - receive.total_qty_received
-                            }"
-                          />
-                          <p>
-                            <small
-                              class="text-danger"
-                              v-show="errors.has(receive.id + 'qty_receive')"
-                              >Qty is required, also require less than value
-                              needed.</small
-                            >
-                          </p>
-                        </td>
-                        <td>{{ receive.total_qty_received }}</td>
-                        <td>{{ receive.pivot.price }}</td>
-                        <td>
-                          <select
-                            v-model="receive.received_to"
-                            v-bind:name="receive.id + 'received_to'"
-                            v-validate="{
-                              required:
-                                data.status === 'on order' ? true : false
-                            }"
-                          >
-                            <option
-                              v-for="warehouse in warehouses"
-                              :key="warehouse.id"
-                              v-bind:value="warehouse.id"
-                            >
-                              {{ warehouse.name }}
-                            </option>
-                          </select>
-                          <p>
-                            <small
-                              class="text-danger"
-                              v-show="errors.has(receive.id + 'received_to')"
-                              >Receiving is required</small
-                            >
-                          </p>
-                        </td>
-                        <td>
-                          <a
-                            href="javascript:void(0);"
-                            @click="selectFile"
-                            title="Import Serial"
-                          >
-                            <i
-                              class="material-icons text-success"
-                              style="font-size: 16px !important"
-                              >publish</i
-                            >
-                          </a>
-                          <h6>{{ file }}</h6>
-                          <input
-                            type="file"
-                            id="fileSelect"
-                            name="fileSelect"
-                            @change="previewFiles(receive, $event)"
-                            style="visibility:hidden;"
-                          />
-                        </td>
-                      </tr>
-                    </tbody>
-                  </table>
-                </div>
-              </div>
-            </div>
-          </div>
-          <div class="modal-footer">
-            <button
-              type="button"
-              class="btn btn-default btn-lg waves-effect"
-              @click="receiveItem"
-            >
-              Receive Items
-            </button>
-          </div>
-        </div>
-      </div>
-    </div>
-    <!-- END RECEIVE MODAL -->
     <!-- START SUPPLIER MODAL -->
     <div
       class="modal fade"
@@ -1152,6 +512,38 @@
         <div class="modal-content">
           <div class="modal-header"></div>
           <div class="modal-body">
+            <div class="row clearfix">
+              <div class="col-md-5">
+                <div class="form-group">
+                  <div class="form-line">
+                    <span>Search</span>
+                    <input
+                      id="search"
+                      type="text"
+                      class="form-control"
+                      v-model="search.supplier"
+                      autocomplete="off"
+                      @keyup="searchSupplier"
+                    />
+                  </div>
+                </div>
+              </div>
+              <div class="col-md-7">
+                <br />
+                <button
+                  class="btn bg-black waves-effect waves-light"
+                  @click="searchSupplier()"
+                >
+                  Search
+                </button>
+                <button
+                  class="btn btn-success waves-effect"
+                  @click="resetSupplier()"
+                >
+                  Reset
+                </button>
+              </div>
+            </div>
             <div class="row clearfix">
               <div class="col-md-12">
                 <table
@@ -1208,156 +600,46 @@ export default {
       authenticatedUser: [],
       roles: [],
       search: {
-        item: null
+        item: null,
+        supplier: null
       },
       data: {
-        id: 0,
-        supplier: [],
+        supplier: null,
         orders: [],
         amount: {
           total: 0,
           subtotal: 0,
           shipping: 0,
-          tax: 0
+          tax: 0,
+          tax_overide: 0,
+          overide: 0,
+          shipping_cost: 0
         },
-        upload: [],
         user: [],
         delivery_date: "",
-        status: "",
-        created_at: "",
-        updated_at: ""
-      },
-      data_receives: {
-        purchase_order_id: null,
-        date_receive: null,
-        receives: [],
-        barcodes: null
+        status: "draft"
       },
       warehouses: [],
-      file: "File",
-      report: {
-        invoice_num: "",
-        freight: "",
-        received_from: "",
-        date_received: null
-      }
+      file: "File"
     };
   },
 
   beforeMount() {},
 
   created() {
-    this.getPurchaseOrder();
-    this.items = this.$global.getItems();
     this.suppliers = this.$global.getSupplier();
     this.warehouses = this.$global.getWarehouses();
     this.authenticatedUser = this.$global.getUser();
     this.roles = this.$global.getRoles();
+    this.loadItems();
   },
 
   mounted() {},
 
   methods: {
-    getPurchaseOrder() {
-      this.$http
-        .get("api/purchase_order/" + this.$route.params.purchase_order)
-        .then(response => {
-          this.data.id = response.body.id;
-          this.data.delivery_date = response.body.delivery_date;
-          this.data.orders = response.body.item;
-          this.data.supplier = response.body.supplier;
-          this.data.amount.tax = response.body.tax;
-          this.data.amount.shipping_cost = response.body.shipping_fee;
-          this.data.status = response.body.status;
-          this.data.user = response.body.user;
-          this.data.created_at = response.body.created_at;
-          this.data.updated_at = response.body.updated_at;
-          this.subtotal();
-          $(".page-loader-wrapper").fadeOut();
-        });
-    },
-    clear() {
-      this.purchase_order.orders = [];
-    },
-    acceptPurchaseOrder() {
-      swal("Accept this order?", {
-        buttons: {
-          accept: "Yes",
-          cancel: true
-        }
-      }).then(value => {
-        switch (value) {
-          case "accept":
-            this.$validator.validateAll().then(result => {
-              if (result) {
-                this.$http
-                  .put(
-                    "api/purchase_order/" + this.$route.params.purchase_order,
-                    this.data
-                  )
-                  .then(response => {});
-
-                this.$http
-                  .post(
-                    "api/purchase_order/accept/" +
-                      this.$route.params.purchase_order
-                  )
-                  .then(response => {
-                    this.$http.get("api/purchase_order").then(response => {
-                      this.$global.setPurchaseOrders(response.body);
-                    });
-
-                    this.$http
-                      .get("api/users/" + this.authenticatedUser.id)
-                      .then(response => {
-                        this.$global.setRoles(response.body.roles);
-                      });
-
-                    this.getPurchaseOrder();
-                    this.roles = this.$global.getRoles();
-                    swal("Purchased order accepted!", {
-                      icon: "success"
-                    });
-                  });
-              }
-            });
-            break;
-
-          default:
-            break;
-        }
-      });
-    },
-    declinePurchaseOrder() {
-      swal({
-        text:
-          "Decline Purchase Order #" + this.$route.params.purchase_order + "?",
-        dangerMode: true,
-        buttons: true
-      }).then(willDelete => {
-        if (willDelete) {
-          this.$http
-            .post(
-              "api/purchase_order/decline/" + this.$route.params.purchase_order
-            )
-            .then(response => {
-              this.$http.get("api/purchase_order").then(response => {
-                this.$global.setPurchaseOrders(response.body);
-              });
-
-              this.$http
-                .get("api/users/" + this.authenticatedUser.id)
-                .then(response => {
-                  this.$global.setRoles(response.body.roles);
-                });
-
-              this.getPurchaseOrder();
-              this.roles = this.$global.getRoles();
-              swal("Purchase order declined!", {
-                dangerMode: true
-              });
-            });
-        }
+    loadItems() {
+      this.$http.get("api/items").then(response => {
+        this.items = response.body;
       });
     },
     submitApproval() {
@@ -1370,37 +652,53 @@ export default {
         switch (value) {
           case "submit":
             this.$validator.validateAll().then(result => {
-              if (result) {
-                this.$http
-                  .put(
-                    "api/purchase_order/" + this.$route.params.purchase_order,
-                    this.data
-                  )
-                  .then(response => {});
+              this.data.user = this.authenticatedUser;
+              // console.log(this.data);
+              this.$http
+                .post("api/purchase_order/submit_approval", this.data)
+                .then(response => {
+                  console.log(response.body);
 
-                this.$http
-                  .post(
-                    "api/purchase_order/submit_approval/" +
-                      this.$route.params.purchase_order
-                  )
-                  .then(response => {
-                    this.$http.get("api/purchase_order").then(response => {
-                      this.$global.setPurchaseOrders(response.body);
-                    });
-
-                    this.$http
-                      .get("api/users/" + this.authenticatedUser.id)
-                      .then(response => {
-                        this.$global.setRoles(response.body.roles);
-                      });
-
-                    this.getPurchaseOrder();
-                    this.roles = this.$global.getRoles();
-                    swal("Submitted for approval!", {
-                      icon: "success"
-                    });
+                  swal("Submitted for approval!", {
+                    icon: "success"
                   });
-              }
+                });
+
+              this.$root.$emit("Sidebar");
+              this.$router.push({
+                path: "/purchase_orders"
+              });
+              // if (result) {
+              //   this.$http
+              //     .put(
+              //       "api/purchase_order/" + this.$route.params.purchase_order,
+              //       this.data
+              //     )
+              //     .then(response => {});
+
+              //   this.$http
+              //     .post(
+              //       "api/purchase_order/submit_approval/" +
+              //         this.$route.params.purchase_order
+              //     )
+              //     .then(response => {
+              //       this.$http.get("api/purchase_order").then(response => {
+              //         this.$global.setPurchaseOrders(response.body);
+              //       });
+
+              //       this.$http
+              //         .get("api/users/" + this.authenticatedUser.id)
+              //         .then(response => {
+              //           this.$global.setRoles(response.body.roles);
+              //         });
+
+              //       this.getPurchaseOrder();
+              //       this.roles = this.$global.getRoles();
+              //       swal("Submitted for approval!", {
+              //         icon: "success"
+              //       });
+              //     });
+              // }
             });
 
             break;
@@ -1471,100 +769,6 @@ export default {
         });
     },
 
-    deleteDraft(id) {
-      console.log(id);
-      swal({
-        title: "Are you sure?",
-        text: "Once deleted, you will not be able to recover this data.",
-        icon: "warning",
-        buttons: true,
-        dangerMode: true
-      })
-        .then(willDelete => {
-          if (willDelete) {
-            this.$http
-              .delete("api/purchase_order/" + id)
-              .then(response => {
-                console.log(response.body);
-                this.$global.setPurchaseOrders(response.body);
-                swal("Draft has been deleted!");
-                this.$router.go(-1);
-              })
-              .catch(response => {
-                swal({
-                  title: "Error",
-                  text: response.body.error,
-                  icon: "error",
-                  dangerMode: true
-                });
-              });
-          }
-        })
-        .then(value => {
-          switch (value) {
-            case "exit":
-              this.$router.push({
-                path: "/list/sales_order"
-              });
-              break;
-
-            default:
-              break;
-          }
-        });
-    },
-    receiveItem() {
-      console.log(this.data_receives);
-      this.$validator.validateAll().then(result => {
-        if (result) {
-          this.data_receives.purchase_order_id = this.$route.params.purchase_order;
-          this.$http.post("api/stocks", this.data_receives).then(response => {
-            console.log(response.body);
-            if (response.body == "Serials already exist!") {
-              swal({
-                title: "Error",
-                text: response.body,
-                icon: "error",
-                dangerMode: true
-              });
-            } else {
-              this.getPurchaseOrder();
-              swal("Ordered Item Successfully Received!", {
-                icon: "success"
-              });
-            }
-
-            // $("#receiveModal").modal("hide");
-
-            this.data_receives.receives = [];
-            this.data_receives.barcodes = null;
-
-            this.$http.get("api/purchase_order").then(response => {
-              this.$global.setPurchaseOrders(response.body);
-            });
-
-            this.$http.get("api/items").then(response => {
-              this.$global.setItems(response.body);
-            });
-          });
-        }
-      });
-    },
-    pdfChanged(e) {
-      this.$validator.validateAll().then(result => {
-        if (result) {
-          this.data.upload = e.target.files[0];
-
-          var fileReader = new FileReader();
-
-          fileReader.readAsDataURL(e.target.files[0]);
-
-          fileReader.onload = e => {
-            this.data.upload.file = e.target.result;
-          };
-        }
-      });
-    },
     searchItem() {
       this.$http.post("api/items/search", this.search).then(response => {
         this.items = response.body;
@@ -1588,8 +792,11 @@ export default {
           this.data.orders.push(response.body);
         });
       }
-
-      // $("#itemModal").modal("hide");
+      var x = document.getElementById("snackbar");
+      x.className = "show";
+      setTimeout(function() {
+        x.className = x.className.replace("show", "");
+      }, 2000);
     },
     removeItem(id) {
       swal({
@@ -1683,36 +890,7 @@ export default {
       this.data.amount.shipping = shipping;
       this.data.amount.total = sum + tax + parseFloat(shipping);
     },
-    print() {
-      this.$htmlToPaper("printable");
-    },
-    selectFile() {
-      document.getElementById("fileSelect").click();
-    },
-    previewFiles(receive, e) {
-      console.log(receive);
-      console.log(e);
-      var files = e.target.files,
-        f = files[0];
-      var reader = new FileReader();
 
-      reader.onload = function(e) {
-        var data = new Uint8Array(e.target.result);
-        var workbook = XLSX.read(data, { type: "array" });
-        let sheetName = workbook.SheetNames[0];
-
-        let worksheet = workbook.Sheets[sheetName];
-        console.log(XLSX.utils.sheet_to_json(worksheet));
-        console.log(this.data);
-        this.file = workbook.SheetNames[0];
-        receive.barcodes = XLSX.utils.sheet_to_json(worksheet);
-        this.data_receives.barcodes = receive.barcodes;
-
-        document.getElementById("fileSelect").value = null;
-      }.bind(this);
-
-      reader.readAsArrayBuffer(f);
-    },
     formatPrice(value) {
       var formatter = new Intl.NumberFormat("en-US", {
         style: "currency",
@@ -1720,6 +898,15 @@ export default {
         minimumFractionDigits: 2
       });
       return formatter.format(value);
+    },
+    searchSupplier() {
+      this.$http.post("api/supplier/search", this.search).then(response => {
+        this.suppliers = response.body;
+      });
+    },
+    resetSupplier() {
+      this.search.supplier = "";
+      this.searchSupplier();
     }
   }
 };
@@ -1770,5 +957,83 @@ select {
 /* Handle on hover */
 ::-webkit-scrollbar-thumb:hover {
   background: #555;
+}
+
+/* for row in receiving report */
+.reportRow {
+  width: 50%;
+  text-align: left;
+  float: left;
+  margin-top: 14px;
+  line-height: 100%;
+}
+.receives {
+  width: 100%;
+  background: lightblue;
+}
+#snackbar {
+  visibility: hidden;
+  min-width: 250px;
+  margin-left: -125px;
+  background-color: #333;
+  color: #fff;
+  text-align: center;
+  border-radius: 2px;
+  padding: 16px;
+  position: fixed;
+  z-index: 1;
+  left: 40%;
+  top: 100px;
+  font-size: 17px;
+}
+
+#snackbar.show {
+  visibility: visible;
+  -webkit-animation: fadein 1s, fadeout 1s 1s;
+  animation: fadein 1s, fadeout 1s 1s;
+}
+
+@-webkit-keyframes fadein {
+  from {
+    top: 10px;
+    opacity: 0;
+  }
+  to {
+    top: 100px;
+    opacity: 1;
+  }
+}
+
+@keyframes fadein {
+  from {
+    top: 10px;
+    opacity: 0;
+  }
+  to {
+    top: 100px;
+    opacity: 1;
+  }
+}
+
+@-webkit-keyframes fadeout {
+  from {
+    top: 100px;
+    opacity: 1;
+  }
+  to {
+    top: 190px;
+    opacity: 0;
+  }
+}
+
+@keyframes fadeout {
+  from {
+    top: 100px;
+    opacity: 1;
+  }
+  to {
+    top: 190px;
+    opacity: 0;
+  }
 }
 </style>

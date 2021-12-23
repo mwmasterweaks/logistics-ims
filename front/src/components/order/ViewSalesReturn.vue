@@ -11,10 +11,21 @@
             <i class="material-icons">keyboard_backspace</i>
             <span>Back</span>
           </button>
+          <button
+            type="button"
+            class="btn btn-danger waves-effect"
+            @click="deleteReturn(dataStock.id)"
+            :hidden="
+              dataStock.status != 'For Approval' || !roles.admin
+            "
+          >
+            <i class="material-icons">delete_forever</i>
+            <span>Delete</span>
+          </button>
 
           <div
             :hidden="
-              dataStock.status != 'For Approval' || !roles.approved_sales_order
+              dataStock.status != 'For Approval' || !roles.admin
             "
             style="float:right; display:block"
           >
@@ -40,7 +51,7 @@
             <hr />
             <div class="row clearfix">
               <div class="col-md-2">
-                <b>Date Recieve:</b>
+                <b>Date Receive:</b>
                 <input
                   class="form-control"
                   type="text"
@@ -93,7 +104,7 @@
                         </tr>
                       </thead>
                       <tbody>
-                        <tr v-for="item in itemsDis" :key="item.index">
+                        <tr v-for="(item, index) in itemsDis" :key="index">
                           <td>
                             {{ item.id }}
                           </td>
@@ -105,8 +116,9 @@
                           <td :hidden="dataStock.status != 'For Approval'">
                             <select
                               class="form-control"
-                              v-model="data.status"
+                              v-model="item.status"
                               @change="updateStatus"
+                              :disabled="!roles.update_sales_return"
                             >
                               <option value="Stocked in">Stocked in</option>
                               <option value="Defective">Defective</option>
@@ -162,6 +174,7 @@ import PreLoader from "../PreLoader.vue";
 export default {
   data() {
     return {
+      authenticatedUser:[],
       itemsDis: [],
       roles: [],
       dataStock: {
@@ -183,6 +196,7 @@ export default {
 
   created() {
     this.roles = this.$global.getRoles();
+    this.authenticatedUser = this.$global.getUser();
   },
   beforeMount() {},
 
@@ -198,13 +212,14 @@ export default {
         .then(response => {
           //console.log(response.body);
           this.dataStock.id = this.$route.params.sales_return_id;
+          this.dataStock.from_id = response.body.from_id;
           this.dataStock.from_name = response.body.from_name;
           this.dataStock.from_contact = response.body.from_contact;
           this.dataStock.from_address = response.body.from_address;
 
-          this.dataStock.clientTo.name = response.body.to_name;
-          this.dataStock.clientTo.contact = response.body.to_contact;
-          this.dataStock.clientTo.address = response.body.to_address;
+          // this.dataStock.clientTo.name = response.body.to_name;
+          // this.dataStock.clientTo.contact = response.body.to_contact;
+          // this.dataStock.clientTo.address = response.body.to_address;
           this.dataStock.status = response.body.status;
 
           this.dataStock.date_recieve = response.body.date_return;
@@ -219,7 +234,7 @@ export default {
                 desc: item.description,
                 qty: item.qty,
                 status: item.status,
-                type: "serial",
+                type: "Serialize",
                 serial: item.serial
               });
             } else {
@@ -229,7 +244,7 @@ export default {
                 desc: item.description,
                 qty: item.qty,
                 status: item.status,
-                type: "consumable",
+                type: "Consumable",
                 serial: ""
               });
             }
@@ -239,58 +254,79 @@ export default {
         });
     },
     updateStatus() {
-      if (this.data.status != null) {
-        var data = {
-          id: this.dataStock.id,
-          itemStatus: this.data.status,
-          item: this.itemsDis
-        };
+      var data = {
+        id: this.dataStock.id,
+        item: this.itemsDis,
+        user: this.authenticatedUser
+      };
 
-        console.log(data);
-        this.$http
-          .post("api/sales_return/updateStatus", data)
-          .then(response => {
-            // this.$global.setSalesReturn(response.body);
-            // swal(this.category.name, "has successfully updated!", {
-            //   icon: "success"
-            // });
-            // this.category = {};
-            console.log(response.body);
-          });
-      }
+      console.log(data);
+      this.$http.post("api/sales_return/updateStatus", data).then(response => {
+        console.log(response.body);
+      });
     },
 
     accept() {
       this.$validator.validateAll().then(result => {
         if (result) {
-          this.$http
-            .post("api/sales_return/accept/" + this.dataStock.id)
-            .then(response => {
-              console.log(response.body);
-              if (response.body == "Data doesn't exist!!") {
-                swal({
-                  title: "Error",
-                  text: response.body,
-                  icon: "error",
-                  dangerMode: true
-                });
-              } else {
-                swal("Item Returned.", {
-                  icon: "success"
-                });
-              }
+          var data = {
+            return_details: this.dataStock,
+            return_items: this.itemsDis,
+            user: this.authenticatedUser
+          };
+          this.$http.post("api/sales_return/accept", data).then(response => {
+            console.log(response.body);
+            if (response.body == "Data doesn't exist!!") {
+              swal({
+                title: "Error",
+                text: response.body,
+                icon: "error",
+                dangerMode: true
+              });
+            } else {
+              swal("Item Returned.", {
+                icon: "success"
+              });
 
               this.loadData();
-              // this.$global.setSalesReturn(response.body);
+            this.$root.$emit("Sidebar");
+            this.$global.setSalesReturn(response.body);
 
-              // swal("Sales Return #" + this.dataStock.id + " accepted!", {
-              //   icon: "success"
-              // });
+            swal("Sales Return #" + this.dataStock.id + " accepted!", {
+              icon: "success"
             });
+            }
+
+            
+          });
         }
       });
     },
 
+    deleteReturn(id) {
+      console.log(id);
+      swal({
+        title: "Are you sure?",
+        text: "Once deleted, you will not be able to recover this data.",
+        icon: "warning",
+        buttons: true,
+        dangerMode: true
+      }).then(willDelete => {
+        if (willDelete) {
+          this.$http.delete("api/SalesReturns/" + id).then(response => {
+            console.log(response.body);
+            if (response.body == "ok") {
+              swal("Transmittal has been deleted!", {
+                icon: "success",
+                window: history.back()
+              });
+            } else {
+              swal("Cancelled Deletion");
+            }
+          });
+        }
+      });
+    },
     exit() {
       swal("Are you sure you want to go back?", {
         icon: "warning",

@@ -5,6 +5,7 @@ namespace App;
 use App\SalesOrder;
 use App\Item;
 use App\Client;
+use App\User;
 
 use Illuminate\Database\Eloquent\Model;
 
@@ -17,6 +18,7 @@ class SalesReturn extends Model
     {
         return $this->hasOne(Client::class, 'id', 'from_client_id');
     }
+
     public function sales_return_details()
     {
         return $this->belongsToMany(Item::class)

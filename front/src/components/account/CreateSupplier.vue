@@ -153,7 +153,7 @@
                 <button
                   class="btn btn-lg btn-info waves-effect waves-light pull-right"
                   @click="create"
-                  :disabled="!roles.create_supplier"
+                  :disabled="!roles.create_item"
                 >
                   <span>Create</span>
                 </button>

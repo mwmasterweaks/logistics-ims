@@ -4,7 +4,7 @@
     <div class="row clearfix">
       <div class="col-md-12">
         <div class="card">
-          <div class="header" style="display:block">
+          <div class="header" style="display:block" id="header">
             <h2 style="float:left">Quick Report</h2>
 
             <div style="float:right">
@@ -80,6 +80,18 @@
                   </div>
                   <div class="modal-body">
                     <form>
+                      <div class="row" style="width:100%;display:flex">
+                        <div style="width:20%">
+                          <input
+                            type="checkbox"
+                            id="date_range"
+                            class="filled-in chk-col-black"
+                            v-model="showRange"
+                            @change="showRange != showRange"
+                          />
+                          <label for="date_range">Select Date Range</label>
+                        </div>
+                      </div>
                       <div class="row">
                         <div class="col-25">
                           <label class="labelNew">Filter By</label>
@@ -98,7 +110,34 @@
                           </select>
                         </div>
                       </div>
-                      <div class="row">
+                      <div class="row" v-show="this.filterBy == 'items'">
+                        <div class="col-25">
+                          <label class="labelNew">Select Item</label>
+                        </div>
+                        <div class="col-75">
+                          <div style="width:92%;float:left">
+                            <model-list-select
+                              :list="items"
+                              v-model="itemSelected"
+                              option-value="id"
+                              option-text="description"
+                              :custom-text="getItemDesc"
+                              style="background:#e4e4e4;"
+                            ></model-list-select>
+                          </div>
+                          <div style="width:8%;float:left">
+                            <button
+                              type="button"
+                              class="btn btn-success waves-effect"
+                              title="Clear Item"
+                              @click="resetItem"
+                            >
+                              <i class="material-icons">backspace</i>
+                            </button>
+                          </div>
+                        </div>
+                      </div>
+                      <div class="row" v-show="this.filterBy == 'purchaseSum'">
                         <div class="col-25">
                           <label class="labelNew">Select Supplier</label>
                         </div>
@@ -114,6 +153,7 @@
                           </div>
                           <div style="width:8%;float:left">
                             <button
+                              type="button"
                               class="btn btn-success waves-effect"
                               title="Clear Supplier"
                               @click="resetSupplier"
@@ -123,16 +163,28 @@
                           </div>
                         </div>
                       </div>
-                      <div class="row">
+                      <br />
+
+                      <div class="row dropdown" v-if="showRange == true">
                         <div class="col-25">
-                          <label for="subject">Select Date Range</label>
+                          <label for="subject">Date</label>
                         </div>
                         <div class="col-75">
                           <date-range-picker @update="onDateSelected" />
                         </div>
                       </div>
-                      <div></div>
                       <br />
+
+                      <div>
+                        <button
+                          type="button"
+                          class="btn waves-effect waves-light toggle-btn pull-right"
+                          :hidden="showRange == true || filterBy == 'items'"
+                          @click="getSummary"
+                        >
+                          Submit
+                        </button>
+                      </div>
                     </form>
                   </div>
                 </div>
@@ -142,7 +194,7 @@
             <div class="col-md-12" style="height:100%">
               <!-- PURCHASE ORDERS REPORT -->
               <div
-                class="card qr-div"
+                class="card qr-div printable"
                 id="printable"
                 v-if="filterBy == 'purchaseSum'"
               >
@@ -181,19 +233,20 @@
                         </h4>
                       </template>
 
-                      <!-- DELIVERY RECEIPT  -->
-                      <tr v-for="report in reports.purchase" :key="report.num">
+                      <!-- PURCHASE  -->
+                      <tr v-for="report in reports.purchase" :key="report.id">
                         <td>
-                          <a
-                            :href="'/purchase_order/' + report.num"
+                          {{ report.id }}
+                          <!-- <a
+                            :href="'/purchase_order/' + report.id"
                             target="_blank"
-                            >{{ report.number }}</a
-                          >
+                            >{{ report.id }}</a
+                          > -->
                         </td>
-                        <td>{{ report.supplier }}</td>
-                        <td>{{ report.total }}</td>
-                        <td>{{ report.date }}</td>
-                        <td>{{ report.requestor }}</td>
+                        <td>{{ report.supplier.name }}</td>
+                        <td>{{ formatPrice(report.total) }}</td>
+                        <td>{{ report.created_at }}</td>
+                        <td>{{ report.user.name }}</td>
                         <td>{{ report.status }}</td>
                       </tr>
                     </tbody>
@@ -202,7 +255,7 @@
               </div>
               <!-- DELIVERY RECEIPTS REPORT -->
               <div
-                class="card qr-div"
+                class="card qr-div printable"
                 id="printable"
                 v-if="filterBy == 'deliverySum'"
               >
@@ -232,7 +285,6 @@
                         <th>Name</th>
                         <th>Memo</th>
                         <th>Class</th>
-                        <th>Qty</th>
                       </tr>
                     </thead>
                     <tbody>
@@ -243,54 +295,38 @@
                       </template>
 
                       <!-- DELIVERY RECEIPT  -->
-                      <tr
-                        v-for="report in reports.data"
-                        :key="report.dr_id"
-                        :hidden="filterBy == 'salesSum'"
-                      >
+                      <tr v-for="report in reports.delivery" :key="report.id">
                         <td></td>
                         <td>
-                          <p>{{ report.date }}</p>
+                          <p>{{ report.created_at }}</p>
                         </td>
+
                         <td>
-                          <a
-                            :href="'/delivery_receipt/' + report.dr_id"
+                          {{ report.id }}
+                          <!-- <a
+                            :href="'/delivery_receipt/' + report.id"
                             target="_blank"
-                            >{{ report.dr_id }}</a
                           >
+                            <p>{{ report.id }}</p></a
+                          > -->
+                        </td>
+
+                        <td>
+                          <p>{{ report.sales_order.client.name }}</p>
                         </td>
                         <td>
-                          <p>{{ report.name }}</p>
+                          <p>Note:{{ report.sales_order.note }}</p>
                         </td>
-                        <td>
-                          <p>Note:{{ report.memo }}</p>
-                        </td>
-                        <td>{{ report.class }}</td>
-                        <td>
-                          <p>-{{ report.qty }}</p>
-                        </td>
+                        <td>{{ report.sales_order.client.class }}</td>
                       </tr>
                       <template> </template>
-
-                      <tr>
-                        <td>
-                          Total As of
-                          {{ this.sumDateSelected.to | moment("MMMM Do YYYY") }}
-                        </td>
-                        <td></td>
-                        <td></td>
-                        <td></td>
-                        <td></td>
-                        <td></td>
-                        <td>-{{ reports.totalQty }}</td>
-                      </tr>
                     </tbody>
                   </table>
                 </div>
               </div>
               <!-- SALES RETURN REPORT -->
               <div
-                class="card qr-div"
+                class="card qr-div printable"
                 id="printable"
                 v-if="filterBy == 'salesReturn'"
               >
@@ -315,7 +351,7 @@
                     <thead>
                       <tr>
                         <th></th>
-                        <th>Date</th>
+                        <th>Date Returned</th>
                         <th>Item</th>
                         <th>Serial</th>
                         <th>Status</th>
@@ -332,15 +368,17 @@
 
                       <!-- SALES RETURN  -->
                       <tr
-                        v-for="(report, index) in reports.data"
+                        v-for="(report, index) in reports.returns"
                         :key="index"
                         :hidden="filterBy != 'salesReturn'"
                       >
                         <td></td>
                         <td>
-                          <p>{{ report.date }}</p>
+                          <p>{{ report.date_return }}</p>
                         </td>
-                        <td>{{ report.id }}</td>
+                        <td>
+                          {{ report.item_id }}-{{ report.desc.description }}
+                        </td>
                         <td>
                           <p>{{ report.serial }}</p>
                         </td>
@@ -353,25 +391,13 @@
                       </tr>
 
                       <template> </template>
-
-                      <tr>
-                        <td>
-                          Total As of
-                          {{ this.sumDateSelected.to | moment("MMMM Do YYYY") }}
-                        </td>
-                        <td></td>
-                        <td></td>
-                        <td></td>
-                        <td></td>
-                        <td>-{{ reports.totalQty }}</td>
-                      </tr>
                     </tbody>
                   </table>
                 </div>
               </div>
               <!-- ALL ITEMS REPORT -->
               <div
-                class="card qr-div"
+                class="card qr-div printable"
                 id="printable"
                 v-if="filterBy == 'items'"
               >
@@ -389,16 +415,28 @@
                   </h6>
                 </div>
                 <div class="table-wrap">
+                  <div
+                    class="row clearfix"
+                    style="width:100%"
+                    v-if="showLoading == '1'"
+                  >
+                    <td colspan="14" class="text-center">
+                      <img src="../img/bars.gif" height="50" />
+                      <br />
+                      Fetching list...
+                    </td>
+                  </div>
                   <table
                     class="table table-striped table-condensed"
                     id="summaryTable3"
+                    v-else
                   >
                     <thead>
                       <tr>
                         <th>Item</th>
                         <th>Description</th>
-                        <th>Quantity On Hand</th>
-                        <!-- <th>Physical Count</th> -->
+                        <th>Qty On Hand</th>
+                        <th>Qty Out</th>
                       </tr>
                     </thead>
                     <tbody>
@@ -414,16 +452,30 @@
                       >
                         <td>{{ report.stock_id }}</td>
                         <td>{{ report.stock_desc }}</td>
-                        <td style="text-align:right">
+                        <td style="text-align:left">
                           <span style="float:left;width:100px">{{
                             report.stock_qty
                           }}</span>
                         </td>
+                        <td
+                          style="text-align:left"
+                          v-if="report.deduct_qty != null"
+                        >
+                          <span style="float:left;width:100px">{{
+                            report.deduct_qty
+                          }}</span>
+                        </td>
+                        <td style="text-align:left" v-else>0</td>
                       </tr>
                     </tbody>
                   </table>
                 </div>
               </div>
+            </div>
+            <div class="footer" id="footer">
+              <label>Encoded By:_________________________</label>
+              <label>Checked By:_________________________</label>
+              <label>Noted By:_________________________</label>
             </div>
           </div>
         </div>
@@ -456,28 +508,62 @@ export default {
       reports: [],
       clients: [],
       suppliers: [],
-      filterBy: "",
+      items: [],
+      filterBy: null,
       clientSelected: null,
       supplierSelected: null,
+      itemSelected: null,
+      generate: null,
       sumDateSelected: {},
       value: "",
       users: [],
       successful_order: [],
       sales_returns: [],
       roles: [],
-      dataForExcel: []
+      dataForExcel: [],
+      showLoading: "1",
+      showRange: false
     };
   },
   created() {
     this.user = this.$global.getUser();
     this.roles = this.$global.getRoles();
     this.suppliers = this.$global.getSupplier();
+    this.loadItems();
   },
   mounted() {},
 
   methods: {
+    getItemDesc(item) {
+      return `${item.name} - ${item.description}`;
+    },
+    loadItems() {
+      this.$http.get("api/items").then(response => {
+        this.items = response.body;
+      });
+    },
     print() {
-      this.$htmlToPaper("printable");
+      // this.$htmlToPaper("printable");
+      $(".content").css("margin-left", "0px");
+      $(".content").css("margin-right", "0px");
+      $(".content").css("margin-top", "25px");
+      $("#printable").css("display", "block");
+      $("#leftsidebar").css("display", "none");
+      $("#del-num").css("display", "none");
+      $("#header").css("display", "none");
+      $(".navbar").css("display", "none");
+      $(".col-md-3").attr("class", "col-md-3 col-xs-3");
+
+      window.print();
+
+      $(".col-md-3 col-xs-3").attr("class", "col-md-3");
+      $(".content").css("margin-left", "315px");
+      $(".content").css("margin-right", "15px");
+      $(".content").css("margin-top", "100px");
+      $("#printable").css("display", "block");
+      $("#leftsidebar").css("display", "block");
+      $("#header").css("display", "block");
+      $(".navbar").css("display", "block");
     },
     deliveryExcel(tbl) {
       this.$nextTick(function() {
@@ -662,15 +748,20 @@ export default {
         );
       });
     },
-
+    showRangeChange() {
+      this.showRange = true;
+    },
     onDateSelected(values) {
+      this.showLoading = "1";
       this.sumDateSelected = values;
       this.getSummary();
     },
     getSummary() {
-      this.$root.$emit("pageLoading");
+      // this.$root.$emit("pageLoading");
+
       this.sumDateSelected.filterBy = this.filterBy;
       this.sumDateSelected.supplierSelected = this.supplierSelected;
+      this.sumDateSelected.itemSelected = this.itemSelected;
 
       console.log(this.sumDateSelected);
       this.$http
@@ -678,12 +769,24 @@ export default {
         .then(response => {
           console.log(response.body);
           this.reports = response.body;
+          this.showLoading = "2";
         });
-      this.$root.$emit("pageLoaded");
+      // this.$root.$emit("pageLoaded");
       document.getElementById("dismiss").click();
     },
     resetSupplier() {
-      this.supplierSelected = "";
+      this.supplierSelected = null;
+    },
+    resetItem() {
+      this.itemSelected = null;
+    },
+    formatPrice(value) {
+      var formatter = new Intl.NumberFormat("en-US", {
+        style: "currency",
+        currency: "PHP",
+        minimumFractionDigits: 2
+      });
+      return formatter.format(value);
     }
   }
 };
@@ -761,5 +864,20 @@ textarea {
 .qr-div {
   box-shadow: none !important;
   border: 0;
+}
+
+.printable {
+  height: 100%;
+}
+
+@media screen {
+  .footer {
+    position: fixed;
+    display: none;
+    bottom: 0;
+    width: 100%;
+    color: white;
+    float: left;
+  }
 }
 </style>

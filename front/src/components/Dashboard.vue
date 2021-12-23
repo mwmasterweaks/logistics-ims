@@ -14,12 +14,8 @@
           <div class="header">
             <h2>Latest Forecast</h2>
           </div>
-          <div
-            class="table-wrap"
-            v-if="alerts.length == 0"
-            style="text-align: center;"
-          >
-            <img src="../img/bars.gif" height="50" /><br />
+          <div class="table-wrap loading-div" v-if="alerts.length == 0">
+            <img src="../img/bars.gif" height="50" />
             Fetching list...
           </div>
           <div class="table-wrap" v-else>
@@ -36,7 +32,10 @@
                   style="display:block;background: linear-gradient(to right, green, orange); height:8px"
                 ></label> -->
               </div>
-              <table class="table table-borderless table-items">
+              <table
+                class="table table-borderless table-items"
+                style="font-size: small; overflow-y: scroll"
+              >
                 <tbody>
                   <div v-if="runningLow.length == 0" class="empty-div">
                     <img src="../img/empty.gif" height="100" /><br />
@@ -79,7 +78,8 @@
                 style="font-size: small; overflow-y: scroll"
               >
                 <tbody>
-                  <div v-if="outOfStock.length == 0" style="text-align: center">
+                  <div v-if="outOfStock.length == 0" class="empty-div">
+                    <img src="../img/empty.gif" height="100" /><br />
                     No data to display.
                   </div>
                   <tr
@@ -166,18 +166,12 @@ export default {
 
   methods: {
     load() {
-      // this.$root.$emit("pageLoading");
       this.$http.post("api/notification/alert").then(response => {
         console.log(response.body);
         this.alerts = response.body.alerts;
         this.runningLow = response.body.runningLow;
         this.outOfStock = response.body.outOfStock;
-        // this.$root.$emit("pageLoaded");
       });
-      // this.$http.get("api/users/" + this.user.id).then(response => {
-      //   this.$global.setRoles(response.body.roles);
-      //   this.roles = this.$global.getRoles();
-      // });
     },
     linkGen(pageNum) {
       return pageNum === 1 ? "?" : `?page=${pageNum}`;
@@ -366,6 +360,13 @@ input[type="submit"]:hover {
   height: 90%;
   width: 100%;
   opacity: 0.1;
+}
+.loading-div {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  flex-direction: column;
+  height: 100%;
 }
 /* .footer {
   position: fixed;

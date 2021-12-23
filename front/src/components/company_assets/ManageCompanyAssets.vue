@@ -6,7 +6,7 @@
           <button
             class="btn btn-default waves-effect"
             @click="createCompanyAsset"
-            :disabled="!roles.create_company_assets"
+            :disabled="!roles.create_item"
           >
             <i class="material-icons">note_add</i>
             <span>Create New Company Asset</span>
@@ -31,7 +31,7 @@
                     class="form-control"
                     autocomplete="off"
                     v-model="search.assets"
-                  >
+                  />
                 </div>
               </div>
             </div>
@@ -45,16 +45,21 @@
                       v-for="type in types"
                       :key="type.id"
                       v-bind:value="type.id"
-                    >{{ type.type_name }}</option>
+                      >{{ type.type_name }}</option
+                    >
                     <option value selected>All</option>
                   </select>
                 </div>
               </div>
             </div>
             <div class="col-md-3">
-              <br>
-              <button class="btn bg-black waves-effect waves-light bg-black">Filter</button>
-              <button class="btn btn-success waves-effect" @click="resetSearch">Clear Filter</button>
+              <br />
+              <button class="btn bg-black waves-effect waves-light bg-black">
+                Filter
+              </button>
+              <button class="btn btn-success waves-effect" @click="resetSearch">
+                Clear Filter
+              </button>
             </div>
           </div>
         </form>
@@ -64,7 +69,10 @@
             <!-- START ORDER LIST TABLE -->
             <div class="table-wrap">
               <div class="table-responsive">
-                <table class="table table-striped table-condensed table-hover" id="SalesOrderTable">
+                <table
+                  class="table table-striped table-condensed table-hover"
+                  id="SalesOrderTable"
+                >
                   <thead>
                     <tr>
                       <th>Name</th>
@@ -107,7 +115,7 @@
               </div>
             </div>
             <!-- END ORDER LIST TABLE-->
-            <br>
+            <br />
             <p>{{ assets.length }} orders found.</p>
           </div>
         </div>

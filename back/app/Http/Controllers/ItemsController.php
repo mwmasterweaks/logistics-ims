@@ -21,7 +21,8 @@ class ItemsController extends Controller
     public function index()
     {
         $items = Item::with(['type', 'category', 'stocks'])
-            ->orderBy('id', 'asc')->get();
+            ->orderBy('name', 'asc')
+            ->get();
 
         $temp = [];
 
@@ -53,6 +54,42 @@ class ItemsController extends Controller
         return response()->json($items);
     }
 
+    public function limited()
+    {
+        $items = Item::with(['type', 'category', 'stocks'])
+            ->orderBy('name', 'asc')
+            ->take(20)
+            ->get();
+
+        $temp = [];
+
+        foreach ($items as $item) {
+            $total_qty_in = 0;
+            $total_qty_out = 0;
+
+            $total_qty_in = DB::table('stocks')
+                ->where('item_id', $item->id)
+                ->sum('qty_in');
+
+            $total_qty_out = DB::table('stocks')
+                ->where('item_id', $item->id)
+                ->sum('qty_out');
+
+            $forecast = (object) app(NotificationController::class)->forecast($item->id);
+            $forecast = (object) $forecast->original;
+
+            $collection = collect($item);
+            $collection->put('total_qty', $total_qty_in - $total_qty_out);
+            $collection->put('price', 0);
+            $collection->put('ordered_qty', 0);
+            $collection->put('forecast', $forecast);
+            array_push($temp, $collection->all());
+        }
+
+        $items = $temp;
+
+        return response()->json($items);
+    }
     public function addGroup(Request $request)
     {
         $items = (object)$request->orders;
@@ -88,7 +125,7 @@ class ItemsController extends Controller
     public function showItems()
     {
         $items = Item::with(['type', 'category', 'stocks'])
-            ->orderBy('id', 'asc')->get();
+            ->orderBy('name', 'asc')->get();
         return response()->json($items);
     }
 
@@ -142,7 +179,7 @@ class ItemsController extends Controller
                 ]);
 
                 //event(new NotifyUpdatedItem);
-                return $this->index();
+                // return $this->index();
             } else {
 
                 return response()->json(['error' => 'Product/Item already exists!'], 500);
@@ -207,13 +244,15 @@ class ItemsController extends Controller
     public function update(Request $request, $id)
     {
         $request->category = (object) $request->category;
+        $request->type = (object) $request->type;
 
         DB::table('items')->where('id', $id)
             ->update([
-                'type_id' => $request->type_id,
+                'type_id' => $request->type->id,
                 'category_id' => $request->category->id,
                 'name' => $request->name,
                 'description' => $request->description,
+                'price' => $request->price,
                 'updated_at' => \Carbon\Carbon::now()
             ]);
 
@@ -226,7 +265,8 @@ class ItemsController extends Controller
             Item::destroy($id);
 
             //event(new NotifyUpdatedItem);
-            return $this->index();
+            // return $this->index();
+            return "deleted!";
         } catch (\Exception $e) {
             return response()->json(['error' => 'There was a problem deleting this item.'], 500);
         }
@@ -288,11 +328,13 @@ class ItemsController extends Controller
 
     public function showSearch(Request $request)
     {
+
         $items = Item::with(['type', 'category', 'stocks'])
-            ->where('id', 'like', "%" . $request->item . "%")
-            ->orWhere('name', 'like', "%" . $request->item . "%")
+            // ->where('id', 'like', "%" . $request->item . "%")
+            // ->orWhere('name', 'like', "%" . $request->item . "%")
+            ->where('name', 'like', '%' . $request->item . "%")
             ->orWhere('description', 'like', "%" . $request->item . "%")
-            ->orderBy('id', 'desc')->get();
+            ->orderBy('name', 'asc')->get();
 
         if (!empty($request->category)) {
             $items = $items->where('category_id', $request->category);
@@ -327,17 +369,17 @@ class ItemsController extends Controller
         //return response()->json($temp);
         $items = $temp;
 
-        // if (!empty($request->category)) {
-        //   $collection = collect($items);
-        //   $filtered = $collection->where('category_id', $request->category);
-        //   $items = $filtered->all();
-        // }
+        if (!empty($request->category)) {
+            $collection = collect($items);
+            $filtered = $collection->where('category_id', $request->category);
+            $items = $filtered->all();
+        }
 
-        // if (!empty($request->type)) {
-        //   $collection = collect($items);
-        //   $filtered = $collection->where('type_id', $request->type);
-        //   $items = $filtered->all();
-        // }
+        if (!empty($request->type)) {
+            $collection = collect($items);
+            $filtered = $collection->where('type_id', $request->type);
+            $items = $filtered->all();
+        }
 
         return response()->json($items);
     }
@@ -543,42 +585,43 @@ class ItemsController extends Controller
         }
     }
 
-    public function searchItem(Request $request)
-    {
+    // public function searchItem(Request $request)
+    // {
+    //     return $request;
 
-        $items = Item::with(['type', 'category', 'stocks'])
-            ->where('description', 'like', $request->item . '%')
-            ->get();
+    //     $items = Item::with(['type', 'category', 'stocks'])
+    //         ->where('description', 'like', $request->item . '%')
+    //         ->get();
 
-        $temp = [];
+    //     $temp = [];
 
-        foreach ($items as $item) {
-            $total_qty_in = 0;
-            $total_qty_out = 0;
+    //     foreach ($items as $item) {
+    //         $total_qty_in = 0;
+    //         $total_qty_out = 0;
 
-            $total_qty_in = DB::table('stocks')
-                ->where('item_id', $item->id)
-                ->sum('qty_in');
+    //         $total_qty_in = DB::table('stocks')
+    //             ->where('item_id', $item->id)
+    //             ->sum('qty_in');
 
-            $total_qty_out = DB::table('stocks')
-                ->where('item_id', $item->id)
-                ->sum('qty_out');
+    //         $total_qty_out = DB::table('stocks')
+    //             ->where('item_id', $item->id)
+    //             ->sum('qty_out');
 
-            $forecast = (object) app(NotificationController::class)->forecast($item->id);
-            $forecast = (object) $forecast->original;
+    //         $forecast = (object) app(NotificationController::class)->forecast($item->id);
+    //         $forecast = (object) $forecast->original;
 
-            $collection = collect($item);
-            $collection->put('total_qty', $total_qty_in - $total_qty_out);
-            $collection->put('price', 0);
-            $collection->put('ordered_qty', 0);
-            $collection->put('forecast', $forecast);
-            array_push($temp, $collection->all());
-        }
+    //         $collection = collect($item);
+    //         $collection->put('total_qty', $total_qty_in - $total_qty_out);
+    //         $collection->put('price', 0);
+    //         $collection->put('ordered_qty', 0);
+    //         $collection->put('forecast', $forecast);
+    //         array_push($temp, $collection->all());
+    //     }
 
-        $items = $temp;
+    //     $items = $temp;
 
-        return response()->json($items);
-    }
+    //     return response()->json($items);
+    // }
 
     public function searchGroup(Request $request)
     {

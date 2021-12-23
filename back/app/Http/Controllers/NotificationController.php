@@ -33,17 +33,17 @@ class NotificationController extends Controller
         $outOfStock = array();
 
         foreach ($items as $item) {
-            $del = DB::table('item_delivery_receipt')
-                ->join('delivery_receipts', 'delivery_receipts.id', '=', 'item_delivery_receipt.delivery_receipt_id')
-                ->where('item_delivery_receipt.item_id', $item->id)
+            $del = DB::table('delivery_receipt_item')
+                ->join('delivery_receipts', 'delivery_receipts.id', '=', 'delivery_receipt_item.delivery_receipt_id')
+                ->where('delivery_receipt_item.item_id', $item->id)
                 ->where('delivery_receipts.status', 'delivering')
                 ->where('created_at', '>', Carbon::now()->subDays(90)->toDateTimeString())
                 ->where('created_at', '<', Carbon::now()->toDateTimeString())
                 ->orWhere('delivery_receipts.status', 'delivered')
-                ->where('item_delivery_receipt.item_id', $item->id)
+                ->where('delivery_receipt_item.item_id', $item->id)
                 ->where('created_at', '>', Carbon::now()->subDays(90)->toDateTimeString())
                 ->where('created_at', '<', Carbon::now()->toDateTimeString())
-                ->sum('item_delivery_receipt.qty');
+                ->sum('delivery_receipt_item.qty');
 
             $locale = DB::table('stocks')
                 ->join('purchase_orders', 'purchase_orders.id', '=', 'stocks.purchase_order_id')
@@ -116,17 +116,17 @@ class NotificationController extends Controller
     {
         $item = DB::table('items')->where('id', $id)->first();
 
-        $del = DB::table('item_delivery_receipt')
-            ->join('delivery_receipts', 'delivery_receipts.id', '=', 'item_delivery_receipt.delivery_receipt_id')
-            ->where('item_delivery_receipt.item_id', $id)
+        $del = DB::table('delivery_receipt_item')
+            ->join('delivery_receipts', 'delivery_receipts.id', '=', 'delivery_receipt_item.delivery_receipt_id')
+            ->where('delivery_receipt_item.item_id', $id)
             ->where('delivery_receipts.status', 'delivering')
             ->where('created_at', '>', Carbon::now()->subDays(90)->toDateTimeString())
             ->where('created_at', '<', Carbon::now()->toDateTimeString())
             ->orWhere('delivery_receipts.status', 'delivered')
-            ->where('item_delivery_receipt.item_id', $id)
+            ->where('delivery_receipt_item.item_id', $id)
             ->where('created_at', '>', Carbon::now()->subDays(90)->toDateTimeString())
             ->where('created_at', '<', Carbon::now()->toDateTimeString())
-            ->sum('item_delivery_receipt.qty');
+            ->sum('delivery_receipt_item.qty');
 
         $locale = DB::table('stocks')
             ->join('purchase_orders', 'purchase_orders.id', '=', 'stocks.purchase_order_id')

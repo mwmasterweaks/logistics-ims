@@ -21,29 +21,149 @@
       <div class="body">
         <!-- START SEARCH FORM -->
         <form @submit.prevent="searchSalesReturn">
-          <div class="row clearfix">
-            <div class="col-md-5">
-              <div class="form-group">
-                <div class="form-line">
-                  <span>Search</span>
-                  <input
-                    type="text"
-                    class="form-control"
-                    autocomplete="off"
-                    @keyup="searchSalesReturnText"
-                    v-model="search.sales_return"
-                  />
+          <div class="row clearfix" style="height:50px">
+            <div style="width:100%">
+              <div class="col-md-1">
+                <div class="form-group">
+                  <span>Sort By</span>
+                  <div class="form-line">
+                    <select class="form-control" v-model="search.sort">
+                      <option value="1">Latest</option>
+                      <option value="2">Oldest</option>
+                    </select>
+                  </div>
                 </div>
+              </div>
+              <div class="col-md-2">
+                <div class="form-group">
+                  <span>Filter By</span>
+                  <div class="form-line">
+                    <select class="form-control" v-model="search.filter">
+                      <option value="number">ID</option>
+                      <option value="client">Client</option>
+                      <option value="returnee">Returnee</option>
+                      <option value="date">Date Created</option>
+                      <option value="status">Status</option>
+                    </select>
+                  </div>
+                </div>
+              </div>
+              <div class="col-md-6" v-if="search.filter == 'date'">
+                <div>
+                  <span>Search</span>
+                </div>
+                <div class="form-group" style="display:flex;">
+                  <b-form-datepicker
+                    id="datepicker-valid"
+                    :state="true"
+                    v-model="search.date_from"
+                    class="date-range"
+                    placeholder="Date From"
+                  ></b-form-datepicker>
+                  <b-form-datepicker
+                    id="datepicker-valid"
+                    :state="true"
+                    v-model="search.date_to"
+                    class="date-range"
+                    placeholder="Date To"
+                  ></b-form-datepicker>
+                </div>
+              </div>
+              <div class="col-md-4" v-else-if="search.filter == 'client'">
+                <div class="form-group">
+                  <div class="form-line">
+                    <span>Search</span>
+                    <input
+                      type="text"
+                      class="form-control"
+                      autocomplete="off"
+                      v-model="search.text"
+                      @keyup="searchSalesReturnText"
+                      placeholder="Type client name"
+                    />
+                  </div>
+                </div>
+              </div>
+              <div class="col-md-4" v-else-if="search.filter == 'returnee'">
+                <div class="form-group">
+                  <div class="form-line">
+                    <span>Search</span>
+                    <input
+                      type="text"
+                      class="form-control"
+                      autocomplete="off"
+                      v-model="search.returnee"
+                      placeholder="Type client name"
+                    />
+                  </div>
+                </div>
+              </div>
+              <div class="col-md-4" v-else-if="search.filter == 'number'">
+                <div class="form-group">
+                  <div class="form-line">
+                    <span>Search</span>
+                    <input
+                      type="text"
+                      class="form-control"
+                      autocomplete="off"
+                      v-model="search.number"
+                      placeholder="All"
+                    />
+                  </div>
+                </div>
+              </div>
+              <div class="col-md-4" v-else-if="search.filter == 'status'">
+                <div class="form-group">
+                  <div class="form-line">
+                    <span>Search</span>
+                    <select
+                      class="form-control"
+                      v-model="search.statusSelected"
+                    >
+                      <option value="draft">Draft</option>
+                      <option value="approval">For Approval</option>
+                      <option value="approved">Order: Ongoing</option>
+                      <option value="declined">Order Declined</option>
+                      <option value="on order">On Order</option>
+                      <option value="order complete">Order Fulfilled </option>
+                    </select>
+                  </div>
+                </div>
+              </div>
+              <div class="col-md-2">
+                <br />
+                <button class="btn btn-sm bg-black waves-effect waves-light">
+                  Filter
+                </button>
+                <button
+                  class="btn btn-sm btn-success waves-effect"
+                  @click="resetSearch"
+                >
+                  Reset
+                </button>
               </div>
             </div>
           </div>
         </form>
+        <div class="row clearfix">
+          <div class="col-md-10"></div>
+          <div class="col-md-2">
+            <span>Showing {{ sales_returns.length }} entries</span>
+          </div>
+        </div>
         <!-- END SEARCH FORM -->
         <div class="row clearfix">
           <div class="col-md-12">
             <!-- START ORDER LIST TABLE -->
             <div class="table-wrap">
-              <div class="table-responsive">
+              <div class="row clearfix" v-if="showLoading" style="width:100%">
+                <td colspan="14" class="text-center">
+                  <img src="../../img/bars.gif" height="50" />
+                  <br />
+                  Fetching list...
+                </td>
+              </div>
+              <div class="table-responsive" v-else>
                 <table
                   class="table table-striped table-condensed table-hover"
                   id="SalesReturnTable"
@@ -101,12 +221,19 @@ moment().format();
 export default {
   data() {
     return {
+      showLoading: false,
       sales_returns: [],
       roles: [],
       authenticatedUser: [],
       search: {
-        sales_return: "",
-        sort: "Latest"
+        text: "",
+        sort: "1",
+        filter: "client",
+        number: "",
+        returnee: "",
+        statusSelected: "",
+        date_from: "",
+        date_to: ""
       }
     };
   },
@@ -118,15 +245,16 @@ export default {
   },
   methods: {
     loadReturns() {
-      this.$root.$emit("pageLoading");
+      this.showLoading = true;
       this.$http.get("api/SalesReturns").then(response => {
+        console.log(response.body);
         this.sales_returns = response.body;
-        this.$root.$emit("pageLoaded");
+        this.showLoading = false;
       });
     },
     searchSalesReturnText() {
       var filter, table, tr, targetTableColCount;
-      filter = this.search.sales_return.toUpperCase();
+      filter = this.search.text.toUpperCase();
       table = document.getElementById("SalesReturnTable");
       tr = table.getElementsByTagName("tr");
       for (var i = 0; i < tr.length; i++) {
@@ -147,6 +275,25 @@ export default {
           table.rows.item(i).style.display = "table-row";
         }
       }
+    },
+    resetSearch() {
+      this.search.text = "";
+      this.search.sort = "1";
+      this.search.filter = "number";
+      this.search.number = "";
+      this.search.returnee = "";
+      this.search.statusSelected = "";
+      this.search.date_from = "";
+      this.search.date_to = "";
+      this.searchSalesReturnText();
+    },
+    searchSalesReturn() {
+      this.showLoading = true;
+      this.$http.post("api/sales_return/search", this.search).then(response => {
+        this.showLoading = false;
+        this.sales_returns = response.body;
+        console.log(response.body);
+      });
     },
 
     createSalesReturn() {
@@ -186,6 +333,23 @@ export default {
   overflow-y: auto;
   overflow-x: hidden;
   border: 1px solid #eee;
+}
+
+.search-list {
+  background: none;
+  border: none !important;
+  border-bottom: 1px solid black !important;
+  border-radius: 0 0 0 0 !important;
+  box-shadow: none !important;
+  width: 70%;
+}
+.date-range {
+  border: none !important;
+  border-bottom: 1px solid black !important;
+  box-shadow: none !important;
+  width: 50%;
+  margin-right: 5px;
+  border-radius: 0 0 0 0 !important;
 }
 
 /* width */

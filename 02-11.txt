@@ -1,0 +1,49 @@
+email table
+
+users
+	department_id
+departments
+	id
+	approver_id
+	name
+	timestamp
+approvers
+	id
+	user_id
+	timestamp
+
+php artisan make:model table -mcr
+php artisan migrate:refresh --path=/database/migrations/fileName.php
+
+
+LOGS:
+DASURECO -> 49 ( delete )
+Sold to Dasureco (Electric Coop.)
+2021-11-08 
+CENTRAL -> 54, 55, 56, 57, 58
+martcomm -> delete  tanan (walay sulod)
+
+SELECT *  FROM `logs` WHERE item_id LIKE "%10000273%" AND remarks LIKE '%Sold to Dasureco%' AND  `created_at` LIKE '%2021-11-08 %';
+
+logs(to be deleted)
+10000274
+10000275
+10000397
+10000561
+10000744
+
+
+
+TIMAAN, FELIX - aprinfelt408@gmail.com , 09456594170
+
+FABULA, LIZA - lizafabula9@gmail.com, 09518814019
+
+BELDENEZA, ROGELIO D. - rogeliojrbeldeneza@gmail.com, 09562409688
+done maam
+
+add ko email address po ni Andales, Roland - rollandalesxx1@gmail.com. 
+
+09516856795 & update email add : kc.gillera@gmail.com account of GILLERA, FIDELA
+
+PERDIDO, JUNNEL M. -change date activated 2021-10-29-> Nov 6 2021 
+

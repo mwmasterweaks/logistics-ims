@@ -641,10 +641,10 @@ export default {
 
   created() {
     this.date = moment().format("MM/DD/YYYY");
-    this.items = this.$global.getItems();
     this.getClients();
     this.warehouses = this.$global.getWarehouses();
     this.getOrder();
+    this.loadItems();
   },
 
   watch: {
@@ -658,6 +658,11 @@ export default {
   },
 
   methods: {
+    loadItems() {
+      this.$http.get("api/items").then(response => {
+        this.items = response.body;
+      });
+    },
     getClients() {
       this.$http.get("api/client").then(response => {
         this.clients = response.body;

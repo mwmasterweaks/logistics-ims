@@ -44,7 +44,12 @@
             </a>
             <ul class="ml-menu">
               <router-link tag="li" to="/purchase_orders">
-                <a href="javascript:void(0);">Purchase Orders</a>
+                <a href="javascript:void(0);"
+                  >Purchase Orders
+                  <span class="badge" id="badge-warning">{{
+                    pendingPurchase
+                  }}</span></a
+                >
               </router-link>
               <router-link tag="li" to="/direct_receives">
                 <a href="javascript:void(0);">Direct Receive Items</a>
@@ -64,17 +69,20 @@
             </a>
             <ul class="ml-menu">
               <router-link tag="li" to="/list/sales_order">
-                <a href="javascript:void(0);">Sales Orders</a>
+                <a href="javascript:void(0);"
+                  >Material Requests
+                  <span class="badge" id="badge-warning">{{
+                    pendingMRequest
+                  }}</span></a
+                >
               </router-link>
               <router-link tag="li" to="/delivery_receipts">
                 <a href="javascript:void(0);">Delivery Receipts</a>
               </router-link>
-              <router-link
-                tag="li"
-                to="/list/sales_return"
-                v-show="roles.create_sales_return"
-              >
-                <a href="javascript:void(0);">Transmittal Receipts</a>
+              <router-link tag="li" to="/list/sales_return">
+                <a href="javascript:void(0);">Transmittal Receipts <span class="badge" id="badge-warning">{{
+                    pendingReturn
+                  }}</span></a>
               </router-link>
             </ul>
           </li>
@@ -91,15 +99,6 @@
               <router-link tag="li" to="/component">
                 <a href="javascript:void(0);">Components</a>
               </router-link>
-              <!-- <router-link tag="li" to="/manage/warehouse">
-                <a href="javascript:void(0);">Warehouses</a>
-              </router-link>
-              <router-link tag="li" to="/manage/category">
-                <a href="javascript:void(0);">Category & type</a>
-              </router-link>
-              <router-link tag="li" to="/list/company_assets">
-                <a href="javascript:void(0);">Company Assets</a>
-              </router-link> -->
             </ul>
           </li>
           <li>
@@ -120,6 +119,9 @@
               </router-link>
               <router-link tag="li" to="/supplier">
                 <a href="javascript:void(0);">Suppliers</a>
+              </router-link>
+              <router-link tag="li" to="/department" v-show="roles.admin">
+                <a href="javascript:void(0);">Departments</a>
               </router-link>
             </ul>
           </li>
@@ -214,16 +216,16 @@
                     - Create sales return are now more detailed.
                   </p>
                   <b>
-                    <p class="twoSpace-span">Sales Order:</p>
+                    <p class="twoSpace-span">Material Request:</p>
                   </b>
                   <p class="fiveSpace-span">
                     - Are now required to select client to send for approval.
                   </p>
                   <p class="fiveSpace-span">
-                    - Fix the search client at create sales order.
+                    - Fix the search client at create material request.
                   </p>
                   <p class="fiveSpace-span">
-                    - Fix the search item at create sales order.
+                    - Fix the search item at create material request.
                   </p>
                   <b>
                     <p class="twoSpace-span">Delivery Receipts:</p>
@@ -300,11 +302,11 @@
                     <p>Updates:</p>
                   </b>
                   <b>
-                    <p class="twoSpace-span">Sales Order:</p>
+                    <p class="twoSpace-span">Material Request:</p>
                   </b>
                   <p class="fiveSpace-span">
-                    - Add item in create sales order are now more efficient.
-                    (big impact for helpdesk)
+                    - Add item in create material request are now more
+                    efficient. (big impact for helpdesk)
                   </p>
                   <b>
                     <p class="twoSpace-span">Delivery Receipts:</p>
@@ -345,7 +347,7 @@
                   </p>
                   <p class="fiveSpace-span">
                     - Quick Report: Can generate summary report filtered by
-                    sales order, delivery receipts, items and clients.
+                    material request, delivery receipts, items and clients.
                   </p>
                   <b class="twoSpace-span">Purchasing </b>
                   <p class="fiveSpace-span">
@@ -354,11 +356,11 @@
                   <p class="fiveSpace-span">
                     - Enabled import of serials in direct receive items.
                   </p>
-                  <b class="twoSpace-span">Sales Orders </b>
+                  <b class="twoSpace-span">Material Request </b>
                   <p class="fiveSpace-span">
                     - Added Item Group button which enables users to choose a
                     group depends on the items needed for S.O, typically used
-                    for sales orders which contains redundant items.
+                    for material request which contains redundant items.
                   </p>
                   <b class="twoSpace-span">Delivery Receipts </b>
                   <p class="fiveSpace-span">-</p>
@@ -391,7 +393,10 @@ export default {
   data() {
     return {
       authenticatedUser: [],
-      roles: []
+      roles: [],
+      pendingMRequest: 0,
+      pendingPurchase: 0,
+      pendingReturn:0
     };
   },
 
@@ -399,12 +404,37 @@ export default {
     this.setAuthenticatedUser();
     // console.log(this.$global.getUser());
     console.log("SIDEBAR VUE");
+    this.setCount();
     // this.authenticatedUser = this.$global.getUser();
     // this.roles = this.$global.getRoles();
     // this.authenticatedUser = this.$global.getUser();
   },
 
+  mounted() {
+    this.$root.$on("Sidebar", () => {
+      //console.log("CALL1");
+      this.setCount();
+    });
+  },
+
   methods: {
+    setCount() {
+      this.$root.$emit("pageLoading");
+      this.$http.post("api/sales_order/pending/number").then(response => {
+        this.pendingMRequest = response.body;
+        this.$root.$emit("pageLoaded");
+      });
+      this.$http.post("api/purchase_order/pending/number").then(response => {
+        this.pendingPurchase = response.body;
+        this.$root.$emit("pageLoaded");
+        // console.log(this.pendingPurchase);
+      });
+      this.$http.post("api/sales_return/pending/number").then(response => {
+        this.pendingReturn = response.body;
+        this.$root.$emit("pageLoaded");
+        // console.log(this.pendingPurchase);
+      });
+    },
     logout() {
       this.$auth.destroyToken();
       this.$global.destroyGlobal();
@@ -470,5 +500,14 @@ export default {
 }
 .fiveSpace-span {
   margin-left: 24px !important;
+}
+
+.badge {
+  font-size: 8px;
+  color: #fffefe;
+}
+#badge-warning {
+  background: #e2ac08;
+  color: #fffefe;
 }
 </style>

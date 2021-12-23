@@ -6,11 +6,32 @@
         <b-tab title="Warehouses" style="cursor:pointer">
           <b-card>
             <b>Manage Warehouses</b>
+            <br />
+            <div class="col-md-6" style="display:flex">
+              <div class="form-group" style="float:left">
+                <div class="form-line">
+                  <input
+                    type="text"
+                    class="form-control"
+                    autocomplete="off"
+                    v-model="search.warehouse"
+                    @keyup="searchKeyword"
+                    placeholder="Search . ."
+                  />
+                </div>
+              </div>
+              <i
+                style="float:right;margin-top:8px"
+                class="material-icons"
+                @click="searchKeyword"
+                >search</i
+              >
+            </div>
             <button
               type="button"
               class="btn btn-default waves-effect"
               @click="createNewWarehouse"
-              :hidden="!roles.create_warehouse"
+              v-show="roles.create_comp"
               style="float:right"
             >
               <i class="material-icons">note_add</i>
@@ -24,6 +45,8 @@
                   <div class="table-responsive">
                     <table
                       class="table table-striped table-condensed table-hover"
+                      id="warehouseTable"
+                      ref="warehouseTable"
                     >
                       <thead>
                         <tr>
@@ -76,10 +99,31 @@
         <b-tab title="Category" style="cursor:pointer">
           <b-card>
             <b>Manage Categories</b>
+            <br />
+            <div class="col-md-6" style="display:flex">
+              <div class="form-group" style="float:left">
+                <div class="form-line">
+                  <input
+                    type="text"
+                    class="form-control"
+                    autocomplete="off"
+                    v-model="search.category"
+                    @keyup="searchKeyword"
+                    placeholder="Search . . ."
+                  />
+                </div>
+              </div>
+              <i
+                style="float:right;margin-top:8px"
+                class="material-icons"
+                @click="searchKeyword"
+                >search</i
+              >
+            </div>
             <button
               type="button"
               class="btn btn-default waves-effect"
-              :hidden="!roles.create_category"
+              v-show="roles.create_comp"
               style="float:right"
               @click="createNewCategory"
             >
@@ -124,13 +168,34 @@
         <b-tab title="Asset Type" style="cursor:pointer">
           <b-card>
             <b> Manage Asset Types</b>
+            <br />
+            <div class="col-md-6" style="display:flex">
+              <div class="form-group" style="float:left">
+                <div class="form-line">
+                  <input
+                    type="text"
+                    class="form-control"
+                    autocomplete="off"
+                    v-model="search.type"
+                    @keyup="searchKeyword"
+                    placeholder="Search . . ."
+                  />
+                </div>
+              </div>
+              <i
+                style="float:right;margin-top:8px"
+                class="material-icons"
+                @click="searchKeyword"
+                >search</i
+              >
+            </div>
             <button
               type="button"
               class="btn btn-default waves-effect"
               style="float:right"
               data-toggle="modal"
               data-target="#modalAddType"
-              :hidden="!roles.create_warehouse"
+              v-show="roles.create_comp"
             >
               <i class="material-icons">note_add</i>
               <span>Create</span>
@@ -184,11 +249,32 @@
         <b-tab title="Company Assets" style="cursor:pointer">
           <b-card>
             <b>Manage Company Assets</b>
+            <br />
+            <div class="col-md-6" style="display:flex">
+              <div class="form-group" style="float:left">
+                <div class="form-line">
+                  <input
+                    type="text"
+                    class="form-control"
+                    autocomplete="off"
+                    v-model="search.asset"
+                    @keyup="searchKeyword"
+                    placeholder="Search . . ."
+                  />
+                </div>
+              </div>
+              <i
+                style="float:right;margin-top:8px"
+                class="material-icons"
+                @click="searchKeyword"
+                >search</i
+              >
+            </div>
             <button
               type="button"
               class="btn btn-default waves-effect"
               style="float:right"
-              :hidden="!roles.create_warehouse"
+              v-show="roles.create_comp"
               @click="createCompanyAsset"
             >
               <i class="material-icons">note_add</i>
@@ -203,7 +289,6 @@
                   <div class="table-responsive">
                     <table
                       class="table table-striped table-condensed table-hover"
-                      id="SalesOrderTable"
                     >
                       <thead>
                         <tr>
@@ -267,13 +352,34 @@
         <b-tab title="Mode of Payment" style="cursor:pointer">
           <b-card>
             <b>Manage Mode of Payment</b>
+            <br />
+            <div class="col-md-6" style="display:flex">
+              <div class="form-group" style="float:left">
+                <div class="form-line">
+                  <input
+                    type="text"
+                    class="form-control"
+                    autocomplete="off"
+                    v-model="search.mode"
+                    @keyup="searchKeyword"
+                    placeholder="Search . . ."
+                  />
+                </div>
+              </div>
+              <i
+                style="float:right;margin-top:8px"
+                class="material-icons"
+                @click="searchKeyword"
+                >search</i
+              >
+            </div>
             <button
               type="button"
               class="btn btn-default waves-effect"
               style="float:right"
               data-toggle="modal"
               data-target="#modalAddMOP"
-              :hidden="!roles.create_warehouse"
+              v-show="roles.create_comp"
             >
               <i class="material-icons">note_add</i>
               <span>Create</span>
@@ -325,13 +431,34 @@
         <b-tab title="Term" style="cursor:pointer">
           <b-card>
             <b>Manage Term</b>
+            <br />
+            <div class="col-md-6" style="display:flex">
+              <div class="form-group" style="float:left">
+                <div class="form-line">
+                  <input
+                    type="text"
+                    class="form-control"
+                    autocomplete="off"
+                    v-model="search.term"
+                    @keyup="searchKeyword"
+                    placeholder="Search . . ."
+                  />
+                </div>
+              </div>
+              <i
+                style="float:right;margin-top:8px"
+                class="material-icons"
+                @click="searchKeyword"
+                >search</i
+              >
+            </div>
             <button
               type="button"
               class="btn btn-default waves-effect"
               style="float:right"
               data-toggle="modal"
               data-target="#modalAddTerm"
-              :hidden="!roles.create_warehouse"
+              v-show="roles.create_comp"
             >
               <i class="material-icons">note_add</i>
               <span>Create</span>
@@ -560,7 +687,7 @@
                         v-model="warehouse.name"
                         autocomplete="off"
                         autofocus="on"
-                        :disabled="!roles.update_warehouse"
+                        :disabled="!roles.update_comp"
                       />
                     </div>
                     <small
@@ -582,7 +709,7 @@
                         class="form-control"
                         v-model="warehouse.address"
                         rows="2"
-                        :disabled="!roles.update_warehouse"
+                        :disabled="!roles.update_comp"
                       ></textarea>
                     </div>
                   </div>
@@ -594,7 +721,7 @@
                 type="submit"
                 value="Save Changes"
                 class="btn btn-lg btn-info waves-effect waves-light pull-right"
-                :disabled="!roles.update_warehouse"
+                v-show="roles.update_comp"
               />
             </div>
           </form>
@@ -641,7 +768,7 @@
                         v-model="category.name"
                         autocomplete="off"
                         autofocus="on"
-                        :disabled="!roles.update_category"
+                        :disabled="!roles.update_comp"
                       />
                     </div>
                     <small
@@ -658,7 +785,7 @@
                 type="submit"
                 value="Save Changes"
                 class="btn btn-lg btn-info waves-effect waves-light pull-right"
-                :disabled="!roles.update_category"
+                v-show="roles.update_comp"
               />
             </div>
           </form>
@@ -705,7 +832,7 @@
                         v-model="type.type_name"
                         autocomplete="off"
                         autofocus="on"
-                        :disabled="!roles.update_category"
+                        :disabled="!roles.update_comp"
                       />
                     </div>
                     <small
@@ -722,7 +849,7 @@
                 type="submit"
                 value="Save Changes"
                 class="btn btn-lg btn-info waves-effect waves-light pull-right"
-                :disabled="!roles.update_category"
+                v-show="roles.update_comp"
               />
             </div>
           </form>
@@ -911,6 +1038,7 @@
             </div>
             <div class="modal-footer">
               <input
+                v-show="roles.update_comp"
                 type="submit"
                 value="Save Changes"
                 class="btn btn-lg btn-info waves-effect waves-light pull-right"
@@ -1015,7 +1143,7 @@
                           autocomplete="off"
                           v-validate="'required'"
                           v-model.trim="mode.mode"
-                          :disabled="!roles.update_category"
+                          :disabled="!roles.update_comp"
                         />
                       </div>
                       <small
@@ -1036,6 +1164,7 @@
                       value="Save Changes"
                       class="btn btn-lg btn-info waves-effect waves-light pull-right"
                       style="float:right"
+                      v-show="roles.update_comp"
                     />
                   </div>
                 </div>
@@ -1142,7 +1271,7 @@
                           autocomplete="off"
                           v-validate="'required'"
                           v-model.trim="term.term"
-                          :disabled="!roles.update_category"
+                          :disabled="!roles.update_comp"
                         />
                       </div>
                       <small
@@ -1163,6 +1292,7 @@
                       value="Save Changes"
                       class="btn btn-lg btn-info waves-effect waves-light pull-right"
                       style="float:right"
+                      v-show="roles.update_comp"
                     />
                   </div>
                 </div>
@@ -1232,6 +1362,14 @@ export default {
       terms: [],
       addTerm: {
         name: ""
+      },
+      search: {
+        warehouse: "",
+        category: "",
+        type: "",
+        asset: "",
+        mode: "",
+        term: ""
       }
     };
   },
@@ -1629,6 +1767,17 @@ export default {
       } else {
         swal("type name is required.", "Information", "info");
       }
+    },
+
+    searchKeyword() {
+      this.$http.post("api/componentSearch", this.search).then(response => {
+        this.warehouses = response.body.warehouse;
+        this.categories = response.body.category;
+        this.types = response.body.type;
+        this.assets = response.body.asset;
+        this.modes = response.body.mode;
+        this.terms = response.body.term;
+      });
     }
   }
 };
@@ -1694,4 +1843,6 @@ textarea {
 ::-webkit-scrollbar-thumb:hover {
   background: #555;
 }
+
+/* search box */
 </style>

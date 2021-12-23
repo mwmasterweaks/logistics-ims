@@ -8,7 +8,7 @@
             type="button"
             class="btn btn-default waves-effect"
             @click="createNewWarehouse"
-            :disabled="!roles.create_warehouse"
+            :disabled="!roles.create_item"
           >
             <i class="material-icons">note_add</i>
             <span>Create New Warehouse</span>
@@ -143,7 +143,7 @@
                             v-model="warehouse.name"
                             autocomplete="off"
                             autofocus="on"
-                            :disabled="!roles.update_warehouse"
+                            :disabled="!roles.update_item"
                           />
                         </div>
                         <small
@@ -165,7 +165,7 @@
                             class="form-control"
                             v-model="warehouse.address"
                             rows="2"
-                            :disabled="!roles.update_warehouse"
+                            :disabled="!roles.update_item"
                           ></textarea>
                         </div>
                       </div>
@@ -177,7 +177,7 @@
                     type="submit"
                     value="Save Changes"
                     class="btn btn-lg btn-info waves-effect waves-light pull-right"
-                    :disabled="!roles.update_warehouse"
+                    :disabled="!roles.update_item"
                   />
                 </div>
               </form>

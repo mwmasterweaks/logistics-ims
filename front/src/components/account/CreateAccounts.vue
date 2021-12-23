@@ -28,12 +28,38 @@
                         v-model.trim="user.name"
                         autocomplete="off"
                         autofocus="on"
-                      >
+                      />
                     </div>
                     <small
                       class="text-danger pull-left"
                       v-show="errors.has('name')"
-                    >Name is required.</small>
+                      >Name is required.</small
+                    >
+                  </div>
+                </div>
+              </div>
+              <div class="row clearfix">
+                <div class="col-md-12">
+                  <span>Department</span>
+                  <div class="input-group">
+                    <div class="form-line">
+                      <model-list-select
+                        class="search-list"
+                        :list="departments"
+                        option-value="id"
+                        option-text="name"
+                        name="department"
+                        v-model="user.department_id"
+                        v-validate="'required'"
+                        placeholder="Please select department .."
+                      >
+                      </model-list-select>
+                    </div>
+                    <small
+                      class="text-danger pull-left"
+                      v-show="errors.has('department')"
+                      >Department is required.</small
+                    >
                   </div>
                 </div>
               </div>
@@ -50,12 +76,13 @@
                         v-validate="{ required: true, email: true }"
                         v-model.trim="user.email"
                         autocomplete="off"
-                      >
+                      />
                     </div>
                     <small
                       class="text-danger pull-left"
                       v-show="errors.has('email')"
-                    >Email is required.</small>
+                      >Email is required.</small
+                    >
                   </div>
                 </div>
               </div>
@@ -72,12 +99,13 @@
                         class="form-control"
                         v-validate="{ required: true, min: 8 }"
                         v-model.trim="user.password"
-                      >
+                      />
                     </div>
                     <small
                       class="text-danger pull-left"
                       v-show="errors.has('password')"
-                    >{{ errors.first('password') }}</small>
+                      >{{ errors.first("password") }}</small
+                    >
                   </div>
                 </div>
               </div>
@@ -93,12 +121,13 @@
                         class="form-control"
                         v-validate="'required|confirmed:password'"
                         v-model.trim="user.confirm_password"
-                      >
+                      />
                     </div>
                     <small
                       class="text-danger pull-left"
                       v-show="errors.has('confirm')"
-                    >The password confirmation does not match.</small>
+                      >The password confirmation does not match.</small
+                    >
                   </div>
                 </div>
               </div>
@@ -109,7 +138,7 @@
                     type="submit"
                     value="Create"
                     class="btn btn-lg btn-info waves-effect waves-light pull-right"
-                  >
+                  />
                 </div>
               </div>
             </div>
@@ -121,34 +150,46 @@
 </template>
 
 <script>
+import { ModelListSelect } from "vue-search-select";
 export default {
+  components: {
+    "model-list-select": ModelListSelect
+  },
   data() {
     return {
       user: {
         name: null,
         email: null,
         password: null,
-        confirm_password: null
-      }
+        confirm_password: null,
+        department_id: null
+      },
+      departments: []
     };
   },
 
+  created() {
+    this.authenticatedUser = this.$global.getUser();
+    this.departments = this.$global.getDepartment();
+  },
   methods: {
     create() {
       this.$validator.validateAll().then(result => {
+        this.user.authenticatedUser = this.authenticatedUser;
         if (result) {
           this.$http
             .post("api/users", this.user)
             .then(response => {
-              this.$global.setUsers(response.body.original);
+              console.log(response.body);
+              // this.$global.setUsers(response.body.original);
 
-              swal(this.user.name, "was successfully created!", {
-                icon: "success"
-              });
+              // swal(this.user.name, "was successfully created!", {
+              //   icon: "success"
+              // });
 
-              this.$router.push({
-                path: "/accounts"
-              });
+              // this.$router.push({
+              //   path: "/accounts"
+              // });
             })
             .catch(response => {
               swal({
@@ -191,4 +232,12 @@ export default {
 </script>
 
 <style scoped>
+.search-list {
+  background: none;
+  border: none !important;
+  border-bottom: 1px solid black !important;
+  border-radius: 0 0 0 0 !important;
+  box-shadow: none !important;
+  width: 70%;
+}
 </style>

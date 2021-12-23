@@ -49,6 +49,7 @@
           type="button"
           class="btn btn-default waves-effect"
           @click="exit"
+          hidden
         >
           <i class="material-icons">keyboard_backspace</i>
           <span>Back</span>
@@ -58,7 +59,7 @@
           type="button"
           class="btn btn-lg btn-info waves-effect"
           @click="update"
-          :disabled="!roles.update_item"
+          v-show="roles.update_item"
         >
           <span>Save Changes</span>
         </button>
@@ -66,7 +67,7 @@
           type="button"
           class="btn btn-default waves-effect"
           @click="deleteItem(item)"
-          :disabled="!roles.delete_item || item.stocks.length > 0"
+          v-show="roles.delete_item || item.stocks.length > 0"
         >
           <i class="material-icons">delete</i>
           <span>Delete Item</span>
@@ -253,7 +254,25 @@
                 <div class="col-md-4">
                   <div class="form-group">
                     <label>Type</label>
-                    <p>{{ item.type.name }}</p>
+                    <!-- <p>{{ item.type.name }}</p> -->
+                    <div class="form-line">
+                      <select
+                        name="category"
+                        class="form-control"
+                        v-validate="'required'"
+                        v-model="item.type.id"
+                        :disabled="!roles.update_item"
+                      >
+                        <option disabled>Please select type</option>
+                        <option
+                          v-for="type in types"
+                          :key="type.id"
+                          v-bind:value="type.id"
+                        >
+                          {{ type.name }}
+                        </option>
+                      </select>
+                    </div>
                   </div>
                 </div>
                 <div class="col-md-5">
@@ -284,14 +303,31 @@
             <div class="col-md-3">
               <barcode v-bind:value="item.id" :options="{}"></barcode>
               <br />
-              <button
-                v-show="item.type.name == 'Consumable'"
+              <div class="col-md-7">
+                <div class="form-group">
+                  <label style="color:red">UNIT COST</label>
+                  <div class="form-line">
+                    <input
+                      name="name"
+                      type="text"
+                      class="form-control"
+                      v-validate="'required'"
+                      v-model="item.price"
+                      autocomplete="off"
+                      :disabled="!roles.update_item"
+                    />
+                  </div>
+                </div>
+              </div>
+              <!-- <button
+                v-show="item.type.name == 'Consumable' && roles.update_item"
                 class="btn btn-default waves-effect pull-left"
                 @click="printConsumable"
               >
                 Print Preview Barcode
-              </button>
+              </button> -->
             </div>
+            <br />
           </div>
           <!-- END ITEM EDIT FORM -->
           <!-- ITEM STOCKS/LOG DETAILS -->
@@ -323,7 +359,8 @@
                     <table class="table table-condensed table-hover">
                       <thead>
                         <tr>
-                          <th>Stock Code#</th>
+                          <th>Receive ID</th>
+                          <th>Stock Code #</th>
                           <th>Unit Price</th>
                           <th>Qty In</th>
                           <th>Qty Out</th>
@@ -339,7 +376,9 @@
                           :key="stock.id"
                           v-show="item.stocks.length > 0"
                         >
+                          <td>{{ stock.direct_receive_id }}</td>
                           <td>{{ stock.id }}</td>
+
                           <td>{{ stock.price }}</td>
                           <td>{{ stock.qty_in }}</td>
                           <td>{{ stock.qty_out }}</td>
@@ -357,7 +396,7 @@
                   role="tabpanel"
                   class="tab-pane fade"
                   id="serial"
-                  v-show="item.type.name == 'Serialize'"
+                  v-show="item.type.name == 'Serialize' && roles.create_item"
                 >
                   <div class="row">
                     <div class="col-md-12">
@@ -426,7 +465,7 @@
       </div>
     </div>
     <!-- Generated Summary Invidual-->
-    <div class="row clearfix">
+    <div id="report" class="row clearfix">
       <div class="col-md-12">
         <div class="card">
           <div class="header" style="display:block">
@@ -542,7 +581,12 @@
                         <p>{{ report.date }}</p>
                       </td>
                       <td>
-                        <p>{{ report.dr_id }}</p>
+                        <!-- <p>{{ report.dr_id }}</p> -->
+                        <a
+                          :href="'/delivery_receipt/' + report.dr_id"
+                          target="_blank"
+                          >{{ report.dr_id }}</a
+                        >
                       </td>
                       <td>
                         <p>{{ report.name }}</p>
@@ -893,14 +937,15 @@ export default {
     },
 
     getForecast() {
-      // this.$http
-      //   .post("api/notification/forecast/" + this.$route.params.item)
-      //   .then(response => {
-      //     this.forecast = response.body;
-      //   });
+      this.$http
+        .post("api/notification/forecast/" + this.$route.params.item)
+        .then(response => {
+          this.forecast = response.body;
+        });
     },
 
     update() {
+      console.log(this.item);
       this.$validator.validateAll().then(() => {
         this.$http
           .put("api/items/" + this.$route.params.item, this.item)
@@ -938,6 +983,7 @@ export default {
 
       document.getElementById("container").style.visibility = "hidden";
       document.getElementById("leftsidebar").style.visibility = "hidden";
+      document.getElementById("report").style.visibility = "hidden";
       document.getElementById("serialPrint").style.visibility = "visible";
       document.getElementById("serialPrint").style.display = "block";
       document.getElementById("leftsidebar").style.display = "none";
@@ -955,6 +1001,7 @@ export default {
     printConsumable() {
       document.getElementById("container").style.visibility = "hidden";
       document.getElementById("leftsidebar").style.visibility = "hidden";
+      document.getElementById("report").style.visibility = "hidden";
       document.getElementById("consumablePrint").style.visibility = "visible";
       document.getElementById("consumablePrint").style.display = "block";
       document.getElementById("leftsidebar").style.display = "none";
@@ -986,12 +1033,13 @@ export default {
           this.$http
             .delete("api/items/" + item.id)
             .then(response => {
-              this.$global.setItems(response.body);
-              this.$router.push({
-                path: "/inventory"
-              });
+              // this.$global.setItems(response.body);
+
               swal("Sucessfully deleted " + item.name + "!", {
                 icon: "success"
+              });
+              this.$router.push({
+                path: "/inventory"
               });
             })
             .catch(response => {

@@ -79,10 +79,13 @@ if (window.location.host == "ims.dctechmicro.com") {
   Vue.http.options.root = "http://ims.dctechmicro.com/back/";
   Vue.prototype.$img_path =
     "http://ims.dctechmicro.com/back/public/attachments/";
+  Vue.prototype.$back_url = "http://ims.dctechmicro.com/back/";
 } else if (window.location.host == "localhost:8080") {
   Vue.http.options.root = "http://localhost:8000";
-  Vue.prototype.$img_path = "http://localhost:8000/imgs/";
-  Vue.prototype.$attachment_path = "http://localhost:8000/attachments/";
+  // Vue.prototype.$img_path = "http://localhost:8000/imgs/";
+  Vue.prototype.$img_path = "http://localhost:8000/attachments/";
+  Vue.prototype.$back_url = "http://localhost:8000/back/";
+  // Vue.prototype.$attachment_path = "http://localhost:8000/attachments/";
 }
 Vue.prototype.$AppliedDateoptions = {
   format: "YYYY-MM-DD",

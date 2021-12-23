@@ -12,51 +12,8 @@
             <i class="material-icons">keyboard_backspace</i>
             <span>Back</span>
           </button>
-          <!-- SAVE BUTTON -->
-          <button
-            class="btn btn-lg btn-info waves-effect"
-            @click="save"
-            v-show="
-              delivery_receipt.status == 'for delivery' ||
-                !roles.create_delivery_receipt
-            "
-            :disabled="this.delivery_receipt.orders.length == 0"
-          >
-            Save
-          </button>
-          <!-- PRINT DELIVERY RECEIPT BUTTON -->
-          <button
-            class="btn btn-lg btn-default waves-effect"
-            @click="confirm"
-            v-show="
-              delivery_receipt.status == 'for delivery' ||
-                !roles.create_delivery_receipt
-            "
-            :disabled="this.delivery_receipt.orders.length == 0"
-          >
-            Confirm
-          </button>
 
-          <button
-            class="btn btn-lg btn-default waves-effect"
-            @click="btnDelivered"
-            v-show="
-              delivery_receipt.status == 'delivering' ||
-                !roles.create_delivery_receipt
-            "
-            :disabled="this.delivery_receipt.orders.length == 0"
-          >
-            Delivered
-          </button>
-
-          <button
-            class="btn btn-lg btn-default waves-effect"
-            @click="printNow"
-            :disabled="
-              delivery_receipt.status == 'for delivery' ||
-                !roles.create_delivery_receipt
-            "
-          >
+          <button class="btn btn-lg btn-default waves-effect" @click="printNow">
             Print Preview
           </button>
         </div>
@@ -98,14 +55,14 @@
                 sales_order.client.class == ''
             "
           >
-            <img src="../../img/inet.gif" style="width:100%" />
+            <img src="../../img/email.gif" style="width:100%" />
           </div>
           <div
             class="col-md-3 col-sm-12"
             style="margin-top:-10px"
             v-if="sales_order.client.class == 'SOLUTIONS CLIENTS'"
           >
-            <img src="../../img/solutions.gif" style="width:100%" />
+            <img src="../../img/soln.gif" style="width:100%" />
           </div>
           <div class="col-md-3 col-sm-12">
             From
@@ -131,7 +88,7 @@
             <p>
               Delivery Receipt
               <b>#{{ delivery_receipt.id }}</b>
-              <br />Sales Order
+              <br />Material Request
               <b>#{{ sales_order.id }}</b>
               <br />
               Date: {{ delivery_receipt.created_at }}
@@ -143,19 +100,27 @@
         <!-- START ORDER TABLE -->
         <div class="row clearfix">
           <div class="col-md-12">
-            <div class="table-wrap">
+            <div class="table-wrap" style="height:auto">
               <div class="table-responsive">
                 <table
                   class="table table-striped table-condensed table-hover cursor-pointer"
+                  style="height:auto"
                 >
+                  <!-- <div class="watermark">
+                    <img
+                      src="../../img/logo.jpg"
+                      style="width:30%;margin-top:50px"
+                    />
+                  </div> -->
                   <thead>
                     <tr>
                       <th>Code</th>
                       <th>Name</th>
                       <th>Description</th>
-                      <th>Serial/Barcode</th>
+                      <!-- <th>Serial/Barcode</th> -->
                       <th>Qty</th>
-                      <!-- <th>Qty Return</th> -->
+                      <th>Qty Return</th>
+                      <th>Note</th>
                       <th>Price</th>
                       <th>Amount</th>
                     </tr>
@@ -174,27 +139,47 @@
                       v-for="(order, index) in delivery_receipt.orders"
                       :key="index"
                       @click="edit(order)"
+                      :disabled="delivery_receipt.status != 'for delivery'"
                     >
                       <td>{{ order.id }}</td>
                       <td>{{ order.name }}</td>
                       <td>{{ order.description }}</td>
-                      <td>
+                      <!-- <td>
                         <span
                           v-for="(serial, index) in order.ordered_serial"
                           :key="index"
                         >
                           {{ serial }}
+
                           <br />
                         </span>
+                      </td> -->
+                      <!-- <td v-if="order.type.name == 'Serialize'">
+                        <span
+                          v-for="(serial, index) in order.ordered_serial.slice(
+                            0,
+                            5
+                          )"
+                          :key="index"
+                        >
+                          {{ serial }}
+
+                          <br />
+                        </span>
+                        <span v-if="order.ordered_serial.length > 5">
+                          + {{ order.ordered_serial.length - 5 }} more
+                        </span>
                       </td>
+                      <td v-else></td> -->
                       <td v-if="order.type.name == 'Consumable'">
                         {{ order.delivering_qty }}
                       </td>
 
                       <td v-else>{{ order.ordered_serial.length }}</td>
-                      <!-- <td>
+                      <td>
                         {{ order.return_qty }}
-                      </td> -->
+                      </td>
+                      <td>{{ order.note }}</td>
                       <td>{{ order.price }}</td>
                       <td v-if="order.type.name == 'Consumable'">
                         {{ order.price * order.delivering_qty }}
@@ -210,14 +195,15 @@
           </div>
         </div>
         <!-- END ORDER TABLE -->
-        <div class="row clearfix">
+        <div
+          class="row clearfix"
+          v-show="delivery_receipt.status == 'for delivery'"
+        >
           <div class="col-md-12">
             <button
               class="btn btn-default waves-effect"
               data-toggle="modal"
               data-target="#salesOrderModal"
-              v-show="delivery_receipt.status == 'for delivery'"
-              :hidden="delivery_receipt.status != 'for delivery'"
             >
               <i class="material-icons">note_add</i>
               <span>Add Items</span>
@@ -233,6 +219,10 @@
                 <label>Note:</label>
                 <br />
                 <p>{{ sales_order.note }}</p>
+                <br />
+                <label>Requested by:</label>
+                <br />
+                <p>{{ sales_order.requestor }}</p>
               </div>
             </div>
           </div>
@@ -284,7 +274,8 @@
             {{ delivery_receipt.user.name }}
             <br />
             <br />
-            <br />_________________________________
+            <br />
+            Alvin Jay P. Angcon
           </div>
           <div class="col-xs-2">
             <b>Released by:</b>
@@ -303,6 +294,8 @@
             <br />
             <br />
             <br />_________________________________
+            <br />
+            Signature over Printed Name/Date
           </div>
         </div>
       </div>
@@ -380,7 +373,7 @@
                       type="text"
                       class="form-control"
                       v-bind:value="item_selected.ordered_serial.length"
-                      v-if="item_selected.type.name == 'Serialize'"
+                      v-if="item_selected.total_qty <= 0"
                       disabled
                     />
                     <input
@@ -388,15 +381,18 @@
                       class="form-control"
                       v-model="item_selected.delivering_qty"
                       v-else
+                      @keyup.enter="pushSerial(item_selected.id)"
                     />
                   </div>
+                  <small
+                    style="font-size:8px;color:red"
+                    v-show="item_selected.type.name == 'Serialize'"
+                    >Type qty & click enter to add available serials</small
+                  >
                 </div>
               </div>
             </div>
-            <div
-              class="row clearfix"
-              v-show="item_selected.type.name == 'Serialize'"
-            >
+            <div class="row clearfix" hidden>
               <!-- test -->
               <div class="col-lg-9 col-md-9">
                 <div class="input-group">
@@ -408,19 +404,7 @@
                     option-value="serial"
                     option-text="serial"
                     placeholder="Select serial available"
-                    @input="checkSerial"
                   ></model-list-select>
-
-                  <small
-                    class="text-success pull-left"
-                    v-show="serial != '' && serial_availability"
-                    >Serial is available.</small
-                  >
-                  <small
-                    class="text-danger pull-left"
-                    v-show="serial != '' && !serial_availability"
-                    >Serial is not available.</small
-                  >
                 </div>
               </div>
               <!-- end of test -->
@@ -465,7 +449,6 @@
                 <button
                   class="btn btn-sm btn-info waves-effect"
                   @click="pushSerial"
-                  :disabled="!serial_availability || serial == ''"
                 >
                   Add Serial
                 </button>
@@ -473,7 +456,7 @@
             </div>
             <div class="row clearfix">
               <div class="col-lg-4 col-md-4">
-                <p>Total Qty: {{ item_selected.total_qty }}</p>
+                <p>Total On-hand Qty: {{ item_selected.total_qty }}</p>
                 <p>Delivered Qty: {{ item_selected.delivered_qty }}</p>
                 <p>Ordered Qty: {{ item_selected.ordered_qty }}</p>
               </div>
@@ -490,7 +473,7 @@
                   >
                     {{ serial }}
 
-                    <small class="font-8">
+                    <small class="font-8" hidden>
                       <a
                         href="javascript:void(0);"
                         class="col-red"
@@ -517,6 +500,7 @@
               @click="add"
               data-dismiss="modal"
               aria-label="Close"
+              v-show="item_selected.total_qty != 0"
             >
               Add to Delivery
             </button>
@@ -527,29 +511,29 @@
     <!-- END SALES ORDER MODAL -->
 
     <!-- PRINT -->
-    <div class="card" id="print_form">
+    <div class="card printable" id="print_form">
       <div class="body">
         <div class="row clearfix">
-          <div class="col-md-4 col-xs-4">
-            <h4>Delivery Receipt</h4>
-          </div>
+          <center><h2>DELIVERY RECEIPT</h2></center>
         </div>
-        <div class="row clearfix">
+        <div style="width:100%;display:flex">
           <div
-            class="col-md-3 col-sm-12"
-            style="margin-top:-10px"
-            v-if="sales_order.client.class == 'INET CLIENTS'"
+            style="margin-top:-10px;width:25%"
+            v-if="
+              sales_order.client.class == 'INET CLIENTS' ||
+                sales_order.client.class == ''
+            "
           >
-            <img src="../../img/inet.gif" style="width:100%" />
+            <img src="../../img/email.gif" width="100%" />
           </div>
           <div
-            class="col-md-3 col-sm-12"
-            style="margin-top:-10px"
+            style="margin-top:-10px;width:25%"
             v-if="sales_order.client.class == 'SOLUTIONS CLIENTS'"
           >
-            <img src="../../img/solutions.gif" style="width:100%" />
+            <img src="../../img/soln.gif" width="100%" />
           </div>
-          <div class="col-md-3 col-xs-3">
+          <div style="width:5%"></div>
+          <div style="width:25%">
             From
             <br />
             <address>
@@ -558,7 +542,7 @@
               8000, Philippines
             </address>
           </div>
-          <div class="col-md-3 col-xs-3">
+          <div style="width:25%">
             To
             <br />
             <address>
@@ -569,11 +553,11 @@
               {{ sales_order.client.contact }}
             </address>
           </div>
-          <div class="col-md-3 col-xs-3">
+          <div style="width:20%">
             <p>
               Delivery Receipt
               <b>#{{ delivery_receipt.id }}</b>
-              <br />Sales Order
+              <br />Material Request
               <b>#{{ sales_order.id }}</b>
               <br />
               Date: {{ delivery_receipt.created_at }}
@@ -585,16 +569,27 @@
         <!-- START ORDER TABLE -->
         <div class="row clearfix">
           <div class="col-md-12 col-xs-12">
-            <div class="table-wrap">
+            <div class="table-wrap" style="height:auto;min-height:35vh">
               <div class="table-responsive">
-                <table class="table table-striped table-condensed">
+                <table
+                  class="table table-striped table-condensed"
+                  style="height:auto"
+                >
+                  <!-- <div class="watermark">
+                    <img
+                      src="../../img/logo.jpg"
+                      style="width:30%;margin-top:50px"
+                    />
+                  </div> -->
                   <thead>
                     <tr>
                       <th>Code</th>
                       <th>Name</th>
                       <th>Description</th>
-                      <th>Serial/Barcode</th>
+                      <!-- <th>Serial/Barcode</th> -->
                       <th>Qty</th>
+                      <th>Qty Return</th>
+                      <th>Note</th>
                       <th>Price</th>
                       <th>Amount</th>
                     </tr>
@@ -616,19 +611,39 @@
                       <td>{{ order.id }}</td>
                       <td>{{ order.name }}</td>
                       <td>{{ order.description }}</td>
-                      <td>
+                      <!-- <td>
                         <span
                           v-for="(serial, index) in order.ordered_serial"
                           :key="index"
                         >
                           {{ serial }}
+
                           <br />
                         </span>
+                      </td> -->
+                      <!-- <td v-if="order.type.name == 'Serialize'">
+                        <span
+                          v-for="(serial, index) in order.ordered_serial.slice(
+                            0,
+                            5
+                          )"
+                          :key="index"
+                        >
+                          {{ serial }}
+
+                          <br />
+                        </span>
+                        <span v-if="order.ordered_serial.length > 5">
+                          + {{ order.ordered_serial.length - 5 }} more
+                        </span>
                       </td>
+                      <td v-else></td> -->
                       <td v-if="order.type.name == 'Consumable'">
                         {{ order.delivering_qty }}
                       </td>
                       <td v-else>{{ order.ordered_serial.length }}</td>
+                      <td>{{ order.return_qty }}</td>
+                      <td>{{ order.note }}</td>
                       <td>{{ order.price }}</td>
                       <td v-if="order.type.name == 'Consumable'">
                         {{ order.price * order.delivering_qty }}
@@ -644,77 +659,96 @@
           </div>
         </div>
         <!-- END ORDER TABLE -->
-        <div class="row clearfix">
-          <!-- REMARKS -->
-          <div class="col-md-6 col-xs-6">
-            <div class="row clearfix">
-              <div class="col-md-8 col-xs-8">
-                <br />
-                <label>Note:</label>
-                <br />
-                <p>{{ sales_order.note }}</p>
+        <div class="signatories">
+          <div class="row clearfix">
+            <!-- REMARKS -->
+            <div class="col-md-6 col-xs-6">
+              <div class="row clearfix">
+                <div class="col-md-8 col-xs-8">
+                  <br />
+                  <label>Note:</label>
+                  <br />
+                  <p>{{ sales_order.note }}</p>
+                  <br />
+                  <label>Requested by:</label>
+                  <br />
+                  <p>{{ sales_order.requestor }}</p>
+                </div>
+              </div>
+            </div>
+
+            <!-- AMOUNT -->
+            <div class="col-md-6 col-xs-6">
+              <div class="table-responsive">
+                <table class="table table-striped">
+                  <tbody>
+                    <tr>
+                      <th>Subtotal:</th>
+                      <td>{{ delivery_receipt.amount.subtotal.toFixed(2) }}</td>
+                    </tr>
+                    <tr>
+                      <th>Tax (0%):</th>
+                      <td>{{ delivery_receipt.amount.tax.toFixed(2) }}</td>
+                    </tr>
+                    <tr>
+                      <th>Shipping:</th>
+                      <td>{{ delivery_receipt.amount.shipping.toFixed(2) }}</td>
+                    </tr>
+                    <tr>
+                      <th>Total:</th>
+                      <td>{{ delivery_receipt.amount.total.toFixed(2) }}</td>
+                    </tr>
+                  </tbody>
+                </table>
               </div>
             </div>
           </div>
-
-          <!-- AMOUNT -->
-          <div class="col-md-6 col-xs-6">
-            <div class="table-responsive">
-              <table class="table table-striped">
-                <tbody>
-                  <tr>
-                    <th>Subtotal:</th>
-                    <td>{{ delivery_receipt.amount.subtotal.toFixed(2) }}</td>
-                  </tr>
-                  <tr>
-                    <th>Tax (0%):</th>
-                    <td>{{ delivery_receipt.amount.tax.toFixed(2) }}</td>
-                  </tr>
-                  <tr>
-                    <th>Shipping:</th>
-                    <td>{{ delivery_receipt.amount.shipping.toFixed(2) }}</td>
-                  </tr>
-                  <tr>
-                    <th>Total:</th>
-                    <td>{{ delivery_receipt.amount.total.toFixed(2) }}</td>
-                  </tr>
-                </tbody>
-              </table>
+          <hr />
+          <div class="row clearfix">
+            <center>
+              <strong
+                ><em
+                  >RECEIVED ABOVE ITEMS IN GOOD ORDER AND CONDITION</em
+                ></strong
+              >
+            </center>
+          </div>
+          <hr />
+          <div class="row clearfix">
+            <div class="col-xs-2">
+              <b>Encoded By:</b>
+              <br />
+              <br />
+              <br />
+              <b>Checked By:</b>
             </div>
-          </div>
-        </div>
-        <hr />
-        <div class="row clearfix">
-          <div class="col-xs-2">
-            <b>Encoded By:</b>
-            <br />
-            <br />
-            <br />
-            <b>Checked By:</b>
-          </div>
-          <div class="col-xs-4">
-            {{ delivery_receipt.user.name }}
-            <br />
-            <br />
-            <br />_________________________________
-          </div>
-          <div class="col-xs-2">
-            <b>Released By:</b>
-            <br />
-            <br />
-            <br />
-            <b>Received By:</b>
-          </div>
-          <div class="col-xs-4">
-            <b v-if="sales_order.client.class == 'INET CLIENTS'"
-              >Emmanuel G. Llabore Jr.</b
-            >
-            <b v-if="sales_order.client.class == 'SOLUTIONS CLIENTS'"
-              >Gabriel Sanchez</b
-            >
-            <br />
-            <br />
-            <br />_________________________________
+            <div class="col-xs-4">
+              {{ delivery_receipt.user.name }}
+              <br />
+              <br />
+              <br />
+              Alvin Jay P. Angcon
+            </div>
+            <div class="col-xs-2">
+              <b>Released By:</b>
+              <br />
+              <br />
+              <br />
+              <b>Received By:</b>
+            </div>
+            <div class="col-xs-4">
+              <b v-if="sales_order.client.class == 'INET CLIENTS'"
+                >Emmanuel G. Llabore Jr.</b
+              >
+              <b v-if="sales_order.client.class == 'SOLUTIONS CLIENTS'"
+                >Gabriel Sanchez</b
+              >
+              <br />
+              <br />
+              <br />_________________________________
+              <br />
+              Signature over Printed Name/Date
+            </div>
           </div>
         </div>
       </div>
@@ -753,6 +787,7 @@ export default {
         },
         status: "",
         note: "",
+        requestor: "",
         remarks: "",
         id: ""
       },
@@ -783,7 +818,8 @@ export default {
         total_qty: 0,
         delivered_qty: 0,
         ordered_qty: 0,
-        delivering_qty: 0
+        delivering_qty: 0,
+        diff: 0
       },
       temp_orders: [],
       roles: [],
@@ -791,7 +827,8 @@ export default {
       serials: [],
       number: "",
       print: false,
-      serial_availability: false
+      serial_availability: false,
+      diff: 0
     };
   },
 
@@ -854,6 +891,7 @@ export default {
             this.sales_order.client = response.body.client;
           this.sales_order.user = response.body.user;
           this.sales_order.note = response.body.note;
+          this.sales_order.requestor = response.body.requestor;
           this.sales_order.status = response.body.status;
           this.sales_order.created_at = response.body.created_at;
           this.sales_order.remarks = response.body.remarks;
@@ -873,24 +911,45 @@ export default {
       for (var index = 0; index < this.sales_order.orders.length; index++) {
         if (this.sales_order.orders[index].id == this.selected_item_index) {
           temp = this.sales_order.orders[index];
+          // temp.serials = [];
         }
       }
-      console.log(temp);
+      console.log(temp.serials);
       this.item_selected = temp;
-      // this.$http
-      //   .get("api/stock/getSerialsPerItem/" + this.item_selected.id)
-      //   .then(response => {
-      //     console.log(response.body);
-      //     this.serials = response.body;
-      //   });
-      console.log(this.item_selected);
+
+      // let items = [];
+      // this.item_selected.serials.forEach(function(item) {
+      //   if (item.status == "stocked in") {
+      //     items.push({
+      //       serial: item.serial
+      //     });
+      //   }
+      // });
+
+      // this.item_selected.serials = items;
     },
 
-    pushSerial() {
-      this.item_selected.ordered_serial.push(this.serial);
-      this.serial = "";
-      this.serial_availability = false;
-      console.log(this.item_selected.ordered_serial);
+    pushSerial(id) {
+      this.item_selected.ordered_serial = [];
+      if (
+        this.item_selected.delivering_qty <= this.item_selected.total_qty &&
+        this.item_selected.delivering_qty <= this.item_selected.ordered_qty
+      ) {
+        this.$http
+          .post("api/stock/getSerialsPerItem", this.item_selected)
+          .then(response => {
+            console.log(response.body);
+            var serials = Object.values(response.body);
+
+            serials.forEach(item => {
+              this.item_selected.ordered_serial.push(item.serial);
+            });
+          });
+      } else {
+        swal("Quantity must not exceed Ordered Qty and Total On-Hand", {
+          icon: "warning"
+        });
+      }
     },
 
     checkSerial() {
@@ -968,7 +1027,12 @@ export default {
     add(item) {
       // $("#salesOrderModal").modal("hide");
 
-      if (!this.item_exist(this.item_selected)) {
+      if (
+        !this.item_exist(this.item_selected) &&
+        this.item_selected.delivering_qty <= this.item_selected.total_qty &&
+        this.item_selected.delivering_qty <= this.item_selected.ordered_qty
+      ) {
+        console.log(this.item_selected);
         this.delivery_receipt.orders.push(this.item_selected);
         this.compute();
       }
@@ -981,23 +1045,23 @@ export default {
       $("#salesOrderModal").modal("show");
     },
 
-    save() {
-      this.$http
-        .put(
-          "api/delivery_receipt/" + this.delivery_receipt.id,
-          this.delivery_receipt
-        )
-        .then(response => {
-          swal(
-            "Delivery Receipt #" +
-              this.delivery_receipt.id +
-              " was succesfully updated!",
-            {
-              icon: "success"
-            }
-          );
-        });
-    },
+    // save() {
+    //   this.$http
+    //     .put(
+    //       "api/delivery_receipt/" + this.delivery_receipt.id,
+    //       this.delivery_receipt
+    //     )
+    //     .then(response => {
+    //       swal(
+    //         "Delivery Receipt #" +
+    //           this.delivery_receipt.id +
+    //           " was succesfully updated!",
+    //         {
+    //           icon: "success"
+    //         }
+    //       );
+    //     });
+    // },
 
     confirm() {
       this.$http
@@ -1027,7 +1091,7 @@ export default {
     printNow() {
       $(".content").css("margin-left", "0px");
       $(".content").css("margin-right", "0px");
-      $(".content").css("margin-top", "5px");
+      $(".content").css("margin-top", "25px");
       $("#print_form").css("display", "block");
       $("#delivery_receipt_button").css("display", "none");
       $("#delivery_receipt_form").css("display", "none");
@@ -1113,7 +1177,7 @@ export default {
         switch (value) {
           case "exit":
             this.$router.push({
-              path: "/delivery_receipts"
+              path: "/list/sales_order"
             });
             break;
 
@@ -1169,10 +1233,30 @@ export default {
 </script>
 
 <style scoped>
+@media print {
+  .printable {
+    font-family: Arial, Helvetica, sans-serif;
+    font-size: 12px;
+  }
+}
+.signatories {
+  margin-top: 80px;
+}
+
 #print_form {
   display: none;
 }
 
+.watermark {
+  position: absolute;
+  color: lightgray;
+  opacity: 0.25;
+  font-size: 3em;
+  width: 100%;
+  top: 8%;
+  text-align: center;
+  z-index: 0;
+}
 .alert {
   border-radius: 4px;
 }
@@ -1243,5 +1327,12 @@ input {
 
 .font-8 {
   font-size: 11px;
+}
+
+.truncate {
+  max-width: 1px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 </style>

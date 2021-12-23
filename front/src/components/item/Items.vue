@@ -11,7 +11,7 @@
               <div>
                 <br />
                 <div class="row clearfix">
-                  <div class="col-md-3">
+                  <div class="col-md-4">
                     <div class="form-group">
                       <div class="form-line">
                         <span>Search</span>
@@ -21,13 +21,49 @@
                           class="form-control"
                           autocomplete="off"
                           v-model="itemSearch.item"
-                          @keyup="searchItem"
+                          @keyup.enter="searchItem"
                         />
                       </div>
                     </div>
                   </div>
-
-                  <div class="col-md-3">
+                  <div class="col-md-2">
+                    <div class="form-group">
+                      <span>Category</span>
+                      <div class="form-line">
+                        <select
+                          class="form-control"
+                          v-model="itemSearch.category"
+                        >
+                          <option
+                            v-for="category in category"
+                            :key="category.id"
+                            v-bind:value="category.id"
+                          >
+                            {{ category.name }}
+                          </option>
+                          <option value selected>All</option>
+                        </select>
+                      </div>
+                    </div>
+                  </div>
+                  <div class="col-md-2">
+                    <div class="form-group">
+                      <span>Type</span>
+                      <div class="form-line">
+                        <select class="form-control" v-model="itemSearch.type">
+                          <option
+                            v-for="type in types"
+                            :key="type.id"
+                            v-bind:value="type.id"
+                          >
+                            {{ type.name }}
+                          </option>
+                          <option value selected>All</option>
+                        </select>
+                      </div>
+                    </div>
+                  </div>
+                  <div class="col-md-2">
                     <br />
                     <button
                       class="btn bg-black waves-effect waves-light"
@@ -40,17 +76,19 @@
                       class="btn btn-success waves-effect"
                       @click="resetItem"
                     >
-                      Clear Filter
+                      Reset
                     </button>
                   </div>
                 </div>
-                <div style="float:right;display:block;margin-top:-66px">
+                <div
+                  style="float:right;display:block;margin-top:-66px"
+                  v-show="roles.create_item"
+                >
                   <button
                     type="button"
                     class="btn btn-default waves-effect"
                     title="Create New Product"
                     @click="createNewItem"
-                    :disabled="!roles.create_item"
                   >
                     <i class="material-icons">note_add</i>
                   </button>
@@ -62,13 +100,21 @@
                   >
                     <i class="material-icons">print</i>
                   </button>
-                  <json-excel
+                  <button
+                    type="submit"
+                    class="btn btn-default waves-effect"
+                    title="Export to Excel"
+                    @click="exportItems('itemTable')"
+                  >
+                    <i class="material-icons">publish</i>
+                  </button>
+                  <!-- <json-excel
                     class="btn btn-default waves-effect"
                     title="Export to Excel"
                     :data="dataForExcel"
                   >
                     <i class="material-icons">publish</i>
-                  </json-excel>
+                  </json-excel> -->
                 </div>
               </div>
             </div>
@@ -78,8 +124,21 @@
               <div class="col-md-12">
                 <div class="table-responsive" id="printable">
                   <div class="table-wrap">
+                    <div
+                      class="row clearfix"
+                      style="width:100%"
+                      v-if="showLoading == '1'"
+                    >
+                      <td colspan="14" class="text-center">
+                        <img src="../../img/bars.gif" height="50" />
+                        <br />
+                        Fetching list...
+                      </td>
+                    </div>
                     <table
                       class="table table-striped table-condensed table-hover"
+                      id="itemTable"
+                      v-else
                     >
                       <thead>
                         <tr>
@@ -92,6 +151,7 @@
                           </th>
                         </tr>
                       </thead>
+
                       <tbody>
                         <router-link
                           tag="tr"
@@ -100,7 +160,6 @@
                           :to="'/items/' + item.id + '/edit'"
                           style="cursor: pointer"
                         >
-                          <!-- <tr v-for="item in items" :key="item.id"> -->
                           <td>
                             <img
                               v-if="item.image != null"
@@ -117,19 +176,18 @@
                               height="50"
                             />
                           </td>
-                          <!-- <td>
+                          <!-- <td>{{ item.id }}</td> -->
+                          <td>
                             <a
                               :href="'/items/' + item.id + '/edit'"
                               target="_blank"
                             >
                               {{ item.id }}
                             </a>
-                          </td> -->
-                          <td>{{ item.id }}</td>
+                          </td>
                           <td>{{ item.name }}</td>
                           <td>{{ item.description }}</td>
                           <td>{{ item.category.name }}</td>
-                          <!-- <td>{{ item.category.name }}</td> -->
                           <td>{{ item.type.name }}</td>
                           <td
                             class="bg-red"
@@ -162,9 +220,8 @@
                             <span v-if="item.stocks.length < 1">0</span>
                             <span v-else>{{ item.total_qty }}</span>
                           </td>
-                          <!-- </tr> -->
                         </router-link>
-                        <tr v-show="totalRows == 0">
+                        <tr v-show="items.length == 0">
                           <td colspan="14" class="text-center">
                             <small class="col-red">
                               <i>No results found.</i>
@@ -175,7 +232,7 @@
                     </table>
                   </div>
                 </div>
-                <p>{{ totalRows }} items found.</p>
+                <p>{{ totalRows }} items displayed.</p>
               </div>
             </div>
           </b-card-text>
@@ -223,13 +280,15 @@
                     </button>
                   </div>
                 </div>
-                <div style="float:right;display:block;margin-top:-66px">
+                <div
+                  style="float:right;display:block;margin-top:-66px"
+                  v-show="roles.create_item"
+                >
                   <button
                     type="button"
                     class="btn btn-default waves-effect"
                     title="Create New Product"
                     @click="createNewGroup"
-                    :disabled="!roles.create_item"
                   >
                     <i class="material-icons">note_add</i>
                   </button>
@@ -241,13 +300,21 @@
                   >
                     <i class="material-icons">print</i>
                   </button>
-                  <json-excel
+                  <button
+                    type="submit"
+                    class="btn btn-default waves-effect"
+                    title="Export to Excel"
+                    @click="exportGroupItems('itemGroupTable')"
+                  >
+                    <i class="material-icons">publish</i>
+                  </button>
+                  <!-- <json-excel
                     class="btn btn-default waves-effect"
                     title="Export to Excel"
                     :data="dataForExcel"
                   >
                     <i class="material-icons">publish</i>
-                  </json-excel>
+                  </json-excel> -->
                 </div>
               </div>
             </div>
@@ -257,10 +324,22 @@
               <div class="col-md-12">
                 <div class="table-responsive" id="printable">
                   <div class="table-wrap">
+                    <div
+                      class="row clearfix"
+                      v-if="showLoading == '1'"
+                      style="width:100%"
+                    >
+                      <td colspan="14" class="text-center">
+                        <img src="../../img/bars.gif" height="50" />
+                        <br />
+                        Fetching list...
+                      </td>
+                    </div>
                     <table
                       class="table table-striped table-condensed table-hover"
                       id="itemGroupTable"
                       ref="itemGroupTable"
+                      v-else
                     >
                       <thead>
                         <tr>
@@ -289,7 +368,7 @@
                     </table>
                   </div>
                 </div>
-                <p>{{ totalRows }} items found.</p>
+                <p>{{ totalRows }} groups found.</p>
               </div>
             </div>
           </b-card-text>
@@ -350,10 +429,7 @@
                         </tr>
                       </thead>
                       <tbody>
-                        <tr
-                          v-for="item in groupItems.items"
-                          :key="item.item_group_id"
-                        >
+                        <tr v-for="item in groupItems.items" :key="item.id">
                           <td>{{ item.id }}</td>
                           <td>{{ item.description }}</td>
                           <td>{{ item.pivot.qty }}</td>
@@ -401,7 +477,7 @@ export default {
       },
       columns: [
         "Image",
-        "Product Code#",
+        "Code",
         "Name",
         "Description",
         "Category",
@@ -422,7 +498,9 @@ export default {
         sort: "Latest"
       },
       itemSearch: {
-        item: ""
+        item: "",
+        category: "",
+        type: ""
       },
       groupSearch: {
         group: ""
@@ -436,54 +514,57 @@ export default {
         name: "",
         items: []
       },
-      items: []
+      items: [],
+      showLoading: "1"
     };
   },
 
   mounted() {
     this.fetchDataaa();
-    // this.items = this.$global.getItems();
-    this.loadGroups();
-    this.totalRows = this.items.length;
   },
   created() {
-    this.items = this.$global.getItems();
     this.types = this.$global.getTypes();
     this.category = this.$global.getCategories();
     this.warehouses = this.$global.getWarehouses();
     this.roles = this.$global.getRoles();
+    this.loadItems();
+    this.loadGroups();
     this.totalRows = this.items.length;
-    console.log(this.$img_path);
-    $(".page-loader-wrapper").fadeOut();
   },
 
   methods: {
-    getItems() {
-      this.$root.$emit("pageLoading");
-      this.$http.get("api/items").then(response => {
+    loadItems() {
+      // console.log(this.showLoading);
+      this.$http.post("api/items/limited").then(response => {
+        console.log(response.body);
         this.items = response.body;
         this.totalRows = this.items.length;
-        this.$root.$emit("pageLoaded");
+        this.showLoading = "2";
+        // console.log(this.showLoading);
       });
     },
     searchItem() {
-      this.$http
-        .post("api/items/searchItem", this.itemSearch)
-        .then(response => {
-          this.items = response.body;
-          console.log(response.body);
-        });
+      this.showLoading = "1";
+      this.$http.post("api/items/search", this.itemSearch).then(response => {
+        this.items = response.body;
+        this.totalRows = this.items.length;
+        this.showLoading = "2";
+      });
     },
     resetItem() {
       this.itemSearch.item = "";
+      this.itemSearch.category = "";
+      this.itemSearch.type = "";
       this.searchItem();
     },
     searchItemGroup() {
+      this.showLoading = "1";
       this.$http
         .post("api/items/searchGroup", this.groupSearch)
         .then(response => {
           this.groups = response.body;
-          console.log(response.body);
+          this.totalRows = this.items.length;
+          this.showLoading = "2";
         });
     },
     resetGroup() {
@@ -509,15 +590,15 @@ export default {
           this.items[i].forecast.status == "ok"
         )
           status = "High Stock";
-        this.dataForExcel.push({
-          ProductCode: this.items[i].id,
-          Name: this.items[i].name,
-          Description: this.items[i].description,
-          Category: this.items[i].category.name,
-          Type: this.items[i].type.name,
-          Status: status,
-          Quantity: this.items[i].total_qty
-        });
+        // this.dataForExcel.push({
+        //   ProductCode: this.items[i].id,
+        //   Name: this.items[i].name,
+        //   Description: this.items[i].description,
+        //   Category: this.items[i].category.name,
+        //   Type: this.items[i].type.name,
+        //   Status: status,
+        //   Quantity: this.items[i].total_qty
+        // });
       }
     },
 
@@ -565,14 +646,14 @@ export default {
     },
 
     loadGroups() {
+      this.showLoading = "1";
       this.$http.post("api/items/showItemGroup").then(response => {
         this.groups = response.body;
-        console.log(response.body);
+        this.showLoading = "2";
       });
     },
     getGroup(index) {
       this.groupItems = this.groups[index];
-      console.log(this.groupItems);
     },
 
     exit() {
@@ -594,6 +675,104 @@ export default {
             break;
         }
       });
+    },
+    exportItems(tbl) {
+      this.$nextTick(function() {
+        setTimeout(
+          function() {
+            var tab_text = "<table border='2px'><tr bgcolor='#87AFC6'>";
+            var textRange;
+            var j = 0;
+            var tab = document.getElementById(tbl); // id of table
+
+            for (j = 0; j < tab.rows.length; j++) {
+              tab_text = tab_text + tab.rows[j].innerHTML + "</tr>";
+              //tab_text=tab_text+"</tr>";
+            }
+
+            tab_text = tab_text + "</table>";
+            tab_text = tab_text.replace(/<A[^>]*>|<\/A>/g, ""); //remove if u want links in your table
+            tab_text = tab_text.replace(/<img[^>]*>/gi, ""); // remove if u want images in your table
+            tab_text = tab_text.replace(/<input[^>]*>|<\/input>/gi, ""); // reomves input params
+
+            var ua = window.navigator.userAgent;
+            var msie = ua.indexOf("MSIE ");
+
+            if (msie > 0 || !!navigator.userAgent.match(/Trident.*rv\:11\./)) {
+              // If Internet Explorer
+              txtArea1.document.open("txt/html", "replace");
+              txtArea1.document.write(tab_text);
+              txtArea1.document.close();
+              txtArea1.focus();
+              var sa = txtArea1.document.execCommand(
+                "SaveAs",
+                true,
+                "Say Thanks to Sumit.xls"
+              );
+            } //other browser not tested on IE 11
+            else
+              var sa = window.open(
+                "data:application/vnd.ms-excel," + encodeURIComponent(tab_text)
+              );
+
+            return sa;
+          }.bind(this),
+          1000
+        );
+      });
+
+      // this.$nextTick(function() {
+      //   setTimeout(this.changeColDisplay(""), 3000);
+      // });
+    },
+    exportGroupItems(tbl) {
+      this.$nextTick(function() {
+        setTimeout(
+          function() {
+            var tab_text = "<table border='2px'><tr bgcolor='#87AFC6'>";
+            var textRange;
+            var j = 0;
+            var tab = document.getElementById(tbl); // id of table
+
+            for (j = 0; j < tab.rows.length; j++) {
+              tab_text = tab_text + tab.rows[j].innerHTML + "</tr>";
+              //tab_text=tab_text+"</tr>";
+            }
+
+            tab_text = tab_text + "</table>";
+            tab_text = tab_text.replace(/<A[^>]*>|<\/A>/g, ""); //remove if u want links in your table
+            tab_text = tab_text.replace(/<img[^>]*>/gi, ""); // remove if u want images in your table
+            tab_text = tab_text.replace(/<input[^>]*>|<\/input>/gi, ""); // reomves input params
+
+            var ua = window.navigator.userAgent;
+            var msie = ua.indexOf("MSIE ");
+
+            if (msie > 0 || !!navigator.userAgent.match(/Trident.*rv\:11\./)) {
+              // If Internet Explorer
+              txtArea1.document.open("txt/html", "replace");
+              txtArea1.document.write(tab_text);
+              txtArea1.document.close();
+              txtArea1.focus();
+              var sa = txtArea1.document.execCommand(
+                "SaveAs",
+                true,
+                "Say Thanks to Sumit.xls"
+              );
+            } //other browser not tested on IE 11
+            else
+              var sa = window.open(
+                "data:application/vnd.ms-excel," + encodeURIComponent(tab_text)
+              );
+
+            return sa;
+          }.bind(this),
+          1000
+        );
+      });
+
+      // this.$nextTick(function() {
+      //   setTimeout(this.changeColDisplay(""), 3000);
+      // });
     }
   }
 };

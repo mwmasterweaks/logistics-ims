@@ -65,6 +65,9 @@ export default function(Vue) {
     setSupplier(supplier) {
       localStorage.setItem("_supplier", JSON.stringify(supplier));
     },
+    setDepartment(department) {
+      localStorage.setItem("_department", JSON.stringify(department));
+    },
 
     setUser(user) {
       localStorage.setItem("_user", JSON.stringify(user));
@@ -156,6 +159,9 @@ export default function(Vue) {
     getSupplier() {
       return JSON.parse(localStorage.getItem("_supplier"));
     },
+    getDepartment() {
+      return JSON.parse(localStorage.getItem("_department"));
+    },
 
     getUser() {
       return JSON.parse(localStorage.getItem("_user"));
@@ -199,6 +205,7 @@ export default function(Vue) {
       localStorage.removeItem("_users");
       localStorage.removeItem("_roles");
       localStorage.removeItem("_supplier");
+      localStorage.removeItem("_department");
       localStorage.removeItem("_amount");
       localStorage.removeItem("_delivery_receipt");
       localStorage.removeItem("_purchase_orders");

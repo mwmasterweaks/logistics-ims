@@ -14,7 +14,7 @@
           </button>
 
           <!-- SAVE BUTTON -->
-          <button
+          <!-- <button
             class="btn btn-lg btn-info waves-effect"
             @click="saveSalesOrder"
             :hidden="
@@ -25,7 +25,7 @@
             "
           >
             Save
-          </button>
+          </button> -->
           <button
             class="btn btn-lg btn-default waves-effect"
             @click="clear"
@@ -55,7 +55,7 @@
 
           <!-- APPROVAL BUTTON -->
           <button
-            class="btn btn-lg btn-default waves-effect"
+            class="btn btn-lg btn-info waves-effect"
             :hidden="
               sales_order.orders.length < 1 ||
                 sales_order.status == 'approval' ||
@@ -99,13 +99,6 @@
           <!-- PRINT BUTTON -->
           <button
             class="btn btn-lg btn-default waves-effect"
-            :disabled="
-              sales_order.status == 'draft' ||
-                sales_order.status == 'declined' ||
-                sales_order.status == 'order complete' ||
-                !roles.create_delivery_receipt
-            "
-            :hidden="sales_order.status != 'approved'"
             @click="printPreview"
           >
             Print Preview
@@ -165,11 +158,12 @@
     </div>
     <div class="card">
       <div class="body">
-        <div class="row clearfix" id="sales_return_notification">
-          <div class="col-md-2 col-sm-2">
-            <h4>Sales Order</h4>
+        <div class="row clearfix">
+          <div class="col-md-4 col-sm-4">
+            <h4>MATERIAL REQUEST</h4>
           </div>
-          <div class="col-md-10 col-sm-10">
+
+          <div class="col-md-8 col-sm-8" id="sales_return_notification">
             <div
               class="alert alert-warning"
               v-show="sales_order.status == 'draft'"
@@ -209,8 +203,18 @@
           </div>
         </div>
         <div class="row clearfix">
-          <div class="col-md-3">
-            <img src="../../img/logo.jpg" />
+          <div
+            class="col-md-3 col-sm-12"
+            style="margin-top:-10px"
+            v-if="
+              sales_order.client.class == 'INET CLIENTS' ||
+                sales_order.client.class == ''
+            "
+          >
+            <img src="../../img/email.gif" style="width:100%" />
+          </div>
+          <div class="col-md-3 col-sm-12" style="margin-top:-10px" v-else>
+            <img src="../../img/soln.gif" style="width:100%" />
           </div>
           <div class="col-md-3">
             From:
@@ -233,7 +237,7 @@
           </div>
           <div class="col-md-3">
             <p>
-              Sales Order
+              Material Request
               <b>#{{ $route.params.order }}</b>
               <br />
               Date Created: {{ sales_order.created_at }}
@@ -244,8 +248,14 @@
         <!-- START ORDER TABLE -->
         <div class="row clearfix">
           <div class="col-md-12">
-            <div class="table-wrap">
+            <div class="table-wrap" style="height:auto">
               <div class="table-responsive">
+                <div class="watermark">
+                  <img
+                    src="../../img/logo.jpg"
+                    style="width:30%;margin-top:50px"
+                  />
+                </div>
                 <table class="table table-striped">
                   <thead>
                     <tr>
@@ -347,7 +357,7 @@
           </div>
         </div>
         <!-- END ORDER TABLE -->
-        <div class="row clearfix">
+        <div class="row clearfix" id="item_buttons">
           <div class="col-md-12">
             <button
               class="btn btn-default waves-effect"
@@ -374,8 +384,8 @@
 
         <div class="row clearfix">
           <!-- NOTES -->
-          <div class="col-md-6">
-            <span>Note:</span>
+          <div class="col-md-6 col-xs-6">
+            <b>Note:</b>
             <div
               class="input-group"
               v-if="
@@ -387,19 +397,39 @@
                 <textarea
                   type="text"
                   class="form-control"
-                  rows="5"
                   v-model="sales_order.note"
                   :disabled="sales_order.status != 'draft'"
                 ></textarea>
               </div>
             </div>
             <p v-else>{{ sales_order.note }}</p>
+            <br />
+            <b>Requested By:</b>
+            <div
+              class="input-group"
+              v-if="
+                sales_order.status == 'draft' ||
+                  sales_order.status == 'approval'
+              "
+            >
+              <div class="form-line">
+                <textarea
+                  type="text"
+                  class="form-control"
+                  v-model="sales_order.requestor"
+                  :disabled="sales_order.status != 'draft'"
+                ></textarea>
+              </div>
+            </div>
+            <p v-else>{{ sales_order.requestor }}</p>
+            <br />
+            <span>Encoded By:{{ sales_order.user.name }}</span>
           </div>
 
           <!-- AMOUNT -->
-          <div class="col-md-6">
+          <div class="col-md-6 col-xs-6">
             <div class="table-responsive">
-              <table class="table">
+              <table class="table table-striped">
                 <tbody>
                   <tr>
                     <th>Subtotal:</th>
@@ -647,7 +677,7 @@
             </button>
           </div>
           <div class="modal-body">
-            <div id="snackbar">Item Added.</div>
+            <div id="snackbar2">Item Group Added.</div>
 
             <div class="row clearfix">
               <div class="col-md-12">
@@ -721,7 +751,8 @@ export default {
         client: {
           name: "",
           location: "",
-          contact: ""
+          contact: "",
+          class: ""
         },
         user: [],
         amount: {
@@ -732,6 +763,7 @@ export default {
         },
         status: "",
         note: "",
+        requestor: "",
         remarks: "",
         id: ""
       },
@@ -773,7 +805,7 @@ export default {
   },
 
   created() {
-    this.items = this.$global.getItems();
+    this.loadItems();
     this.getGroups();
     this.getClients();
     this.authenticatedUser = this.$global.getUser();
@@ -786,6 +818,11 @@ export default {
   watch: {},
 
   methods: {
+    loadItems() {
+      this.$http.get("api/items").then(response => {
+        this.items = response.body;
+      });
+    },
     createDuplicate() {
       var body = $("body");
       console.log(this.$route.params);
@@ -838,11 +875,13 @@ export default {
       this.$http
         .get("api/sales_order/" + this.$route.params.order)
         .then(response => {
+          console.log(response.body.client);
           if (response.body.client != null)
             this.sales_order.client = response.body.client;
           this.sales_order.orders = response.body.sales_order_details;
           this.sales_order.user = response.body.user;
           this.sales_order.note = response.body.note;
+          this.sales_order.requestor = response.body.requestor;
           this.sales_order.status = response.body.status;
           this.sales_order.created_at = response.body.created_at;
           this.sales_order.remarks = response.body.remarks;
@@ -918,20 +957,22 @@ export default {
       var item_id = 0;
       var item_name = "";
       var item_des = "";
+      var item_qty = "";
 
       if (flag == 1) {
         item_id = item.id;
         item_name = item.name;
         item_des = item.description;
+        item_qty = "0";
 
-        this.execute(item, flag, item_id, item_name, item_des);
+        this.execute(item, flag, item_id, item_name, item_des, item_qty);
       } else if (flag == 2) {
         var length = item.items.length;
         groupItems = item.items;
         var qty = item.items.qty;
 
         // console.log(groupItems[0]);
-        console.log(qty);
+        // console.log(qty);
 
         for (var index = 0; index < length; index++) {
           this.execute(
@@ -939,32 +980,40 @@ export default {
             flag,
             groupItems[index].id,
             groupItems[index].name,
-            groupItems[index].description
+            groupItems[index].description,
+            groupItems[index].pivot.qty
           );
         }
       }
     },
 
-    execute(item, flag, item_id, item_name, item_des) {
+    execute(item, flag, item_id, item_name, item_des, item_qty) {
       if (!this.item_exist(item, flag)) {
         this.sales_order.orders.push({
           id: item_id,
           name: item_name,
           description: item_des,
-          ordered_qty: "",
+          ordered_qty: item_qty,
           delivered_qty: "",
-          price: "0"
+          price: "0",
+          amount: "0"
         });
         this.compute();
 
-        var x = document.getElementById("snackbar");
+        if (flag == 1) {
+          var x = document.getElementById("snackbar");
+          x.className = "show";
+          setTimeout(function() {
+            x.className = x.className.replace("show", "");
+          }, 2000);
+        } else var x = document.getElementById("snackbar2");
         x.className = "show";
         setTimeout(function() {
           x.className = x.className.replace("show", "");
         }, 2000);
 
-        this.itemSearch.item = "";
-        this.searchItem();
+        // this.itemSearch.item = "";
+        // this.searchItem();
       } else {
         swal("That item is already in the list", {
           icon: "error"
@@ -1010,7 +1059,9 @@ export default {
         .put("api/sales_order/" + this.sales_order.id, this.sales_order)
         .then(response => {
           swal(
-            "Sales Order #" + this.sales_order.id + " was succesfully updated!",
+            "Materil Request #" +
+              this.sales_order.id +
+              " was succesfully updated!",
             {
               icon: "success"
             }
@@ -1052,7 +1103,7 @@ export default {
             .post("api/sales_order/accept/" + this.sales_order.id)
             .then(response => {
               this.load();
-              swal("Sales Order #" + this.sales_order.id + " accepted!", {
+              swal("Material Request #" + this.sales_order.id + " accepted!", {
                 icon: "success"
               });
             });
@@ -1069,7 +1120,7 @@ export default {
         .post("api/sales_order/decline/" + this.sales_order.id)
         .then(response => {
           this.load();
-          swal("Sales Order #" + this.sales_order.id + " declined!", {
+          swal("Material Request #" + this.sales_order.id + " declined!", {
             dangerMode: true
           });
         });
@@ -1108,9 +1159,10 @@ export default {
       this.sales_order.amount.subtotal = 0;
       this.sales_order.amount.total = 0;
       this.sales_order.note = "";
+      this.sales_order.requestor = "";
       this.showNotification(
         "bg-black",
-        "Sales order was cleared!",
+        "Material Request was cleared!",
         "top",
         "left",
         "animated bounceInLeft",
@@ -1120,9 +1172,10 @@ export default {
     printPreview() {
       $(".content").css("margin-left", "0px");
       $(".content").css("margin-right", "0px");
-      $(".content").css("margin-top", "5px");
+      $(".content").css("margin-top", "25px");
       //$("#print_form").css("display", "block");
       $("#sales_order_button").css("display", "none");
+      $("#item_buttons").css("display", "none");
       $("#sales_return_notification").css("display", "none");
       $("#leftsidebar").css("display", "none");
       $(".navbar").css("display", "none");
@@ -1135,6 +1188,7 @@ export default {
       $(".content").css("margin-right", "15px");
       $(".content").css("margin-top", "100px");
       $("#sales_order_button").css("display", "block");
+      $("#item_buttons").css("display", "block");
       $("#sales_return_notification").css("display", "block");
       $("#leftsidebar").css("display", "block");
       $(".navbar").css("display", "block");
@@ -1289,6 +1343,25 @@ export default {
 </script>
 
 <style scoped>
+@media screen {
+  .watermark {
+    display: none;
+  }
+}
+
+@media print {
+  .watermark {
+    position: absolute;
+    color: lightgray;
+    opacity: 0.25;
+    font-size: 3em;
+    width: 100%;
+    top: 8%;
+    text-align: center;
+    z-index: 0;
+    display: block;
+  }
+}
 .alert {
   border-radius: 4px;
 }
@@ -1384,6 +1457,27 @@ body.loading .modalLoading {
 }
 
 #snackbar.show {
+  visibility: visible;
+  -webkit-animation: fadein 1s, fadeout 1s 1s;
+  animation: fadein 1s, fadeout 1s 1s;
+}
+#snackbar2 {
+  visibility: hidden;
+  min-width: 250px;
+  margin-left: -125px;
+  background-color: #333;
+  color: #fff;
+  text-align: center;
+  border-radius: 2px;
+  padding: 16px;
+  position: fixed;
+  z-index: 1;
+  left: 40%;
+  top: 100px;
+  font-size: 17px;
+}
+
+#snackbar2.show {
   visibility: visible;
   -webkit-animation: fadein 1s, fadeout 1s 1s;
   animation: fadein 1s, fadeout 1s 1s;

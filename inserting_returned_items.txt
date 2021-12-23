@@ -1,0 +1,97 @@
+  $return1 = DB::table('item_sales_return')
+                ->where('sales_return_id', $id)
+                ->first();
+
+            $return2 = DB::table('sales_returns')
+                ->where('id', $id)
+                ->first();
+
+
+            $retSales = DB::table('sales_orders')
+                ->where("client_id", $return2->from_client_id)
+                ->first();
+
+            $retDelivery = DB::table('delivery_receipts')
+                ->where("sales_order_id", $retSales->id)
+                ->first();
+
+            $retItem =
+                DB::table('delivery_receipt_item')
+                ->where("delivery_receipt_id", $retDelivery->id)
+                ->where("item_id", $return1->item_id)
+                ->where("barcode", $return1->serial);
+
+            $retItemCount = $retItem->count();
+
+            if ($retItemCount > 0) {
+
+                DB::table('sales_returns')
+                    ->where('id', $id)
+                    ->update([
+                        'status' => "Approved",
+                        'updated_at' => Carbon::now()
+                    ]);
+
+                // $addQty = $retItem->increment("qty_return", 1);
+
+                $itemTemp = Item::with(['type', 'category', 'stocks'])
+                    ->find($return1->item_id);
+
+
+
+                if ($return1->serial == null) {
+                    if ($return1->status != 'Defective') {
+                        DB::table('stocks')->insert(
+                            [
+                                'item_id' => $itemTemp->id,
+                                'warehouse_id' => $return1->received_to,
+                                'received_at' => $return2->date_return,
+                                'qty_in' => $return1->qty,
+                                'created_at' => Carbon::now(),
+                                'updated_at' => Carbon::now(),
+                            ]
+                        );
+                    }
+                } else {
+
+                    $serial = DB::table('stock_serial')->where('serial', $return1->serial)->first();
+
+
+                    if ($return1->status == 'Defective') {
+
+                        DB::table('stock_serial')
+                            ->where('serial', $return1->serial)
+                            ->update([
+                                'status' => 'Defective'
+                            ]);
+                    } else {
+                        DB::table('stocks')
+                            ->where('id', $serial->stock_id)
+                            ->increment(
+                                'qty_in',
+                                $return1->qty
+                            );
+
+                        DB::table('stock_serial')
+                            ->where('serial', $return1->serial)
+                            ->update([
+                                'status' => 'stocked in'
+                            ]);
+                    }
+                }
+
+                DB::table('logs')->insert(
+                    [
+                        'item_id' => $return1->item_id,
+                        'serial' => $return1->serial,
+                        'status' => $return1->status,
+                        'remarks' => ' Return Quantity of ' . $return1->qty,
+                        'created_at' => Carbon::now(),
+                        'updated_at' => Carbon::now(),
+                    ]
+                );
+                DB::commit();
+                return response()->json("Data inserted!");
+            } else {
+                return response()->json("Data doesn't exist!!");
+            }
